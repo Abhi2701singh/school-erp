@@ -1,0 +1,4 @@
+/* Custom styles for EduManage ERP */
+.table-hover tbody tr:hover {
+    background-color: #f1f5f9;
+}

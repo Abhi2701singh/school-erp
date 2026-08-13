@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9">
+        <div class="card card-custom p-4">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-chalkboard-user text-primary me-2"></i> {{ title }}</h4>
+            
+            <form method="post">
+                {% csrf_token %}
+                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">User Credentials</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Username</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Email Address</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Password</label>
+                        {{ form.password }}
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">Teacher Info & Assignments</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">First Name</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Last Name</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Employee ID</label>
+                        {{ form.employee_id }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Qualification</label>
+                        {{ form.qualification }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Contact Phone</label>
+                        {{ form.phone }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Joining Date</label>
+                        {{ form.joining_date }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Address</label>
+                        {{ form.address }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Assign Classes (Hold Ctrl to multi-select)</label>
+                        {{ form.assigned_classes }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Assign Sections</label>
+                        {{ form.assigned_sections }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Assign Subjects</label>
+                        {{ form.assigned_subjects }}
+                    </div>
+                </div>
+
+                <div class="text-end border-top pt-3">
+                    <a href="{% url 'teacher_list' %}" class="btn btn-light me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-save me-2"></i> Save Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

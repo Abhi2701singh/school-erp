@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+{% block title %}Enter Exam Marks - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="card card-custom p-4 mb-4">
+    <h4 class="fw-bold mb-3"><i class="fa-solid fa-award text-primary me-2"></i> Enter Subject Exam Marks</h4>
+    
+    <form method="get" class="row g-2">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold mb-1">Select Exam</label>
+            <select name="exam_id" class="form-select" required>
+                <option value="">-- Select Exam --</option>
+                {% for e in exams %}
+                    <option value="{{ e.id }}" {% if selected_exam and selected_exam.id == e.id %}selected{% endif %}>{{ e.name }} ({{ e.class_level.name }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold mb-1">Select Subject</label>
+            <select name="subject_id" class="form-select" required>
+                <option value="">-- Select Subject --</option>
+                {% for s in subjects %}
+                    <option value="{{ s.id }}" {% if selected_subject and selected_subject.id == s.id %}selected{% endif %}>{{ s.name }} (Max: {{ s.max_marks }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold mb-1">Select Section</label>
+            <select name="section_id" class="form-select" required>
+                <option value="">-- Select Section --</option>
+                {% for sec in sections %}
+                    <option value="{{ sec.id }}" {% if selected_section == sec.id|stringformat:"i" %}selected{% endif %}>{{ sec.class_level.name }} - {{ sec.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-list-check me-1"></i> Load Students</button>
+        </div>
+    </form>
+</div>
+
+{% if students %}
+<div class="card card-custom p-4">
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="exam_id" value="{{ selected_exam.id }}">
+        <input type="hidden" name="subject_id" value="{{ selected_subject.id }}">
+        <input type="hidden" name="section_id" value="{{ selected_section }}">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0">Marksheet Entry: {{ selected_exam.name }} | {{ selected_subject.name }} (Max Marks: {{ selected_subject.max_marks }})</h5>
+            <span class="badge bg-info fs-6">{{ students.count }} Students</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Adm No</th>
+                        <th>Student Name</th>
+                        <th style="width: 140px;">Theory Marks</th>
+                        <th style="width: 140px;">Practical Marks</th>
+                        <th>Grade / Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    {% with mark_obj=existing_marks|get_item:student.id %}
+                    <tr>
+                        <td><strong>{{ student.roll_no|default:"-" }}</strong></td>
+                        <td><span class="badge bg-secondary">{{ student.admission_no }}</span></td>
+                        <td class="fw-bold">{{ student.first_name }} {{ student.last_name }}</td>
+                        <td>
+                            <input type="number" step="0.5" name="theory_{{ student.id }}" class="form-control" value="{{ mark_obj.theory_marks_obtained|default:0 }}" max="{{ selected_subject.max_marks }}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.5" name="practical_{{ student.id }}" class="form-control" value="{{ mark_obj.practical_marks_obtained|default:0 }}" max="{{ selected_subject.max_marks }}">
+                        </td>
+                        <td>
+                            {% if mark_obj %}
+                                <span class="badge bg-primary fs-6">{{ mark_obj.grade }}</span>
+                                {% if mark_obj.is_pass %}
+                                    <span class="badge bg-success">PASS</span>
+                                {% else %}
+                                    <span class="badge bg-danger">FAIL</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">Not Entered</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-success btn-lg px-5"><i class="fa-solid fa-floppy-disk me-2"></i> Save Exam Marks</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

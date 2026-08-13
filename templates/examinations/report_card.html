@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Card - {{ student.first_name }} {{ student.last_name }} ({{ exam.name }})</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: sans-serif;
+            padding: 2rem;
+        }
+        .report-card-container {
+            max-width: 800px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border: 2px solid #e2e8f0;
+            margin: 0 auto;
+        }
+        .school-title {
+            color: #1e1b4b;
+            font-weight: 800;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; background: white; }
+            .report-card-container { border: none; box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="report-card-container">
+    <div class="row align-items-center mb-4 border-bottom pb-3">
+        <div class="col-8">
+            <h3 class="school-title m-0">{{ student.school.name }}</h3>
+            <p class="text-muted m-0 mb-1">{{ student.school.address }} | Contact: {{ student.school.phone }}</p>
+            <span class="badge bg-primary fs-6">{{ exam.name }} - ACADEMIC REPORT CARD</span>
+        </div>
+        <div class="col-4 text-end">
+            {% if student.school.logo %}
+                <img src="{{ student.school.logo.url }}" style="max-height:70px;">
+            {% else %}
+                <i class="fa-solid fa-graduation-cap display-3 text-primary"></i>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Student Details Grid -->
+    <div class="bg-light p-3 rounded-3 mb-4">
+        <div class="row g-2">
+            <div class="col-6"><strong>Student Name:</strong> {{ student.first_name }} {{ student.last_name }}</div>
+            <div class="col-6"><strong>Admission No:</strong> {{ student.admission_no }}</div>
+            <div class="col-6"><strong>Class & Section:</strong> {{ student.current_class.name }} - {{ student.current_section.name }}</div>
+            <div class="col-6"><strong>Roll No:</strong> {{ student.roll_no|default:"-" }}</div>
+            <div class="col-6"><strong>Father's Name:</strong> {{ student.father_name }}</div>
+            <div class="col-6"><strong>Academic Session:</strong> {{ exam.academic_session.name }}</div>
+        </div>
+    </div>
+
+    <!-- Marks Table -->
+    <table class="table table-bordered align-middle text-center mb-4">
+        <thead class="table-dark">
+            <tr>
+                <th class="text-start">Subject</th>
+                <th>Theory Marks</th>
+                <th>Practical Marks</th>
+                <th>Total Obtained</th>
+                <th>Max Marks</th>
+                <th>Grade</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in marks %}
+            <tr>
+                <td class="text-start fw-bold">{{ m.subject.name }}</td>
+                <td>{{ m.theory_marks_obtained }}</td>
+                <td>{{ m.practical_marks_obtained }}</td>
+                <td class="fw-bold">{{ m.total_marks_obtained }}</td>
+                <td>{{ m.subject.max_marks }}</td>
+                <td><span class="badge bg-secondary fs-6">{{ m.grade }}</span></td>
+                <td>
+                    {% if m.is_pass %}
+                        <span class="badge bg-success">PASS</span>
+                    {% else %}
+                        <span class="badge bg-danger">FAIL</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-muted">No marks recorded.</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="table-light">
+            <tr>
+                <th colspan="3" class="text-end">Grand Total:</th>
+                <th class="fw-bold text-primary">{{ grand_total_obtained }}</th>
+                <th>{{ grand_total_max }}</th>
+                <th>Overall:</th>
+                <th>
+                    {% if overall_pass %}
+                        <span class="badge bg-success fs-6">PASSED</span>
+                    {% else %}
+                        <span class="badge bg-danger fs-6">FAILED</span>
+                    {% endif %}
+                </th>
+            </tr>
+            <tr>
+                <th colspan="3" class="text-end">Percentage:</th>
+                <th colspan="4" class="text-start fw-bold text-success fs-5">{{ percentage }}%</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="row mt-5 pt-4 text-center">
+        <div class="col-4 border-top pt-2">Class Teacher Signature</div>
+        <div class="col-4 border-top pt-2">Exam Controller</div>
+        <div class="col-4 border-top pt-2">Principal Signature</div>
+    </div>
+</div>
+
+<div class="no-print text-center mt-4">
+    <button onclick="window.print()" class="btn btn-primary btn-lg shadow"><i class="fa-solid fa-print me-2"></i> Print Report Card PDF</button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Class Timetable - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    {% if user.is_school_admin %}
+    <div class="col-md-4">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Add Timetable Period</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Class</label>
+                    {{ form.class_level }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Section</label>
+                    {{ form.section }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Subject</label>
+                    {{ form.subject }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Teacher</label>
+                    {{ form.teacher_user }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Day</label>
+                    {{ form.day }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Period Number</label>
+                    {{ form.period_number }}
+                </div>
+                <div class="mb-2 row">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Start Time</label>
+                        {{ form.start_time }}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">End Time</label>
+                        {{ form.end_time }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-2"><i class="fa-solid fa-save me-2"></i> Save Period</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="{% if user.is_school_admin %}col-md-8{% else %}col-md-12{% endif %}">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock text-primary me-2"></i> Timetable Schedule</h5>
+            
+            <form method="get" class="row g-2 mb-3">
+                <div class="col-md-5">
+                    <select name="class_id" class="form-select">
+                        <option value="">-- All Classes --</option>
+                        {% for c in classes %}
+                            <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <select name="section_id" class="form-select">
+                        <option value="">-- All Sections --</option>
+                        {% for s in sections %}
+                            <option value="{{ s.id }}" {% if selected_section == s.id|stringformat:"i" %}selected{% endif %}>{{ s.class_level.name }} - {{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100"><i class="fa-solid fa-filter"></i> Filter</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Class & Section</th>
+                            <th>Day</th>
+                            <th>Period</th>
+                            <th>Subject</th>
+                            <th>Teacher</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tt in timetables %}
+                        <tr>
+                            <td class="fw-bold">{{ tt.class_level.name }} - {{ tt.section.name }}</td>
+                            <td><span class="badge bg-secondary">{{ tt.day }}</span></td>
+                            <td><span class="badge bg-primary">P{{ tt.period_number }}</span></td>
+                            <td class="fw-bold text-primary">{{ tt.subject.name }}</td>
+                            <td>{{ tt.teacher_user.get_full_name|default:tt.teacher_user.username }}</td>
+                            <td><small>{{ tt.start_time }} - {{ tt.end_time }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-muted text-center py-4">No timetable entries found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

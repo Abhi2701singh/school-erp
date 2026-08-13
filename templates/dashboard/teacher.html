@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold m-0">Teacher Workspace</h3>
+    <p class="text-muted">Welcome back, {{ user.get_full_name }}</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-layer-group text-primary me-2"></i> My Assigned Classes</h5>
+            <div class="d-flex flex-wrap gap-2">
+                {% for cls in assigned_classes %}
+                    <span class="badge bg-primary fs-6 p-2">{{ cls.name }}</span>
+                {% empty %}
+                    <span class="text-muted">No classes assigned yet.</span>
+                {% endfor %}
+            </div>
+            <h5 class="fw-bold mb-3 mt-4"><i class="fa-solid fa-book text-success me-2"></i> My Assigned Subjects</h5>
+            <div class="d-flex flex-wrap gap-2">
+                {% for sbj in assigned_subjects %}
+                    <span class="badge bg-success fs-6 p-2">{{ sbj.name }}</span>
+                {% empty %}
+                    <span class="text-muted">No subjects assigned yet.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock text-warning me-2"></i> Timetable Schedule</h5>
+            <ul class="list-group list-group-flush">
+                {% for tt in timetables %}
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                        <span><strong>{{ tt.day }} P{{ tt.period_number }}</strong>: {{ tt.class_level.name }}-{{ tt.section.name }} ({{ tt.subject.name }})</span>
+                        <small class="text-muted">{{ tt.start_time }} - {{ tt.end_time }}</small>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item px-0 text-muted">No schedule found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

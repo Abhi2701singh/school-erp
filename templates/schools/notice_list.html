@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Noticeboard - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    {% if user.is_school_admin %}
+    <div class="col-md-5">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-bullhorn text-warning me-2"></i> Post New Announcement</h5>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Notice Title</label>
+                    {{ form.title }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Target Audience</label>
+                    {{ form.target_role }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Notice Content</label>
+                    {{ form.content }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Attachment (PDF / Image)</label>
+                    {{ form.attachment }}
+                </div>
+                <button type="submit" class="btn btn-warning text-white w-100 fw-bold"><i class="fa-solid fa-paper-plane me-2"></i> Publish Notice</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="{% if user.is_school_admin %}col-md-7{% else %}col-md-12{% endif %}">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-newspaper text-primary me-2"></i> Published School Announcements</h5>
+            <div class="d-flex flex-column gap-3">
+                {% for notice in notices %}
+                    <div class="p-3 border rounded-3 bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold m-0 text-primary">{{ notice.title }}</h6>
+                            <span class="badge bg-secondary">{{ notice.get_target_role_display }}</span>
+                        </div>
+                        <p class="mb-2 text-dark">{{ notice.content|linebreaks }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted"><i class="fa-solid fa-calendar me-1"></i> Posted on {{ notice.created_at|date:"d M Y, h:i A" }}</small>
+                            {% if notice.attachment %}
+                                <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-outline-primary" target="_blank"><i class="fa-solid fa-paperclip me-1"></i> View Attachment</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-muted text-center py-4">No notices published yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

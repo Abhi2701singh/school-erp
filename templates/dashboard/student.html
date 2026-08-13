@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Portal - EduManage ERP{% endblock %}
+
+{% block content %}
+{% if student %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold m-0">Welcome, {{ student.first_name }} {{ student.last_name }}</h3>
+        <p class="text-muted m-0">Class: <strong>{{ student.current_class.name }} - {{ student.current_section.name }}</strong> | Roll No: <strong>{{ student.roll_no }}</strong></p>
+    </div>
+    <a href="{% url 'student_id_card' student.id %}" class="btn btn-outline-primary" target="_blank">
+        <i class="fa-solid fa-id-card me-2"></i> Print ID Card
+    </a>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-success text-white"><i class="fa-solid fa-clipboard-user"></i></div>
+            <div>
+                <h3 class="fw-bold mb-0">{{ att_pct }}%</h3>
+                <small class="text-muted">Attendance Rate</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-danger text-white"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div>
+                <h3 class="fw-bold mb-0">₹{{ total_due|floatformat:2 }}</h3>
+                <small class="text-muted">Pending Fee Dues</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary text-white"><i class="fa-solid fa-book-bookmark"></i></div>
+            <div>
+                <h3 class="fw-bold mb-0">{{ homeworks|length }}</h3>
+                <small class="text-muted">Active Assignments</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Homework & Exam Results Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-book-open text-primary me-2"></i> Homework & Assignments</h5>
+            <ul class="list-group list-group-flush">
+                {% for hw in homeworks %}
+                    <li class="list-group-item px-0">
+                        <div class="fw-semibold">{{ hw.title }} ({{ hw.subject.name }})</div>
+                        <small class="text-muted">Due Date: {{ hw.due_date }}</small>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item px-0 text-muted">No pending homework.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-award text-warning me-2"></i> Recent Marks & Exam Results</h5>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mark in marks %}
+                            <tr>
+                                <td>{{ mark.exam.name }}</td>
+                                <td>{{ mark.subject.name }}</td>
+                                <td class="fw-bold">{{ mark.total_marks_obtained }} / {{ mark.subject.max_marks }}</td>
+                                <td><span class="badge bg-info">{{ mark.grade }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-muted">No exam results published yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+    <div class="alert alert-warning">Student profile not linked to your user account.</div>
+{% endif %}
+{% endblock %}

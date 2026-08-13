@@ -1,0 +1,22 @@
+databases:
+  - name: edumanage-db
+    databaseName: edumanage_erp
+    user: edumanage_user
+
+services:
+  - type: web
+    name: edumanage-school-erp
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn school_erp.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: edumanage-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"

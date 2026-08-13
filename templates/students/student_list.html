@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Directory - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold m-0">Student Directory</h3>
+        <p class="text-muted m-0">Manage student admissions and profiles</p>
+    </div>
+    {% if user.is_school_admin %}
+    <a href="{% url 'student_admission' %}" class="btn btn-primary">
+        <i class="fa-solid fa-user-plus me-2"></i> New Admission
+    </a>
+    {% endif %}
+</div>
+
+<div class="card card-custom p-4 mb-4">
+    <form method="get" class="row g-2">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Search by Name / Adm No / Mobile..." value="{{ query }}">
+        </div>
+        <div class="col-md-3">
+            <select name="class_id" class="form-select">
+                <option value="">-- All Classes --</option>
+                {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="section_id" class="form-select">
+                <option value="">-- All Sections --</option>
+                {% for s in sections %}
+                    <option value="{{ s.id }}" {% if selected_section == s.id|stringformat:"i" %}selected{% endif %}>{{ s.class_level.name }} - {{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-secondary w-100"><i class="fa-solid fa-search me-1"></i> Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Adm No</th>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                    <th>Class & Section</th>
+                    <th>Father Name</th>
+                    <th>Parent Phone</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td><span class="badge bg-secondary">{{ student.admission_no }}</span></td>
+                    <td><strong>{{ student.roll_no|default:"-" }}</strong></td>
+                    <td class="fw-bold">
+                        {% if student.photo %}
+                            <img src="{{ student.photo.url }}" class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover;">
+                        {% endif %}
+                        {{ student.first_name }} {{ student.last_name }}
+                    </td>
+                    <td>{{ student.current_class.name }} - {{ student.current_section.name }}</td>
+                    <td>{{ student.father_name }}</td>
+                    <td>{{ student.parent_phone }}</td>
+                    <td>
+                        <span class="badge {% if student.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ student.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'student_profile' student.id %}" class="btn btn-sm btn-outline-primary me-1"><i class="fa-solid fa-user me-1"></i> Profile</a>
+                        <a href="{% url 'collect_fee' student.id %}" class="btn btn-sm btn-outline-success me-1"><i class="fa-solid fa-money-bill me-1"></i> Fees</a>
+                        <a href="{% url 'student_id_card' student.id %}" class="btn btn-sm btn-outline-dark" target="_blank"><i class="fa-solid fa-id-card"></i> ID Card</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No students found matching the criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

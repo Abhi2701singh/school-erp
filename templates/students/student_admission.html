@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}New Student Admission - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card card-custom p-4">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-user-plus text-primary me-2"></i> Student Admission Form</h4>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="fa-solid fa-graduation-cap me-2"></i> Academic & Allocation Details</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Admission Number</label>
+                        {{ form.admission_no }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Roll Number</label>
+                        {{ form.roll_no }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Admission Date</label>
+                        {{ form.admission_date }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Academic Session</label>
+                        {{ form.academic_session }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Admitted Class</label>
+                        {{ form.current_class }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Admitted Section</label>
+                        {{ form.current_section }}
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="fa-solid fa-user me-2"></i> Personal Information</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">First Name</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Last Name</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Date of Birth</label>
+                        {{ form.dob }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Gender</label>
+                        {{ form.gender }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Blood Group</label>
+                        {{ form.blood_group }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Aadhaar / Govt ID Number</label>
+                        {{ form.govt_id }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Student Photo</label>
+                        {{ form.photo }}
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Residential Address</label>
+                        {{ form.address }}
+                    </div>
+                </div>
+
+                <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="fa-solid fa-users me-2"></i> Parent & Guardian Details</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Father's Name</label>
+                        {{ form.father_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Mother's Name</label>
+                        {{ form.mother_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Guardian's Name</label>
+                        {{ form.guardian_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Parent Contact Phone</label>
+                        {{ form.parent_phone }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Parent Email</label>
+                        {{ form.parent_email }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Parent Occupation</label>
+                        {{ form.parent_occupation }}
+                    </div>
+                </div>
+
+                <div class="text-end border-top pt-3">
+                    <a href="{% url 'student_list' %}" class="btn btn-light me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-5 fw-bold"><i class="fa-solid fa-user-check me-2"></i> Complete Admission</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

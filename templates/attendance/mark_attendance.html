@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+{% block title %}Mark Daily Attendance - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="card card-custom p-4 mb-4">
+    <h4 class="fw-bold mb-3"><i class="fa-solid fa-clipboard-user text-primary me-2"></i> Mark Student Attendance</h4>
+    
+    <form method="get" class="row g-2">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold mb-1">Class</label>
+            <select name="class_id" class="form-select" required>
+                <option value="">-- Select Class --</option>
+                {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold mb-1">Section</label>
+            <select name="section_id" class="form-select" required>
+                <option value="">-- Select Section --</option>
+                {% for s in sections %}
+                    <option value="{{ s.id }}" {% if selected_section == s.id|stringformat:"i" %}selected{% endif %}>{{ s.class_level.name }} - {{ s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold mb-1">Date</label>
+            <input type="date" name="date" class="form-control" value="{{ attendance_date }}" required>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-users me-1"></i> Fetch Students</button>
+        </div>
+    </form>
+</div>
+
+{% if students %}
+<div class="card card-custom p-4">
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="class_id" value="{{ selected_class }}">
+        <input type="hidden" name="section_id" value="{{ selected_section }}">
+        <input type="hidden" name="date" value="{{ attendance_date }}">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0">Student Attendance Sheet ({{ attendance_date }})</h5>
+            <span class="badge bg-info fs-6">{{ students.count }} Students</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Adm No</th>
+                        <th>Student Name</th>
+                        <th>Attendance Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td><strong>{{ student.roll_no|default:"-" }}</strong></td>
+                        <td><span class="badge bg-secondary">{{ student.admission_no }}</span></td>
+                        <td class="fw-bold">{{ student.first_name }} {{ student.last_name }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="status_{{ student.id }}" id="p_{{ student.id }}" value="P" {% if not existing_attendance or existing_attendance|get_item:student.id == 'P' or not existing_attendance|get_item:student.id %}checked{% endif %}>
+                                <label class="btn btn-outline-success btn-sm" for="p_{{ student.id }}">Present</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ student.id }}" id="a_{{ student.id }}" value="A" {% if existing_attendance|get_item:student.id == 'A' %}checked{% endif %}>
+                                <label class="btn btn-outline-danger btn-sm" for="a_{{ student.id }}">Absent</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ student.id }}" id="l_{{ student.id }}" value="L" {% if existing_attendance|get_item:student.id == 'L' %}checked{% endif %}>
+                                <label class="btn btn-outline-warning btn-sm" for="l_{{ student.id }}">Late</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ student.id }}" id="le_{{ student.id }}" value="LE" {% if existing_attendance|get_item:student.id == 'LE' %}checked{% endif %}>
+                                <label class="btn btn-outline-info btn-sm" for="le_{{ student.id }}">Leave</label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" name="remarks_{{ student.id }}" class="form-control form-control-sm" placeholder="Optional remark...">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-success btn-lg px-5"><i class="fa-solid fa-floppy-disk me-2"></i> Save Attendance</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

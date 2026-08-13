@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Schools Directory - Super Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold m-0">Schools Directory</h3>
+        <p class="text-muted m-0">Manage all registered schools on the ERP SaaS platform</p>
+    </div>
+    <a href="{% url 'school_create' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-2"></i> Register New School
+    </a>
+</div>
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>School Name</th>
+                    <th>Code</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Principal</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for school in schools %}
+                <tr>
+                    <td class="fw-bold">{{ school.name }}</td>
+                    <td><span class="badge bg-secondary">{{ school.code }}</span></td>
+                    <td>{{ school.email }}</td>
+                    <td>{{ school.phone }}</td>
+                    <td>{{ school.principal_name|default:"N/A" }}</td>
+                    <td>
+                        {% if school.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'switch_school' school.id %}" class="btn btn-sm btn-outline-primary me-1"><i class="fa-solid fa-arrow-right-to-bracket"></i> Manage</a>
+                        <a href="{% url 'school_edit' school.id %}" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">No schools registered yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}School Admin Dashboard - {{ request.school.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold m-0">{{ request.school.name }} Dashboard</h3>
+        <p class="text-muted m-0">Active Session: <span class="badge bg-primary">{{ active_session.name|default:"Not Set" }}</span></p>
+    </div>
+    <div>
+        <a href="{% url 'student_admission' %}" class="btn btn-primary me-2"><i class="fa-solid fa-user-plus me-1"></i> New Student</a>
+        <a href="{% url 'mark_attendance' %}" class="btn btn-outline-primary"><i class="fa-solid fa-clipboard-user me-1"></i> Mark Attendance</a>
+    </div>
+</div>
+
+<!-- Stat Cards Grid -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary text-white"><i class="fa-solid fa-user-graduate"></i></div>
+            <div>
+                <h3 class="fw-bold mb-0">{{ total_students }}</h3>
+                <small class="text-muted">Total Students</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success text-white"><i class="fa-solid fa-chalkboard-user"></i></div>
+            <div>
+                <h3 class="fw-bold mb-0">{{ total_teachers }}</h3>
+                <small class="text-muted">Teachers & Faculty</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-info text-white"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            <div>
+                <h3 class="fw-bold mb-0">₹{{ fee_collected_total|floatformat:0 }}</h3>
+                <small class="text-muted">Fee Collected</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning text-white"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div>
+                <h3 class="fw-bold mb-0">{{ defaulters_count }}</h3>
+                <small class="text-muted">Fee Defaulters</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today Attendance & Analytics Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-7">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-line text-primary me-2"></i> Today's Attendance Overview</h5>
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center">
+                    <h1 class="display-4 fw-bold text-primary mb-0">{{ attendance_pct }}%</h1>
+                    <small class="text-muted">Overall Present Rate Today</small>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fa-solid fa-circle text-success me-2"></i> Present</span>
+                        <span class="fw-bold">{{ today_present }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fa-solid fa-circle text-danger me-2"></i> Absent</span>
+                        <span class="fw-bold">{{ today_absent }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card card-custom p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-bullhorn text-warning me-2"></i> Recent Notices</h5>
+                <a href="{% url 'notice_list' %}" class="btn btn-sm btn-link">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for notice in notices %}
+                    <li class="list-group-item px-0">
+                        <div class="fw-semibold">{{ notice.title }}</div>
+                        <small class="text-muted">{{ notice.created_at|date:"d M Y" }} • Target: {{ notice.get_target_role_display }}</small>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item px-0 text-muted">No notices posted yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Student Admissions Table -->
+<div class="card card-custom p-4">
+    <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-check text-success me-2"></i> Recent Admissions</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Admission No</th>
+                    <th>Student Name</th>
+                    <th>Class & Section</th>
+                    <th>Parent Phone</th>
+                    <th>Admission Date</th>
+                    <th class="text-end">Profile</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in recent_students %}
+                <tr>
+                    <td><span class="badge bg-secondary">{{ student.admission_no }}</span></td>
+                    <td class="fw-bold">{{ student.first_name }} {{ student.last_name }}</td>
+                    <td>{{ student.current_class.name }} - {{ student.current_section.name }}</td>
+                    <td>{{ student.parent_phone }}</td>
+                    <td>{{ student.admission_date }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'student_profile' student.id %}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No student records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

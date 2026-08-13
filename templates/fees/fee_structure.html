@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Fee Structure & Setup - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card card-custom p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Create Fee Category Head</h5>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="create_head" value="1">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Fee Head Name</label>
+                    {{ head_form.name }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    {{ head_form.description }}
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save me-2"></i> Save Fee Head</button>
+            </form>
+        </div>
+
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-layer-group text-success me-2"></i> Define Class Fee Amount</h5>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="create_struct" value="1">
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Class</label>
+                    {{ struct_form.class_level }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Fee Head</label>
+                    {{ struct_form.fee_head }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Amount (₹)</label>
+                    {{ struct_form.amount }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Frequency</label>
+                    {{ struct_form.frequency }}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Due Date</label>
+                    {{ struct_form.due_date }}
+                </div>
+                <button type="submit" class="btn btn-success w-100 mt-2"><i class="fa-solid fa-plus me-2"></i> Add Fee Structure</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card card-custom p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-money-bill-wave text-warning me-2"></i> Current Fee Structures</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Class</th>
+                            <th>Fee Head</th>
+                            <th>Amount</th>
+                            <th>Frequency</th>
+                            <th>Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for st in structures %}
+                        <tr>
+                            <td class="fw-bold">{{ st.class_level.name }}</td>
+                            <td>{{ st.fee_head.name }}</td>
+                            <td class="fw-bold text-success">₹{{ st.amount }}</td>
+                            <td><span class="badge bg-info">{{ st.get_frequency_display }}</span></td>
+                            <td><small>{{ st.due_date|default:"-" }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted text-center">No fee structures added.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card card-custom p-4 bg-light border-primary">
+            <h5 class="fw-bold text-primary mb-2"><i class="fa-solid fa-bolt me-2"></i> Auto Assign Fees to Class Students</h5>
+            <p class="text-muted fs-7 mb-3">Generate student fee dues for all active students in a selected class based on defined structures above.</p>
+            <form method="post" action="{% url 'assign_fees' %}" class="row g-2">
+                {% csrf_token %}
+                <div class="col-8">
+                    <select name="class_id" class="form-select" required>
+                        <option value="">-- Select Target Class --</option>
+                        {% for st in structures %}
+                            <option value="{{ st.class_level.id }}">{{ st.class_level.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-4">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-gear me-1"></i> Assign Dues</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

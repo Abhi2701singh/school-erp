@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Subjects Setup - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Add Subject</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Subject Name</label>
+                    {{ form.name }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Subject Code</label>
+                    {{ form.code }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Subject Type</label>
+                    {{ form.subject_type }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Maximum Marks</label>
+                    {{ form.max_marks }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Passing Marks</label>
+                    {{ form.pass_marks }}
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save me-2"></i> Save Subject</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-book-open text-warning me-2"></i> Subjects Directory</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Subject Name</th>
+                            <th>Type</th>
+                            <th>Max Marks</th>
+                            <th>Pass Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sbj in subjects %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ sbj.code|default:"N/A" }}</span></td>
+                            <td class="fw-bold fs-6">{{ sbj.name }}</td>
+                            <td><span class="badge bg-info">{{ sbj.get_subject_type_display }}</span></td>
+                            <td>{{ sbj.max_marks }}</td>
+                            <td>{{ sbj.pass_marks }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted text-center">No subjects created yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

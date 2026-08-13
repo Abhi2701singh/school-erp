@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Teachers & Faculty - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold m-0">Teachers Directory</h3>
+        <p class="text-muted m-0">Manage teaching staff and class assignments</p>
+    </div>
+    {% if user.is_school_admin %}
+    <a href="{% url 'teacher_create' %}" class="btn btn-primary">
+        <i class="fa-solid fa-user-plus me-2"></i> Add Teacher
+    </a>
+    {% endif %}
+</div>
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Emp ID</th>
+                    <th>Teacher Name</th>
+                    <th>Qualification</th>
+                    <th>Phone</th>
+                    <th>Assigned Classes</th>
+                    <th>Assigned Subjects</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in teachers %}
+                <tr>
+                    <td><span class="badge bg-secondary">{{ t.employee_id }}</span></td>
+                    <td class="fw-bold">{{ t.user.get_full_name|default:t.user.username }}</td>
+                    <td>{{ t.qualification }}</td>
+                    <td>{{ t.phone }}</td>
+                    <td>
+                        {% for c in t.assigned_classes.all %}
+                            <span class="badge bg-primary me-1">{{ c.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">-</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for s in t.assigned_subjects.all %}
+                            <span class="badge bg-success me-1">{{ s.name }}</span>
+                        {% empty %}
+                            <span class="text-muted">-</span>
+                        {% endfor %}
+                    </td>
+                    <td class="text-end">
+                        {% if user.is_school_admin %}
+                        <a href="{% url 'teacher_edit' t.id %}" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">No teachers registered yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
