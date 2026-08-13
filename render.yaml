@@ -2,11 +2,13 @@ databases:
   - name: edumanage-db
     databaseName: edumanage_erp
     user: edumanage_user
+    plan: free
 
 services:
   - type: web
     name: edumanage-school-erp
     env: python
+    plan: free
     buildCommand: "./build.sh"
     startCommand: "gunicorn school_erp.wsgi:application"
     envVars:
