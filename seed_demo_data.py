@@ -173,7 +173,10 @@ def seed():
     set_current_school(school_b)
     cls_x, _ = Class.objects.get_or_create(school=school_b, name="Class 10", defaults={'numeric_value': 10})
     sec_x, _ = Section.objects.get_or_create(school=school_b, class_level=cls_x, name='A', defaults={'stream': 'General'})
-    st_x_user = User.objects.create_user('xavier_xav-2026-01', 'mumbai@parent.com', 'Password@123', role=User.Roles.STUDENT, school=school_b, first_name="Rohan", last_name="Deshmukh")
+    if not User.objects.filter(username='xavier_xav-2026-01').exists():
+        st_x_user = User.objects.create_user('xavier_xav-2026-01', 'mumbai@parent.com', 'Password@123', role=User.Roles.STUDENT, school=school_b, first_name="Rohan", last_name="Deshmukh")
+    else:
+        st_x_user = User.objects.get(username='xavier_xav-2026-01')
     Student.objects.get_or_create(
         school=school_b,
         admission_no="XAV-2026-01",
