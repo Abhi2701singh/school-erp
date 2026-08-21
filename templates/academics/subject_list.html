@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="row g-4">
-    <div class="col-md-4">
-        <div class="card card-custom p-4">
+    <div class="col-12 col-lg-4">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Add Subject</h5>
             <form method="post">
                 {% csrf_token %}
@@ -34,12 +34,12 @@
         </div>
     </div>
 
-    <div class="col-md-8">
-        <div class="card card-custom p-4">
+    <div class="col-12 col-lg-8">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-book-open text-warning me-2"></i> Subjects Directory</h5>
             <div class="table-responsive">
                 <table class="table align-middle">
-                    <thead>
+                    <thead class="table-light">
                         <tr>
                             <th>Code</th>
                             <th>Subject Name</th>
@@ -52,13 +52,13 @@
                         {% for sbj in subjects %}
                         <tr>
                             <td><span class="badge bg-secondary">{{ sbj.code|default:"N/A" }}</span></td>
-                            <td class="fw-bold fs-6">{{ sbj.name }}</td>
+                            <td class="fw-bold fs-6 text-nowrap">{{ sbj.name }}</td>
                             <td><span class="badge bg-info">{{ sbj.get_subject_type_display }}</span></td>
                             <td>{{ sbj.max_marks }}</td>
                             <td>{{ sbj.pass_marks }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="text-muted text-center">No subjects created yet.</td></tr>
+                        <tr><td colspan="5" class="text-muted text-center py-3">No subjects created yet.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -67,3 +67,4 @@
     </div>
 </div>
 {% endblock %}
+

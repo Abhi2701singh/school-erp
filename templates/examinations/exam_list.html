@@ -5,8 +5,8 @@
 {% block content %}
 <div class="row g-4">
     {% if user.is_school_admin %}
-    <div class="col-md-4">
-        <div class="card card-custom p-4">
+    <div class="col-12 col-lg-4">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Create Exam</h5>
             <form method="post">
                 {% csrf_token %}
@@ -40,8 +40,8 @@
     </div>
     {% endif %}
 
-    <div class="{% if user.is_school_admin %}col-md-8{% else %}col-md-12{% endif %}">
-        <div class="card card-custom p-4">
+    <div class="{% if user.is_school_admin %}col-12 col-lg-8{% else %}col-12{% endif %}">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-pen text-success me-2"></i> Examination Schedule</h5>
             <div class="table-responsive">
                 <table class="table align-middle table-hover">
@@ -57,9 +57,9 @@
                     <tbody>
                         {% for exam in exams %}
                         <tr>
-                            <td class="fw-bold fs-6">{{ exam.name }}</td>
+                            <td class="fw-bold fs-6 text-nowrap">{{ exam.name }}</td>
                             <td><span class="badge bg-primary">{{ exam.class_level.name }}</span></td>
-                            <td><small>{{ exam.start_date }} to {{ exam.end_date }}</small></td>
+                            <td class="text-nowrap"><small>{{ exam.start_date }} to {{ exam.end_date }}</small></td>
                             <td>
                                 {% if exam.is_published %}
                                     <span class="badge bg-success">Result Published</span>
@@ -67,7 +67,7 @@
                                     <span class="badge bg-warning">In Progress</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap">
                                 <a href="{% url 'marks_entry' %}?exam_id={{ exam.id }}" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-award me-1"></i> Enter Marks</a>
                             </td>
                         </tr>
@@ -81,3 +81,4 @@
     </div>
 </div>
 {% endblock %}
+

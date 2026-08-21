@@ -5,8 +5,8 @@
 {% block content %}
 <div class="row g-4">
     {% if user.is_school_admin %}
-    <div class="col-md-4">
-        <div class="card card-custom p-4">
+    <div class="col-12 col-lg-4">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Add Timetable Period</h5>
             <form method="post">
                 {% csrf_token %}
@@ -34,7 +34,7 @@
                     <label class="form-label fw-semibold">Period Number</label>
                     {{ form.period_number }}
                 </div>
-                <div class="mb-2 row">
+                <div class="mb-2 row g-2">
                     <div class="col-6">
                         <label class="form-label fw-semibold">Start Time</label>
                         {{ form.start_time }}
@@ -50,12 +50,12 @@
     </div>
     {% endif %}
 
-    <div class="{% if user.is_school_admin %}col-md-8{% else %}col-md-12{% endif %}">
-        <div class="card card-custom p-4">
+    <div class="{% if user.is_school_admin %}col-12 col-lg-8{% else %}col-12{% endif %}">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock text-primary me-2"></i> Timetable Schedule</h5>
             
             <form method="get" class="row g-2 mb-3">
-                <div class="col-md-5">
+                <div class="col-12 col-sm-5">
                     <select name="class_id" class="form-select">
                         <option value="">-- All Classes --</option>
                         {% for c in classes %}
@@ -63,7 +63,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-5">
+                <div class="col-12 col-sm-5">
                     <select name="section_id" class="form-select">
                         <option value="">-- All Sections --</option>
                         {% for s in sections %}
@@ -71,8 +71,8 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-secondary w-100"><i class="fa-solid fa-filter"></i> Filter</button>
+                <div class="col-12 col-sm-2">
+                    <button type="submit" class="btn btn-secondary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
                 </div>
             </form>
 
@@ -91,12 +91,12 @@
                     <tbody>
                         {% for tt in timetables %}
                         <tr>
-                            <td class="fw-bold">{{ tt.class_level.name }} - {{ tt.section.name }}</td>
+                            <td class="fw-bold text-nowrap">{{ tt.class_level.name }} - {{ tt.section.name }}</td>
                             <td><span class="badge bg-secondary">{{ tt.day }}</span></td>
                             <td><span class="badge bg-primary">P{{ tt.period_number }}</span></td>
-                            <td class="fw-bold text-primary">{{ tt.subject.name }}</td>
-                            <td>{{ tt.teacher_user.get_full_name|default:tt.teacher_user.username }}</td>
-                            <td><small>{{ tt.start_time }} - {{ tt.end_time }}</small></td>
+                            <td class="fw-bold text-primary text-nowrap">{{ tt.subject.name }}</td>
+                            <td class="text-nowrap">{{ tt.teacher_user.get_full_name|default:tt.teacher_user.username }}</td>
+                            <td class="text-nowrap"><small>{{ tt.start_time }} - {{ tt.end_time }}</small></td>
                         </tr>
                         {% empty %}
                         <tr><td colspan="6" class="text-muted text-center py-4">No timetable entries found.</td></tr>
@@ -108,3 +108,4 @@
     </div>
 </div>
 {% endblock %}
+

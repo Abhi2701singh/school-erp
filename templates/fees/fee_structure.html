@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="row g-4">
-    <div class="col-md-5">
-        <div class="card card-custom p-4 mb-4">
+    <div class="col-12 col-lg-5">
+        <div class="card card-custom p-3 p-sm-4 mb-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Create Fee Category Head</h5>
             <form method="post">
                 {% csrf_token %}
@@ -22,7 +22,7 @@
             </form>
         </div>
 
-        <div class="card card-custom p-4">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-layer-group text-success me-2"></i> Define Class Fee Amount</h5>
             <form method="post">
                 {% csrf_token %}
@@ -52,8 +52,8 @@
         </div>
     </div>
 
-    <div class="col-md-7">
-        <div class="card card-custom p-4 mb-4">
+    <div class="col-12 col-lg-7">
+        <div class="card card-custom p-3 p-sm-4 mb-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-money-bill-wave text-warning me-2"></i> Current Fee Structures</h5>
             <div class="table-responsive">
                 <table class="table align-middle">
@@ -69,26 +69,26 @@
                     <tbody>
                         {% for st in structures %}
                         <tr>
-                            <td class="fw-bold">{{ st.class_level.name }}</td>
-                            <td>{{ st.fee_head.name }}</td>
-                            <td class="fw-bold text-success">₹{{ st.amount }}</td>
+                            <td class="fw-bold text-nowrap">{{ st.class_level.name }}</td>
+                            <td class="text-nowrap">{{ st.fee_head.name }}</td>
+                            <td class="fw-bold text-success text-nowrap">₹{{ st.amount }}</td>
                             <td><span class="badge bg-info">{{ st.get_frequency_display }}</span></td>
-                            <td><small>{{ st.due_date|default:"-" }}</small></td>
+                            <td class="text-nowrap"><small>{{ st.due_date|default:"-" }}</small></td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="text-muted text-center">No fee structures added.</td></tr>
+                        <tr><td colspan="5" class="text-muted text-center py-3">No fee structures added.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="card card-custom p-4 bg-light border-primary">
+        <div class="card card-custom p-3 p-sm-4 bg-light border-primary">
             <h5 class="fw-bold text-primary mb-2"><i class="fa-solid fa-bolt me-2"></i> Auto Assign Fees to Class Students</h5>
             <p class="text-muted fs-7 mb-3">Generate student fee dues for all active students in a selected class based on defined structures above.</p>
             <form method="post" action="{% url 'assign_fees' %}" class="row g-2">
                 {% csrf_token %}
-                <div class="col-8">
+                <div class="col-12 col-sm-8">
                     <select name="class_id" class="form-select" required>
                         <option value="">-- Select Target Class --</option>
                         {% for st in structures %}
@@ -96,7 +96,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-4">
+                <div class="col-12 col-sm-4">
                     <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-gear me-1"></i> Assign Dues</button>
                 </div>
             </form>
@@ -104,3 +104,4 @@
     </div>
 </div>
 {% endblock %}
+

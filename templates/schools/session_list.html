@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="row g-4">
-    <div class="col-md-5">
-        <div class="card card-custom p-4">
+    <div class="col-12 col-lg-5">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Add Academic Session</h5>
             <form method="post">
                 {% csrf_token %}
@@ -30,12 +30,12 @@
         </div>
     </div>
 
-    <div class="col-md-7">
-        <div class="card card-custom p-4">
+    <div class="col-12 col-lg-7">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-calendar-days text-success me-2"></i> Session History</h5>
             <div class="table-responsive">
                 <table class="table align-middle">
-                    <thead>
+                    <thead class="table-light">
                         <tr>
                             <th>Session Name</th>
                             <th>Start Date</th>
@@ -46,9 +46,9 @@
                     <tbody>
                         {% for s in sessions %}
                         <tr>
-                            <td class="fw-bold">{{ s.name }}</td>
-                            <td>{{ s.start_date }}</td>
-                            <td>{{ s.end_date }}</td>
+                            <td class="fw-bold text-nowrap">{{ s.name }}</td>
+                            <td class="text-nowrap">{{ s.start_date }}</td>
+                            <td class="text-nowrap">{{ s.end_date }}</td>
                             <td>
                                 {% if s.is_current %}
                                     <span class="badge bg-success">Current Active Session</span>
@@ -58,7 +58,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-muted text-center">No sessions defined yet.</td></tr>
+                        <tr><td colspan="4" class="text-muted text-center py-3">No sessions defined yet.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -67,3 +67,4 @@
     </div>
 </div>
 {% endblock %}
+

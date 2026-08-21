@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,200 +11,31 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Responsive Styles -->
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <style>
-        :root {
-            --sidebar-width: 260px;
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-body: #f8fafc;
-            --sidebar-bg: #0f172a;
-            --sidebar-color: #94a3b8;
-            --sidebar-active-bg: #1e293b;
-            --card-border-radius: 16px;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-body);
-            color: #334155;
-        }
-
-        /* Sidebar Styling */
-        #sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: var(--sidebar-bg);
-            color: #ffffff;
-            z-index: 1000;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-
-        #sidebar .brand-header {
-            padding: 1.5rem 1.25rem;
-            border-bottom: 1px solid #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        #sidebar .brand-logo {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        #sidebar .nav-section-title {
-            padding: 1rem 1.25rem 0.5rem;
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #64748b;
-        }
-
-        #sidebar ul.nav-links {
-            list-style: none;
-            padding: 0 0.75rem;
-            margin: 0;
-        }
-
-        #sidebar ul.nav-links li a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0.7rem 1rem;
-            color: var(--sidebar-color);
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 0.92rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            margin-bottom: 4px;
-        }
-
-        #sidebar ul.nav-links li a:hover, #sidebar ul.nav-links li a.active {
-            background-color: var(--sidebar-active-bg);
-            color: #ffffff;
-        }
-
-        #sidebar ul.nav-links li a i {
-            width: 20px;
-            font-size: 1.1rem;
-        }
-
-        /* Main Content Styling */
-        #main-wrapper {
-            margin-left: var(--sidebar-width);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #top-navbar {
-            height: 70px;
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 0 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .tenant-badge {
-            background: #e0e7ff;
-            color: #4338ca;
-            font-weight: 600;
-            font-size: 0.85rem;
-            padding: 6px 14px;
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .user-dropdown .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            background-color: #cbd5e1;
-        }
-
-        .content-container {
-            padding: 2rem;
-            flex: 1;
-        }
-
-        .card-custom {
-            background: #ffffff;
-            border-radius: var(--card-border-radius);
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .stat-card {
-            padding: 1.5rem;
-            border-radius: var(--card-border-radius);
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-        }
-
-        .stat-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        /* Print Styling */
-        @media print {
-            #sidebar, #top-navbar, .no-print {
-                display: none !important;
-            }
-            #main-wrapper {
-                margin-left: 0 !important;
-            }
-            .content-container {
-                padding: 0 !important;
-            }
-        }
-    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebarBackdrop"></div>
+
     <!-- Sidebar Navigation -->
     <nav id="sidebar">
         <div class="brand-header">
-            <div class="brand-logo"><i class="fa-solid fa-graduation-cap"></i></div>
-            <div>
-                <h6 class="m-0 fw-bold text-white">EduManage</h6>
-                <small class="text-muted" style="font-size: 0.75rem;">Multi-School ERP</small>
+            <div class="d-flex align-items-center gap-2">
+                <div class="brand-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div>
+                    <h6 class="m-0 fw-bold text-white">EduManage</h6>
+                    <small class="text-muted" style="font-size: 0.75rem;">Multi-School ERP</small>
+                </div>
             </div>
+            <button id="sidebarClose" class="sidebar-close-btn d-lg-none" type="button" aria-label="Close sidebar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
         <ul class="nav-links mt-3">
@@ -267,20 +99,27 @@
     <div id="main-wrapper">
         <!-- Top Navbar -->
         <header id="top-navbar">
-            <div>
+            <div class="d-flex align-items-center gap-2">
+                <button id="sidebarToggle" class="navbar-toggle-btn d-lg-none" type="button" aria-label="Toggle navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
                 {% if request.school %}
-                    <span class="tenant-badge"><i class="fa-solid fa-school"></i> {{ request.school.name }} ({{ request.school.code }})</span>
+                    <span class="tenant-badge" title="{{ request.school.name }} ({{ request.school.code }})">
+                        <i class="fa-solid fa-school"></i> 
+                        <span class="text-truncate">{{ request.school.name }}</span>
+                    </span>
                 {% elif user.is_super_admin %}
-                    <span class="badge bg-purple text-white p-2" style="background:#8b5cf6;"><i class="fa-solid fa-globe"></i> Super Admin (All Schools Context)</span>
+                    <span class="badge bg-purple text-white p-2" style="background:#8b5cf6;"><i class="fa-solid fa-globe"></i> Super Admin</span>
                 {% endif %}
             </div>
 
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2 gap-sm-3">
                 <div class="text-end d-none d-md-block">
                     <div class="fw-bold fs-7">{{ user.get_full_name|default:user.username }}</div>
                     <small class="text-muted" style="font-size: 0.78rem;">{{ user.get_role_display }}</small>
                 </div>
-                <a href="{% url 'profile' %}">
+                <a href="{% url 'profile' %}" class="d-flex align-items-center text-decoration-none">
                     {% if user.profile_photo %}
                         <img src="{{ user.profile_photo.url }}" class="user-avatar" alt="Avatar">
                     {% else %}
@@ -314,6 +153,54 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Responsive Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const closeBtn = document.getElementById('sidebarClose');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            function openSidebar() {
+                if (sidebar && backdrop) {
+                    sidebar.classList.add('show');
+                    backdrop.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            function closeSidebar() {
+                if (sidebar && backdrop) {
+                    sidebar.classList.remove('show');
+                    backdrop.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+            if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+            // Auto close mobile drawer on link click
+            const navLinks = document.querySelectorAll('#sidebar .nav-links a');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 992) {
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // Close on resize if wider than 992px
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 992) {
+                    closeSidebar();
+                }
+            });
+        });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

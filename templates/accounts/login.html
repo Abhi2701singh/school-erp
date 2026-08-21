@@ -12,10 +12,11 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem;
+            padding: 1rem;
         }
         .login-card {
             background: #ffffff;
@@ -27,24 +28,38 @@
         }
         .login-header {
             background: linear-gradient(135deg, #4f46e5, #9333ea);
-            padding: 2.5rem 2rem 2rem;
+            padding: 2rem 1.5rem 1.5rem;
             color: white;
             text-align: center;
         }
         .brand-logo-icon {
-            width: 60px;
-            height: 60px;
+            width: 54px;
+            height: 54px;
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             border-radius: 16px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            margin-bottom: 1rem;
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
         }
         .login-body {
-            padding: 2rem;
+            padding: 1.5rem;
+        }
+        @media (min-width: 576px) {
+            .login-header {
+                padding: 2.5rem 2rem 2rem;
+            }
+            .brand-logo-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            .login-body {
+                padding: 2rem;
+            }
         }
         .form-control {
             padding: 0.75rem 1rem;

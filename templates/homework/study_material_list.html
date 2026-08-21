@@ -5,8 +5,8 @@
 {% block content %}
 <div class="row g-4">
     {% if user.is_teacher_user or user.is_school_admin %}
-    <div class="col-md-5">
-        <div class="card card-custom p-4">
+    <div class="col-12 col-lg-5">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i> Upload Study Material / Notes</h5>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -36,8 +36,8 @@
     </div>
     {% endif %}
 
-    <div class="{% if user.is_teacher_user or user.is_school_admin %}col-md-7{% else %}col-md-12{% endif %}">
-        <div class="card card-custom p-4">
+    <div class="{% if user.is_teacher_user or user.is_school_admin %}col-12 col-lg-7{% else %}col-12{% endif %}">
+        <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-pdf text-danger me-2"></i> Study Materials & Syllabus PDF Library</h5>
             <div class="table-responsive">
                 <table class="table align-middle table-hover">
@@ -59,8 +59,8 @@
                                 <div class="fw-bold">{{ mat.title }}</div>
                                 <small class="text-muted">{{ mat.description }}</small>
                             </td>
-                            <td><small>{{ mat.uploaded_at|date:"d M Y" }}</small></td>
-                            <td class="text-end">
+                            <td class="text-nowrap"><small>{{ mat.uploaded_at|date:"d M Y" }}</small></td>
+                            <td class="text-end text-nowrap">
                                 <a href="{{ mat.file.url }}" class="btn btn-sm btn-outline-danger" target="_blank"><i class="fa-solid fa-file-pdf me-1"></i> Open PDF</a>
                             </td>
                         </tr>
@@ -74,3 +74,4 @@
     </div>
 </div>
 {% endblock %}
+
