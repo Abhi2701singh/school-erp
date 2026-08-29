@@ -69,6 +69,7 @@ def student_admission_view(request):
             student = form.save(commit=False)
             student.school = request.school
 
+            student.status = 'ACTIVE'
             if not student.academic_session_id:
                 student.academic_session = active_session
 

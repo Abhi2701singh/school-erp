@@ -16,11 +16,16 @@ class StudentAdmissionForm(forms.ModelForm):
             if active_session and not self.initial.get('academic_session'):
                 self.fields['academic_session'].initial = active_session
 
-        self.fields['admission_no'].required = False
-        self.fields['admission_date'].required = False
-        self.fields['address'].required = False
-        self.fields['father_name'].required = False
-        self.fields['parent_phone'].required = False
+        # Non-critical fields are optional for quick admission
+        for field_name in [
+            'admission_no', 'roll_no', 'last_name', 'blood_group', 'govt_id',
+            'photo', 'address', 'admission_date', 'academic_session',
+            'father_name', 'mother_name', 'guardian_name', 'parent_phone',
+            'parent_email', 'parent_occupation'
+        ]:
+            if field_name in self.fields:
+                self.fields[field_name].required = False
+
         self.fields['gender'].initial = 'M'
 
     class Meta:
@@ -30,7 +35,7 @@ class StudentAdmissionForm(forms.ModelForm):
             'blood_group', 'govt_id', 'photo', 'address', 'admission_date',
             'academic_session', 'current_class', 'current_section',
             'father_name', 'mother_name', 'guardian_name', 'parent_phone',
-            'parent_email', 'parent_occupation', 'status'
+            'parent_email', 'parent_occupation'
         ]
         widgets = {
             'admission_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank to auto-generate'}),
@@ -53,7 +58,6 @@ class StudentAdmissionForm(forms.ModelForm):
             'parent_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mobile Number'}),
             'parent_email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
             'parent_occupation': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Occupation'}),
-            'status': forms.Select(attrs={'class': 'form-select'}),
         }
 
 
