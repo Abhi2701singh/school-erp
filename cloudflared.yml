@@ -1,0 +1,10 @@
+# Cloudflare Tunnel Ingress Configuration for EduManage School ERP
+# Connects Cloudflare Global Edge directly to your Django application
+
+ingress:
+  # Map all HTTP traffic to local Django Gunicorn server
+  - service: http://localhost:8000
+    originRequest:
+      noTLSVerify: false
+      httpHostHeader: localhost
+      originServerName: localhost

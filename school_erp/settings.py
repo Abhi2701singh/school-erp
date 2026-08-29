@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # Static files production server
+    'accounts.cloudflare_middleware.CloudflareMiddleware', # Cloudflare Real IP & Edge Trace
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,8 +108,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # Cloudflare Proxy SSL Header
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# CSRF Trusted Origins for Render & Local
+# CSRF Trusted Origins for Cloudflare, Render & Local
 CSRF_TRUSTED_ORIGINS = [
+    'https://*.pages.dev',
+    'http://*.pages.dev',
+    'https://*.workers.dev',
+    'http://*.workers.dev',
+    'https://*.trycloudflare.com',
+    'http://*.trycloudflare.com',
+    'https://*.cloudflarepreview.com',
     'https://*.onrender.com',
     'http://*.onrender.com',
     'https://*.render.com',
