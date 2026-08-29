@@ -10,6 +10,18 @@ class StudentAdmissionForm(forms.ModelForm):
             self.fields['academic_session'].queryset = AcademicSession.objects.filter(school=school)
             self.fields['current_class'].queryset = Class.objects.filter(school=school)
             self.fields['current_section'].queryset = Section.objects.filter(school=school)
+            
+            # If only one active session exists, set it as initial
+            active_session = AcademicSession.objects.filter(school=school, is_current=True).first()
+            if active_session and not self.initial.get('academic_session'):
+                self.fields['academic_session'].initial = active_session
+
+        self.fields['admission_no'].required = False
+        self.fields['admission_date'].required = False
+        self.fields['address'].required = False
+        self.fields['father_name'].required = False
+        self.fields['parent_phone'].required = False
+        self.fields['gender'].initial = 'M'
 
     class Meta:
         model = Student
@@ -21,26 +33,26 @@ class StudentAdmissionForm(forms.ModelForm):
             'parent_email', 'parent_occupation', 'status'
         ]
         widgets = {
-            'admission_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. ADM2026-001'}),
+            'admission_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank to auto-generate'}),
             'roll_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 101'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'dob': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Student First Name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name / Surname'}),
+            'dob': forms.DateInput(attrs={'class': 'form-control dob-picker', 'placeholder': 'Select Date of Birth (YYYY-MM-DD)'}),
             'gender': forms.Select(attrs={'class': 'form-select'}),
-            'blood_group': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. O+'}),
+            'blood_group': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. O+, A+, B+'}),
             'govt_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Aadhaar / National ID'}),
             'photo': forms.FileInput(attrs={'class': 'form-control'}),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'admission_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Residential Address'}),
+            'admission_date': forms.DateInput(attrs={'class': 'form-control admission-date-picker', 'placeholder': 'Admission Date (YYYY-MM-DD)'}),
             'academic_session': forms.Select(attrs={'class': 'form-select'}),
             'current_class': forms.Select(attrs={'class': 'form-select'}),
             'current_section': forms.Select(attrs={'class': 'form-select'}),
-            'father_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'mother_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'guardian_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'parent_phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'parent_email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'parent_occupation': forms.TextInput(attrs={'class': 'form-control'}),
+            'father_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Father's Full Name"}),
+            'mother_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Mother's Name"}),
+            'guardian_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Guardian's Name (Optional)"}),
+            'parent_phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mobile Number'}),
+            'parent_email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
+            'parent_occupation': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Occupation'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
 

@@ -6,7 +6,34 @@
 <div class="row justify-content-center">
     <div class="col-12 col-xl-10">
         <div class="card card-custom p-3 p-sm-4">
-            <h4 class="fw-bold mb-4"><i class="fa-solid fa-user-plus text-primary me-2"></i> Student Admission Form</h4>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+                <h4 class="fw-bold m-0"><i class="fa-solid fa-user-plus text-primary me-2"></i> Student Admission Form</h4>
+                <span class="badge bg-primary fs-6 px-3 py-2"><i class="fa-solid fa-calendar-check me-1"></i> Session: {{ active_session.name|default:"Active" }}</span>
+            </div>
+
+            <!-- Credentials Auto-Generation Notice -->
+            <div class="alert alert-info border-0 d-flex align-items-center gap-3 py-2 mb-4">
+                <i class="fa-solid fa-key fs-4 text-info"></i>
+                <div class="small">
+                    <strong>Auto Login Credentials:</strong> Student Login account will be created automatically.
+                    <br>
+                    • <strong>Username:</strong> Student's Name (e.g. <code>aarav</code> or <code>aarav_101</code>) &nbsp;|&nbsp;
+                    • <strong>Password:</strong> Student's Date of Birth (e.g. <code>15-08-2015</code>)
+                </div>
+            </div>
+
+            {% if form.errors %}
+            <div class="alert alert-danger border-0 mb-4">
+                <div class="fw-bold mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> Please correct the following errors:</div>
+                <ul class="mb-0 ps-3 small">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
             
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -14,8 +41,21 @@
                 <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="fa-solid fa-graduation-cap me-2"></i> Academic & Allocation Details</h6>
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-sm-6 col-md-4">
+                        <label class="form-label fw-semibold">Admitted Class <span class="text-danger">*</span></label>
+                        {{ form.current_class }}
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <label class="form-label fw-semibold">Admitted Section <span class="text-danger">*</span></label>
+                        {{ form.current_section }}
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <label class="form-label fw-semibold">Academic Session</label>
+                        {{ form.academic_session }}
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4">
                         <label class="form-label fw-semibold">Admission Number</label>
                         {{ form.admission_no }}
+                        <small class="text-muted d-block mt-1">Leave blank to auto-generate</small>
                     </div>
                     <div class="col-12 col-sm-6 col-md-4">
                         <label class="form-label fw-semibold">Roll Number</label>
@@ -25,24 +65,12 @@
                         <label class="form-label fw-semibold">Admission Date</label>
                         {{ form.admission_date }}
                     </div>
-                    <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold">Academic Session</label>
-                        {{ form.academic_session }}
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold">Admitted Class</label>
-                        {{ form.current_class }}
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold">Admitted Section</label>
-                        {{ form.current_section }}
-                    </div>
                 </div>
 
                 <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="fa-solid fa-user me-2"></i> Personal Information</h6>
                 <div class="row g-3 mb-4">
                     <div class="col-12 col-md-6">
-                        <label class="form-label fw-semibold">First Name</label>
+                        <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
                         {{ form.first_name }}
                     </div>
                     <div class="col-12 col-md-6">
@@ -50,11 +78,15 @@
                         {{ form.last_name }}
                     </div>
                     <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold">Date of Birth</label>
-                        {{ form.dob }}
+                        <label class="form-label fw-semibold">Date of Birth <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-calendar-day text-primary"></i></span>
+                            {{ form.dob }}
+                        </div>
+                        <small class="text-muted">Click to select Year, Month & Day</small>
                     </div>
                     <div class="col-12 col-sm-6 col-md-4">
-                        <label class="form-label fw-semibold">Gender</label>
+                        <label class="form-label fw-semibold">Gender <span class="text-danger">*</span></label>
                         {{ form.gender }}
                     </div>
                     <div class="col-12 col-sm-6 col-md-4">
@@ -111,5 +143,33 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Flatpickr for Date of Birth with quick Month and Year dropdown selection
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr(".dob-picker", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d M Y",
+                maxDate: "today",
+                yearRange: "1995:2026",
+                monthSelectorType: "dropdown",
+                defaultDate: "2015-01-01",
+                allowInput: true
+            });
+
+            flatpickr(".admission-date-picker", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d M Y",
+                defaultDate: "today",
+                allowInput: true
+            });
+        }
+    });
+</script>
 {% endblock %}
 

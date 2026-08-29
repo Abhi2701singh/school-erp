@@ -51,13 +51,37 @@
                 <div class="col-12 col-md-8"><strong>Address:</strong> {{ student.address }}</div>
             </div>
 
-            <h5 class="fw-bold text-primary mt-4 mb-3">Parent Information</h5>
+            <h5 class="fw-bold text-primary mt-4 mb-3"><i class="fa-solid fa-users me-2"></i> Parent Information</h5>
             <div class="row g-3">
-                <div class="col-12 col-sm-6 col-md-4"><strong>Father's Name:</strong> {{ student.father_name }}</div>
-                <div class="col-12 col-sm-6 col-md-4"><strong>Mother's Name:</strong> {{ student.mother_name|default:"N/A" }}</div>
-                <div class="col-12 col-sm-6 col-md-4"><strong>Parent Phone:</strong> {{ student.parent_phone }}</div>
-                <div class="col-12 col-sm-6 col-md-4"><strong>Parent Email:</strong> {{ student.parent_email|default:"N/A" }}</div>
-                <div class="col-12 col-sm-6 col-md-4"><strong>Occupation:</strong> {{ student.parent_occupation|default:"N/A" }}</div>
+                <div class="col-12 col-sm-6 col-md-4"><strong>Father's Name:</strong> {{ student.father_name|default:"-" }}</div>
+                <div class="col-12 col-sm-6 col-md-4"><strong>Mother's Name:</strong> {{ student.mother_name|default:"-" }}</div>
+                <div class="col-12 col-sm-6 col-md-4"><strong>Parent Phone:</strong> {{ student.parent_phone|default:"-" }}</div>
+                <div class="col-12 col-sm-6 col-md-4"><strong>Parent Email:</strong> {{ student.parent_email|default:"-" }}</div>
+                <div class="col-12 col-sm-6 col-md-4"><strong>Occupation:</strong> {{ student.parent_occupation|default:"-" }}</div>
+            </div>
+
+            <h5 class="fw-bold text-primary mt-4 mb-3"><i class="fa-solid fa-key me-2"></i> Student Portal Login Credentials</h5>
+            <div class="row g-3">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted d-block">Login Username</small>
+                        <strong class="text-primary fs-6">{{ student.user.username|default:"Not Assigned" }}</strong>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted d-block">Login Password (DOB)</small>
+                        <strong class="text-dark fs-6">{{ dob_password }}</strong>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted d-block">Account Status</small>
+                        <span class="badge {% if student.user.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if student.user.is_active %}Active Portal Access{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
