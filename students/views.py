@@ -14,7 +14,7 @@ def student_list_view(request):
     class_id = request.GET.get('class_id', '')
     section_id = request.GET.get('section_id', '')
 
-    students = Student.objects.select_related('current_class', 'current_section', 'academic_session').all()
+    students = Student.objects.filter(school=request.school).select_related('current_class', 'current_section', 'academic_session')
 
     if query:
         students = students.filter(
@@ -29,8 +29,8 @@ def student_list_view(request):
     if section_id:
         students = students.filter(current_section_id=section_id)
 
-    classes = Class.objects.all()
-    sections = Section.objects.all()
+    classes = Class.objects.filter(school=request.school)
+    sections = Section.objects.filter(school=request.school)
 
     return render(request, 'students/student_list.html', {
         'students': students,
@@ -49,7 +49,7 @@ def student_admission_view(request):
         return redirect('student_list')
 
     if request.method == 'POST':
-        form = StudentAdmissionForm(request.POST, request.FILES)
+        form = StudentAdmissionForm(request.POST, request.FILES, school=request.school)
         if form.is_valid():
             student = form.save(commit=False)
             student.school = request.school
@@ -75,14 +75,17 @@ def student_admission_view(request):
         # Pre-fill active session if available
         active_session = AcademicSession.objects.filter(school=request.school, is_current=True).first()
         initial = {'academic_session': active_session} if active_session else {}
-        form = StudentAdmissionForm(initial=initial)
+        form = StudentAdmissionForm(initial=initial, school=request.school)
 
     return render(request, 'students/student_admission.html', {'form': form})
 
 
 @login_required
 def student_profile_view(request, pk):
-    student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'academic_session', 'school'), pk=pk)
+    if request.user.is_super_admin():
+        student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'academic_session', 'school'), pk=pk)
+    else:
+        student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'academic_session', 'school'), pk=pk, school=request.school)
 
     if request.method == 'POST' and request.user.is_school_admin():
         doc_form = StudentDocumentForm(request.POST, request.FILES)
@@ -119,5 +122,8 @@ def student_profile_view(request, pk):
 
 @login_required
 def student_id_card_view(request, pk):
-    student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'school'), pk=pk)
+    if request.user.is_super_admin():
+        student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'school'), pk=pk)
+    else:
+        student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'school'), pk=pk, school=request.school)
     return render(request, 'students/student_id_card.html', {'student': student})

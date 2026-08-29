@@ -9,10 +9,10 @@ from schools.models import AcademicSession
 
 @login_required
 def exam_list_view(request):
-    exams = Exam.objects.select_related('class_level', 'academic_session').all()
+    exams = Exam.objects.filter(school=request.school).select_related('class_level', 'academic_session')
 
     if request.method == 'POST' and request.user.is_school_admin():
-        form = ExamForm(request.POST)
+        form = ExamForm(request.POST, school=request.school)
         if form.is_valid():
             active_session = AcademicSession.objects.filter(school=request.school, is_current=True).first()
             if not active_session:
@@ -26,7 +26,7 @@ def exam_list_view(request):
             messages.success(request, f"Exam '{exam.name}' created.")
             return redirect('exam_list')
     else:
-        form = ExamForm()
+        form = ExamForm(school=request.school)
 
     return render(request, 'examinations/exam_list.html', {'exams': exams, 'form': form})
 
@@ -37,23 +37,25 @@ def marks_entry_view(request):
     subject_id = request.GET.get('subject_id')
     section_id = request.GET.get('section_id')
 
-    exams = Exam.objects.all()
-    subjects = Subject.objects.all()
-    sections = Section.objects.all()
+    exams = Exam.objects.filter(school=request.school)
+    subjects = Subject.objects.filter(school=request.school)
+    sections = Section.objects.filter(school=request.school)
 
-    selected_exam = get_object_or_404(Exam, pk=exam_id) if exam_id else None
-    selected_subject = get_object_or_404(Subject, pk=subject_id) if subject_id else None
+    selected_exam = get_object_or_404(Exam, pk=exam_id, school=request.school) if exam_id else None
+    selected_subject = get_object_or_404(Subject, pk=subject_id, school=request.school) if subject_id else None
 
     students = []
     existing_marks = {}
 
     if selected_exam and selected_subject and section_id:
         students = Student.objects.filter(
+            school=request.school,
             current_class=selected_exam.class_level,
             current_section_id=section_id,
             status='ACTIVE'
         )
         entries = MarksEntry.objects.filter(
+            school=request.school,
             exam=selected_exam,
             subject=selected_subject,
             student__in=students
@@ -65,9 +67,9 @@ def marks_entry_view(request):
         subject_id = request.POST.get('subject_id')
         section_id = request.POST.get('section_id')
 
-        selected_exam = get_object_or_404(Exam, pk=exam_id)
-        selected_subject = get_object_or_404(Subject, pk=subject_id)
-        students = Student.objects.filter(current_class=selected_exam.class_level, current_section_id=section_id, status='ACTIVE')
+        selected_exam = get_object_or_404(Exam, pk=exam_id, school=request.school)
+        selected_subject = get_object_or_404(Subject, pk=subject_id, school=request.school)
+        students = Student.objects.filter(school=request.school, current_class=selected_exam.class_level, current_section_id=section_id, status='ACTIVE')
 
         saved_count = 0
         for student in students:
@@ -106,10 +108,10 @@ def marks_entry_view(request):
 
 @login_required
 def report_card_view(request, student_id, exam_id):
-    student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'school'), pk=student_id)
-    exam = get_object_or_404(Exam, pk=exam_id)
+    student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'school'), pk=student_id, school=request.school)
+    exam = get_object_or_404(Exam, pk=exam_id, school=request.school)
 
-    marks = MarksEntry.objects.filter(student=student, exam=exam).select_related('subject')
+    marks = MarksEntry.objects.filter(school=request.school, student=student, exam=exam).select_related('subject')
 
     grand_total_max = sum([m.subject.max_marks for m in marks])
     grand_total_obtained = sum([m.total_marks_obtained for m in marks])

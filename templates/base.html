@@ -47,8 +47,9 @@
             </li>
 
             {% if user.is_super_admin %}
-                <div class="nav-section-title">Super Admin</div>
-                <li><a href="{% url 'school_list' %}"><i class="fa-solid fa-school"></i> Schools Management</a></li>
+                <div class="nav-section-title">Platform Administration</div>
+                <li><a href="{% url 'school_list' %}" class="{% if request.resolver_match.url_name == 'school_list' %}active{% endif %}"><i class="fa-solid fa-school"></i> Schools Directory</a></li>
+                <li><a href="{% url 'school_create' %}" class="{% if request.resolver_match.url_name == 'school_create' %}active{% endif %}"><i class="fa-solid fa-square-plus"></i> Register New School</a></li>
             {% endif %}
 
             {% if user.is_school_admin %}

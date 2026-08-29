@@ -10,11 +10,11 @@ from academics.models import Class
 
 @login_required
 def fee_structure_view(request):
-    fee_heads = FeeHead.objects.all()
-    structures = FeeStructure.objects.select_related('class_level', 'fee_head').all()
+    fee_heads = FeeHead.objects.filter(school=request.school)
+    structures = FeeStructure.objects.filter(school=request.school).select_related('class_level', 'fee_head')
 
     head_form = FeeHeadForm()
-    struct_form = FeeStructureForm()
+    struct_form = FeeStructureForm(school=request.school)
 
     if request.method == 'POST':
         if 'create_head' in request.POST:
@@ -26,7 +26,7 @@ def fee_structure_view(request):
                 messages.success(request, f"Fee Head '{fh.name}' created.")
                 return redirect('fee_structure')
         elif 'create_struct' in request.POST:
-            struct_form = FeeStructureForm(request.POST)
+            struct_form = FeeStructureForm(request.POST, school=request.school)
             if struct_form.is_valid():
                 active_session = AcademicSession.objects.filter(school=request.school, is_current=True).first()
                 if not active_session:
@@ -57,8 +57,8 @@ def assign_fees_view(request):
             messages.error(request, "No active academic session.")
             return redirect('fee_structure')
 
-        structures = FeeStructure.objects.filter(class_level_id=class_id, academic_session=active_session)
-        students = Student.objects.filter(current_class_id=class_id, status='ACTIVE')
+        structures = FeeStructure.objects.filter(school=request.school, class_level_id=class_id, academic_session=active_session)
+        students = Student.objects.filter(school=request.school, current_class_id=class_id, status='ACTIVE')
 
         assigned_count = 0
         for student in students:
@@ -81,12 +81,12 @@ def assign_fees_view(request):
 
 @login_required
 def collect_fee_view(request, student_id):
-    student = get_object_or_404(Student, pk=student_id)
-    student_fees = StudentFee.objects.filter(student=student)
+    student = get_object_or_404(Student, pk=student_id, school=request.school)
+    student_fees = StudentFee.objects.filter(school=request.school, student=student)
 
     if request.method == 'POST':
         student_fee_id = request.POST.get('student_fee_id')
-        student_fee = get_object_or_404(StudentFee, pk=student_fee_id, student=student)
+        student_fee = get_object_or_404(StudentFee, pk=student_fee_id, student=student, school=request.school)
 
         form = CollectFeeForm(request.POST)
         if form.is_valid():
@@ -112,12 +112,12 @@ def collect_fee_view(request, student_id):
 @login_required
 def fee_defaulters_view(request):
     class_id = request.GET.get('class_id')
-    pending_fees = StudentFee.objects.filter(status__in=['PENDING', 'PARTIAL']).select_related('student', 'fee_head', 'student__current_class', 'student__current_section')
+    pending_fees = StudentFee.objects.filter(school=request.school, status__in=['PENDING', 'PARTIAL']).select_related('student', 'fee_head', 'student__current_class', 'student__current_section')
 
     if class_id:
         pending_fees = pending_fees.filter(student__current_class_id=class_id)
 
-    classes = Class.objects.all()
+    classes = Class.objects.filter(school=request.school)
 
     return render(request, 'fees/fee_defaulters.html', {
         'pending_fees': pending_fees,
@@ -128,5 +128,5 @@ def fee_defaulters_view(request):
 
 @login_required
 def fee_receipt_view(request, receipt_id):
-    payment = get_object_or_404(FeePayment.objects.select_related('student_fee', 'student_fee__student', 'student_fee__student__current_class', 'student_fee__school', 'collected_by'), pk=receipt_id)
+    payment = get_object_or_404(FeePayment.objects.select_related('student_fee', 'student_fee__student', 'student_fee__student__current_class', 'student_fee__school', 'collected_by'), pk=receipt_id, school=request.school)
     return render(request, 'fees/fee_receipt.html', {'payment': payment})

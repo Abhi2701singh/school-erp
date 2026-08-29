@@ -28,11 +28,10 @@ class Student(TenantModel):
     photo = models.ImageField(upload_to="student_photos/", null=True, blank=True)
     govt_id = models.CharField(max_length=50, blank=True, verbose_name="Aadhaar / National ID")
     address = models.TextField()
-
     admission_date = models.DateField()
-    academic_session = models.ForeignKey(AcademicSession, on_delete=models.PROTECT, related_name="students")
-    current_class = models.ForeignKey(Class, on_delete=models.PROTECT, related_name="students")
-    current_section = models.ForeignKey(Section, on_delete=models.PROTECT, related_name="students")
+    academic_session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE, related_name="students")
+    current_class = models.ForeignKey(Class, on_delete=models.CASCADE, related_name="students")
+    current_section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="students")
 
     # Parent / Guardian details
     father_name = models.CharField(max_length=150)

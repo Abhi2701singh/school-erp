@@ -6,10 +6,10 @@ from homework.forms import HomeworkForm, StudyMaterialForm
 
 @login_required
 def homework_list_view(request):
-    homeworks = Homework.objects.select_related('class_level', 'section', 'subject', 'created_by').all()
+    homeworks = Homework.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'created_by')
 
     if request.method == 'POST' and (request.user.is_teacher_user() or request.user.is_school_admin()):
-        form = HomeworkForm(request.POST, request.FILES)
+        form = HomeworkForm(request.POST, request.FILES, school=request.school)
         if form.is_valid():
             hw = form.save(commit=False)
             hw.school = request.school
@@ -18,17 +18,17 @@ def homework_list_view(request):
             messages.success(request, "Homework assigned successfully!")
             return redirect('homework_list')
     else:
-        form = HomeworkForm()
+        form = HomeworkForm(school=request.school)
 
     return render(request, 'homework/homework_list.html', {'homeworks': homeworks, 'form': form})
 
 
 @login_required
 def study_material_list_view(request):
-    materials = StudyMaterial.objects.select_related('class_level', 'subject', 'uploaded_by').all()
+    materials = StudyMaterial.objects.filter(school=request.school).select_related('class_level', 'subject', 'uploaded_by')
 
     if request.method == 'POST' and (request.user.is_teacher_user() or request.user.is_school_admin()):
-        form = StudyMaterialForm(request.POST, request.FILES)
+        form = StudyMaterialForm(request.POST, request.FILES, school=request.school)
         if form.is_valid():
             sm = form.save(commit=False)
             sm.school = request.school
@@ -37,6 +37,6 @@ def study_material_list_view(request):
             messages.success(request, "Study material uploaded!")
             return redirect('study_material_list')
     else:
-        form = StudyMaterialForm()
+        form = StudyMaterialForm(school=request.school)
 
     return render(request, 'homework/study_material_list.html', {'materials': materials, 'form': form})

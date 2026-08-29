@@ -4,6 +4,13 @@ from schools.models import AcademicSession
 from academics.models import Class, Section
 
 class StudentAdmissionForm(forms.ModelForm):
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if school:
+            self.fields['academic_session'].queryset = AcademicSession.objects.filter(school=school)
+            self.fields['current_class'].queryset = Class.objects.filter(school=school)
+            self.fields['current_section'].queryset = Section.objects.filter(school=school)
+
     class Meta:
         model = Student
         fields = [

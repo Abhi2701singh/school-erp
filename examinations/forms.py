@@ -2,6 +2,12 @@ from django import forms
 from examinations.models import Exam, MarksEntry
 
 class ExamForm(forms.ModelForm):
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if school:
+            from academics.models import Class
+            self.fields['class_level'].queryset = Class.objects.filter(school=school)
+
     class Meta:
         model = Exam
         fields = ['name', 'exam_type', 'class_level', 'start_date', 'end_date', 'is_published']

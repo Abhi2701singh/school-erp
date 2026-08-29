@@ -12,6 +12,13 @@ class FeeHeadForm(forms.ModelForm):
 
 
 class FeeStructureForm(forms.ModelForm):
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if school:
+            from academics.models import Class
+            self.fields['class_level'].queryset = Class.objects.filter(school=school)
+            self.fields['fee_head'].queryset = FeeHead.objects.filter(school=school)
+
     class Meta:
         model = FeeStructure
         fields = ['class_level', 'fee_head', 'amount', 'frequency', 'due_date']

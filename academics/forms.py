@@ -11,7 +11,14 @@ class ClassForm(forms.ModelForm):
         }
 
 
+from accounts.models import User
+
 class SectionForm(forms.ModelForm):
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if school:
+            self.fields['class_level'].queryset = Class.objects.filter(school=school)
+
     class Meta:
         model = Section
         fields = ['class_level', 'name', 'stream']
@@ -36,6 +43,14 @@ class SubjectForm(forms.ModelForm):
 
 
 class TimetableForm(forms.ModelForm):
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if school:
+            self.fields['class_level'].queryset = Class.objects.filter(school=school)
+            self.fields['section'].queryset = Section.objects.filter(school=school)
+            self.fields['subject'].queryset = Subject.objects.filter(school=school)
+            self.fields['teacher_user'].queryset = User.objects.filter(school=school, role=User.Roles.TEACHER)
+
     class Meta:
         model = Timetable
         fields = ['class_level', 'section', 'subject', 'teacher_user', 'day', 'period_number', 'start_time', 'end_time']

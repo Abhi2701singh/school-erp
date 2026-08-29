@@ -7,7 +7,7 @@ from accounts.models import User
 
 @login_required
 def teacher_list_view(request):
-    teachers = Teacher.objects.select_related('user').prefetch_related('assigned_classes', 'assigned_subjects').all()
+    teachers = Teacher.objects.filter(school=request.school).select_related('user').prefetch_related('assigned_classes', 'assigned_subjects')
     return render(request, 'teachers/teacher_list.html', {'teachers': teachers})
 
 
@@ -18,7 +18,7 @@ def teacher_create_view(request):
         return redirect('teacher_list')
 
     if request.method == 'POST':
-        form = TeacherForm(request.POST)
+        form = TeacherForm(request.POST, school=request.school)
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password'] or 'Teacher@123'
@@ -46,20 +46,20 @@ def teacher_create_view(request):
                 messages.success(request, f"Teacher '{first_name} {last_name}' added successfully! Login: {username} / {password}")
                 return redirect('teacher_list')
     else:
-        form = TeacherForm()
+        form = TeacherForm(school=request.school)
 
     return render(request, 'teachers/teacher_form.html', {'form': form, 'title': 'Add Teacher'})
 
 
 @login_required
 def teacher_edit_view(request, pk):
-    teacher = get_object_or_404(Teacher, pk=pk)
+    teacher = get_object_or_404(Teacher, pk=pk, school=request.school)
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
         return redirect('teacher_list')
 
     if request.method == 'POST':
-        form = TeacherForm(request.POST, instance=teacher)
+        form = TeacherForm(request.POST, instance=teacher, school=request.school)
         if form.is_valid():
             user = teacher.user
             user.first_name = form.cleaned_data['first_name']
@@ -78,6 +78,6 @@ def teacher_edit_view(request, pk):
             'first_name': teacher.user.first_name,
             'last_name': teacher.user.last_name,
         }
-        form = TeacherForm(instance=teacher, initial=initial)
+        form = TeacherForm(instance=teacher, initial=initial, school=request.school)
 
     return render(request, 'teachers/teacher_form.html', {'form': form, 'title': f'Edit Teacher - {teacher.user.get_full_name()}'})

@@ -2,6 +2,14 @@ from django import forms
 from homework.models import Homework, StudyMaterial
 
 class HomeworkForm(forms.ModelForm):
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if school:
+            from academics.models import Class, Section, Subject
+            self.fields['class_level'].queryset = Class.objects.filter(school=school)
+            self.fields['section'].queryset = Section.objects.filter(school=school)
+            self.fields['subject'].queryset = Subject.objects.filter(school=school)
+
     class Meta:
         model = Homework
         fields = ['class_level', 'section', 'subject', 'title', 'description', 'attachment', 'due_date']
@@ -17,6 +25,13 @@ class HomeworkForm(forms.ModelForm):
 
 
 class StudyMaterialForm(forms.ModelForm):
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if school:
+            from academics.models import Class, Subject
+            self.fields['class_level'].queryset = Class.objects.filter(school=school)
+            self.fields['subject'].queryset = Subject.objects.filter(school=school)
+
     class Meta:
         model = StudyMaterial
         fields = ['class_level', 'subject', 'title', 'description', 'file']

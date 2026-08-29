@@ -11,6 +11,10 @@ def school_list_view(request):
         return redirect('dashboard')
 
     schools = School.objects.all()
+    # Attach admin user to each school for display
+    for s in schools:
+        s.admin_user = User.objects.filter(school=s, role__in=[User.Roles.SCHOOL_ADMIN, User.Roles.PRINCIPAL]).first()
+
     return render(request, 'schools/school_list.html', {'schools': schools})
 
 
@@ -19,7 +23,7 @@ from accounts.models import User
 @login_required
 def school_create_view(request):
     if not request.user.is_super_admin():
-        messages.error(request, "Permission denied.")
+        messages.error(request, "Permission denied. Only Super Admin can register schools.")
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -52,7 +56,7 @@ def school_create_view(request):
                 )
                 messages.success(
                     request,
-                    f"School '{school.name}' created successfully! School Admin Login: Username: '{admin_username}' | Password: '{admin_password}'"
+                    f"School '{school.name}' created successfully! School Admin Login -> Username: '{admin_username}' | Password: '{admin_password}'"
                 )
             else:
                 messages.success(request, f"School '{school.name}' created successfully with initial Academic Session 2025-2026!")
@@ -71,16 +75,60 @@ def school_edit_view(request, pk):
         messages.error(request, "Permission denied.")
         return redirect('dashboard')
 
+    admin_user = User.objects.filter(school=school, role__in=[User.Roles.SCHOOL_ADMIN, User.Roles.PRINCIPAL]).first()
+
     if request.method == 'POST':
         form = SchoolForm(request.POST, request.FILES, instance=school)
         if form.is_valid():
             form.save()
-            messages.success(request, f"School '{school.name}' details updated.")
-            return redirect('dashboard')
-    else:
-        form = SchoolForm(instance=school)
 
-    return render(request, 'schools/school_form.html', {'form': form, 'title': f'Edit {school.name}', 'school': school})
+            # If Super Admin updated admin credentials
+            if request.user.is_super_admin():
+                admin_username = form.cleaned_data.get('admin_username')
+                admin_password = form.cleaned_data.get('admin_password')
+
+                if admin_user:
+                    if admin_username and admin_username != admin_user.username:
+                        if not User.objects.filter(username=admin_username).exclude(pk=admin_user.pk).exists():
+                            admin_user.username = admin_username
+                    if admin_password:
+                        admin_user.set_password(admin_password)
+                    admin_user.save()
+                elif admin_username:
+                    User.objects.create_user(
+                        username=admin_username,
+                        password=admin_password or 'Password@123',
+                        role=User.Roles.SCHOOL_ADMIN,
+                        school=school,
+                        first_name=school.name,
+                        last_name="Admin"
+                    )
+
+            messages.success(request, f"School '{school.name}' details updated.")
+            return redirect('school_list' if request.user.is_super_admin() else 'dashboard')
+    else:
+        initial = {}
+        if admin_user:
+            initial['admin_username'] = admin_user.username
+        form = SchoolForm(instance=school, initial=initial)
+
+    return render(request, 'schools/school_form.html', {'form': form, 'title': f'Edit {school.name}', 'school': school, 'admin_user': admin_user})
+
+
+@login_required
+def school_delete_view(request, pk):
+    if not request.user.is_super_admin():
+        messages.error(request, "Permission denied. Only Super Admin can delete schools.")
+        return redirect('dashboard')
+
+    school = get_object_or_404(School, pk=pk)
+    if request.method == 'POST':
+        school_name = school.name
+        school.delete()
+        messages.success(request, f"School '{school_name}' and all its associated data (students, teachers, classes, records) have been permanently deleted.")
+        return redirect('school_list')
+
+    return render(request, 'schools/school_confirm_delete.html', {'school': school})
 
 
 @login_required

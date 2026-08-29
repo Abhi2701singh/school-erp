@@ -22,6 +22,8 @@ def dashboard_router_view(request):
         total_students_all = Student.objects.count()
         total_teachers_all = Teacher.objects.count()
         schools = School.objects.all()
+        for s in schools:
+            s.admin_user = User.objects.filter(school=s, role__in=[User.Roles.SCHOOL_ADMIN, User.Roles.PRINCIPAL]).first()
 
         return render(request, 'dashboard/super_admin.html', {
             'total_schools': total_schools,
@@ -35,24 +37,24 @@ def dashboard_router_view(request):
     if user.is_school_admin():
         active_session = AcademicSession.objects.filter(school=request.school, is_current=True).first()
 
-        total_students = Student.objects.filter(status='ACTIVE').count()
-        total_teachers = Teacher.objects.count()
-        total_classes = Class.objects.count()
+        total_students = Student.objects.filter(school=request.school, status='ACTIVE').count()
+        total_teachers = Teacher.objects.filter(school=request.school).count()
+        total_classes = Class.objects.filter(school=request.school).count()
 
         today_str = date.today()
-        today_atts = StudentAttendance.objects.filter(date=today_str)
+        today_atts = StudentAttendance.objects.filter(school=request.school, date=today_str)
         today_present = today_atts.filter(status='P').count()
         today_absent = today_atts.filter(status='A').count()
         today_total = today_atts.count()
         attendance_pct = round((today_present / today_total) * 100, 1) if today_total > 0 else 0.0
 
         # Fee Analytics
-        fee_collected_total = FeePayment.objects.aggregate(total=Sum('amount_paid'))['total'] or 0.0
-        pending_fees = StudentFee.objects.filter(status__in=['PENDING', 'PARTIAL'])
+        fee_collected_total = FeePayment.objects.filter(school=request.school).aggregate(total=Sum('amount_paid'))['total'] or 0.0
+        pending_fees = StudentFee.objects.filter(school=request.school, status__in=['PENDING', 'PARTIAL'])
         defaulters_count = pending_fees.values('student').distinct().count()
 
-        notices = Notice.objects.filter(is_active=True)[:5]
-        recent_students = Student.objects.order_by('-created_at')[:5]
+        notices = Notice.objects.filter(school=request.school, is_active=True)[:5]
+        recent_students = Student.objects.filter(school=request.school).order_by('-created_at')[:5]
 
         return render(request, 'dashboard/school_admin.html', {
             'total_students': total_students,

@@ -6,7 +6,7 @@ from academics.forms import ClassForm, SectionForm, SubjectForm, TimetableForm
 
 @login_required
 def class_list_view(request):
-    classes = Class.objects.all()
+    classes = Class.objects.filter(school=request.school)
     if request.method == 'POST' and request.user.is_school_admin():
         form = ClassForm(request.POST)
         if form.is_valid():
@@ -25,9 +25,9 @@ def class_list_view(request):
 
 @login_required
 def section_list_view(request):
-    sections = Section.objects.select_related('class_level').all()
+    sections = Section.objects.filter(school=request.school).select_related('class_level')
     if request.method == 'POST' and request.user.is_school_admin():
-        form = SectionForm(request.POST)
+        form = SectionForm(request.POST, school=request.school)
         if form.is_valid():
             sec = form.save(commit=False)
             sec.school = request.school
@@ -35,14 +35,14 @@ def section_list_view(request):
             messages.success(request, f"Section '{sec.name}' added to {sec.class_level.name}!")
             return redirect('section_list')
     else:
-        form = SectionForm()
+        form = SectionForm(school=request.school)
 
     return render(request, 'academics/section_list.html', {'sections': sections, 'form': form})
 
 
 @login_required
 def subject_list_view(request):
-    subjects = Subject.objects.all()
+    subjects = Subject.objects.filter(school=request.school)
     if request.method == 'POST' and request.user.is_school_admin():
         form = SubjectForm(request.POST)
         if form.is_valid():
@@ -59,7 +59,7 @@ def subject_list_view(request):
 
 @login_required
 def timetable_view(request):
-    timetables = Timetable.objects.select_related('class_level', 'section', 'subject', 'teacher_user').all()
+    timetables = Timetable.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'teacher_user')
     class_id = request.GET.get('class_id')
     section_id = request.GET.get('section_id')
 
@@ -69,7 +69,7 @@ def timetable_view(request):
         timetables = timetables.filter(section_id=section_id)
 
     if request.method == 'POST' and request.user.is_school_admin():
-        form = TimetableForm(request.POST)
+        form = TimetableForm(request.POST, school=request.school)
         if form.is_valid():
             tt = form.save(commit=False)
             tt.school = request.school
@@ -77,10 +77,10 @@ def timetable_view(request):
             messages.success(request, "Timetable period added.")
             return redirect('timetable')
     else:
-        form = TimetableForm()
+        form = TimetableForm(school=request.school)
 
-    classes = Class.objects.all()
-    sections = Section.objects.all()
+    classes = Class.objects.filter(school=request.school)
+    sections = Section.objects.filter(school=request.school)
 
     return render(request, 'academics/timetable.html', {
         'timetables': timetables,

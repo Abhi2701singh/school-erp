@@ -22,9 +22,9 @@
                 <tr>
                     <th>School Name</th>
                     <th>Code</th>
-                    <th>Email</th>
-                    <th>Phone</th>
+                    <th>Admin Username</th>
                     <th>Principal</th>
+                    <th>Contact</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -32,11 +32,23 @@
             <tbody>
                 {% for school in schools %}
                 <tr>
-                    <td class="fw-bold text-nowrap">{{ school.name }}</td>
+                    <td>
+                        <div class="fw-bold">{{ school.name }}</div>
+                        <small class="text-muted">{{ school.address|truncatechars:35 }}</small>
+                    </td>
                     <td><span class="badge bg-secondary">{{ school.code }}</span></td>
-                    <td>{{ school.email }}</td>
-                    <td class="text-nowrap">{{ school.phone }}</td>
+                    <td>
+                        {% if school.admin_user %}
+                            <code>{{ school.admin_user.username }}</code>
+                        {% else %}
+                            <span class="text-muted small">No Admin</span>
+                        {% endif %}
+                    </td>
                     <td>{{ school.principal_name|default:"N/A" }}</td>
+                    <td>
+                        <div><small class="text-muted"><i class="fa-solid fa-envelope me-1"></i>{{ school.email }}</small></div>
+                        <div><small class="text-muted"><i class="fa-solid fa-phone me-1"></i>{{ school.phone }}</small></div>
+                    </td>
                     <td>
                         {% if school.is_active %}
                             <span class="badge bg-success">Active</span>
@@ -45,13 +57,17 @@
                         {% endif %}
                     </td>
                     <td class="text-end text-nowrap">
-                        <a href="{% url 'switch_school' school.id %}" class="btn btn-sm btn-outline-primary me-1"><i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Manage</a>
-                        <a href="{% url 'school_edit' school.id %}" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-pen me-1"></i> Edit</a>
+                        <a href="{% url 'school_edit' school.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit School & Admin Credentials">
+                            <i class="fa-solid fa-pen me-1"></i> Edit
+                        </a>
+                        <a href="{% url 'school_delete' school.id %}" class="btn btn-sm btn-outline-danger" title="Delete School">
+                            <i class="fa-solid fa-trash-can me-1"></i> Delete
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">No schools registered yet.</td>
+                    <td colspan="7" class="text-center py-4 text-muted">No schools registered yet. Click "Register New School" above to get started.</td>
                 </tr>
                 {% endfor %}
             </tbody>

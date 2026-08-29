@@ -13,16 +13,17 @@ def mark_attendance_view(request):
     section_id = request.GET.get('section_id')
     attendance_date_str = request.GET.get('date', str(date.today()))
 
-    classes = Class.objects.all()
-    sections = Section.objects.all()
+    classes = Class.objects.filter(school=request.school)
+    sections = Section.objects.filter(school=request.school)
     active_session = AcademicSession.objects.filter(school=request.school, is_current=True).first()
 
     students = []
     existing_attendance = {}
 
     if class_id and section_id:
-        students = Student.objects.filter(current_class_id=class_id, current_section_id=section_id, status='ACTIVE')
+        students = Student.objects.filter(school=request.school, current_class_id=class_id, current_section_id=section_id, status='ACTIVE')
         records = StudentAttendance.objects.filter(
+            school=request.school,
             class_level_id=class_id,
             section_id=section_id,
             date=attendance_date_str
@@ -38,7 +39,7 @@ def mark_attendance_view(request):
             messages.error(request, "No active academic session found for this school.")
             return redirect('mark_attendance')
 
-        students = Student.objects.filter(current_class_id=class_id, current_section_id=section_id, status='ACTIVE')
+        students = Student.objects.filter(school=request.school, current_class_id=class_id, current_section_id=section_id, status='ACTIVE')
         saved_count = 0
 
         for student in students:
@@ -81,14 +82,15 @@ def attendance_report_view(request):
     month = request.GET.get('month', date.today().month)
     year = request.GET.get('year', date.today().year)
 
-    classes = Class.objects.all()
-    sections = Section.objects.all()
+    classes = Class.objects.filter(school=request.school)
+    sections = Section.objects.filter(school=request.school)
 
     report_data = []
     if class_id and section_id:
-        students = Student.objects.filter(current_class_id=class_id, current_section_id=section_id, status='ACTIVE')
+        students = Student.objects.filter(school=request.school, current_class_id=class_id, current_section_id=section_id, status='ACTIVE')
         for student in students:
             atts = StudentAttendance.objects.filter(
+                school=request.school,
                 student=student,
                 date__month=month,
                 date__year=year

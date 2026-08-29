@@ -67,7 +67,7 @@ class User(AbstractUser):
         return self.role == self.Roles.SUPER_ADMIN or self.is_superuser
 
     def is_school_admin(self):
-        return self.role in [self.Roles.SCHOOL_ADMIN, self.Roles.PRINCIPAL] or self.is_super_admin()
+        return self.role in [self.Roles.SCHOOL_ADMIN, self.Roles.PRINCIPAL]
 
     def is_teacher_user(self):
         return self.role == self.Roles.TEACHER
