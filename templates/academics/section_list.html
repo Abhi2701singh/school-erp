@@ -37,6 +37,7 @@
                             <th>Section Name</th>
                             <th>Stream</th>
                             <th>Students Assigned</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,9 +47,14 @@
                             <td><span class="badge bg-primary fs-6">{{ sec.name }}</span></td>
                             <td><span class="badge bg-secondary">{{ sec.get_stream_display }}</span></td>
                             <td>{{ sec.students.count }}</td>
+                            <td class="text-end text-nowrap">
+                                <a href="{% url 'section_delete' sec.id %}" class="btn btn-sm btn-outline-danger" title="Delete Section">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                </a>
+                            </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-muted text-center py-3">No sections created yet.</td></tr>
+                        <tr><td colspan="5" class="text-muted text-center py-3">No sections created yet.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

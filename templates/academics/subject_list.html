@@ -46,6 +46,7 @@
                             <th>Type</th>
                             <th>Max Marks</th>
                             <th>Pass Marks</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,9 +57,14 @@
                             <td><span class="badge bg-info">{{ sbj.get_subject_type_display }}</span></td>
                             <td>{{ sbj.max_marks }}</td>
                             <td>{{ sbj.pass_marks }}</td>
+                            <td class="text-end text-nowrap">
+                                <a href="{% url 'subject_delete' sbj.id %}" class="btn btn-sm btn-outline-danger" title="Delete Subject">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                </a>
+                            </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="text-muted text-center py-3">No subjects created yet.</td></tr>
+                        <tr><td colspan="6" class="text-muted text-center py-3">No subjects created yet.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

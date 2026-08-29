@@ -10,6 +10,12 @@ def class_list_view(request):
     if request.method == 'POST' and request.user.is_school_admin():
         form = ClassForm(request.POST)
         if form.is_valid():
+            class_name = form.cleaned_data.get('name')
+            # Check duplicate class
+            if Class.objects.filter(school=request.school, name=class_name).exists():
+                messages.warning(request, f"Class '{class_name}' already exists in your school!")
+                return redirect('class_list')
+
             cls = form.save(commit=False)
             cls.school = request.school
             cls.save()
@@ -21,6 +27,22 @@ def class_list_view(request):
         form = ClassForm()
 
     return render(request, 'academics/class_list.html', {'classes': classes, 'form': form})
+
+
+@login_required
+def class_delete_view(request, pk):
+    if not request.user.is_school_admin():
+        messages.error(request, "Permission denied.")
+        return redirect('class_list')
+
+    cls = get_object_or_404(Class, pk=pk, school=request.school)
+    if request.method == 'POST':
+        class_name = cls.name
+        cls.delete()
+        messages.success(request, f"Class '{class_name}' and its sections have been deleted successfully.")
+        return redirect('class_list')
+
+    return render(request, 'academics/class_confirm_delete.html', {'cls': cls})
 
 
 @login_required
@@ -41,6 +63,22 @@ def section_list_view(request):
 
 
 @login_required
+def section_delete_view(request, pk):
+    if not request.user.is_school_admin():
+        messages.error(request, "Permission denied.")
+        return redirect('section_list')
+
+    section = get_object_or_404(Section, pk=pk, school=request.school)
+    if request.method == 'POST':
+        sec_name = f"{section.class_level.name} - Section {section.name}"
+        section.delete()
+        messages.success(request, f"Section '{sec_name}' deleted successfully.")
+        return redirect('section_list')
+
+    return render(request, 'academics/section_confirm_delete.html', {'section': section})
+
+
+@login_required
 def subject_list_view(request):
     subjects = Subject.objects.filter(school=request.school)
     if request.method == 'POST' and request.user.is_school_admin():
@@ -55,6 +93,22 @@ def subject_list_view(request):
         form = SubjectForm()
 
     return render(request, 'academics/subject_list.html', {'subjects': subjects, 'form': form})
+
+
+@login_required
+def subject_delete_view(request, pk):
+    if not request.user.is_school_admin():
+        messages.error(request, "Permission denied.")
+        return redirect('subject_list')
+
+    subject = get_object_or_404(Subject, pk=pk, school=request.school)
+    if request.method == 'POST':
+        subj_name = subject.name
+        subject.delete()
+        messages.success(request, f"Subject '{subj_name}' deleted successfully.")
+        return redirect('subject_list')
+
+    return render(request, 'academics/subject_confirm_delete.html', {'subject': subject})
 
 
 @login_required
@@ -90,3 +144,18 @@ def timetable_view(request):
         'selected_class': class_id,
         'selected_section': section_id,
     })
+
+
+@login_required
+def timetable_delete_view(request, pk):
+    if not request.user.is_school_admin():
+        messages.error(request, "Permission denied.")
+        return redirect('timetable')
+
+    tt = get_object_or_404(Timetable, pk=pk, school=request.school)
+    if request.method == 'POST':
+        tt.delete()
+        messages.success(request, "Timetable period deleted.")
+        return redirect('timetable')
+
+    return render(request, 'academics/timetable_confirm_delete.html', {'timetable': tt})

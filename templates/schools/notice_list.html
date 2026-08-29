@@ -45,9 +45,14 @@
                         <p class="mb-2 text-dark">{{ notice.content|linebreaks }}</p>
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
                             <small class="text-muted"><i class="fa-solid fa-calendar me-1"></i> {{ notice.created_at|date:"d M Y, h:i A" }}</small>
-                            {% if notice.attachment %}
-                                <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank"><i class="fa-solid fa-paperclip me-1"></i> View Attachment</a>
-                            {% endif %}
+                            <div class="d-flex gap-1">
+                                {% if notice.attachment %}
+                                    <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank"><i class="fa-solid fa-paperclip me-1"></i> View Attachment</a>
+                                {% endif %}
+                                {% if user.is_school_admin %}
+                                    <a href="{% url 'notice_delete' notice.id %}" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Notice"><i class="fa-solid fa-trash-can me-1"></i> Delete</a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 {% empty %}

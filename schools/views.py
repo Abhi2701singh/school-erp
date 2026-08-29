@@ -153,6 +153,22 @@ def session_list_view(request):
 
 
 @login_required
+def session_delete_view(request, pk):
+    if not request.user.is_school_admin():
+        messages.error(request, "Permission denied.")
+        return redirect('dashboard')
+
+    session = get_object_or_404(AcademicSession, pk=pk, school=request.school)
+    if request.method == 'POST':
+        s_name = session.name
+        session.delete()
+        messages.success(request, f"Academic session '{s_name}' deleted successfully.")
+        return redirect('session_list')
+
+    return render(request, 'schools/session_confirm_delete.html', {'session': session})
+
+
+@login_required
 def notice_list_view(request):
     if request.user.is_super_admin():
         notices = Notice.objects.all()
@@ -171,3 +187,18 @@ def notice_list_view(request):
         form = NoticeForm()
 
     return render(request, 'schools/notice_list.html', {'notices': notices, 'form': form})
+
+
+@login_required
+def notice_delete_view(request, pk):
+    if not request.user.is_school_admin():
+        messages.error(request, "Permission denied.")
+        return redirect('dashboard')
+
+    notice = get_object_or_404(Notice, pk=pk, school=request.school)
+    if request.method == 'POST':
+        notice.delete()
+        messages.success(request, "Notice deleted successfully.")
+        return redirect('notice_list')
+
+    return render(request, 'schools/notice_confirm_delete.html', {'notice': notice})

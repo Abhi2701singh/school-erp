@@ -33,6 +33,7 @@
                             <th>Class Name</th>
                             <th>Sections Count</th>
                             <th>Students Count</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,9 +43,14 @@
                             <td class="fw-bold fs-6 text-nowrap">{{ cls.name }}</td>
                             <td><span class="badge bg-info">{{ cls.sections.count }} Sections</span></td>
                             <td><span class="badge bg-success">{{ cls.students.count }} Students</span></td>
+                            <td class="text-end text-nowrap">
+                                <a href="{% url 'class_delete' cls.id %}" class="btn btn-sm btn-outline-danger" title="Delete Class">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                </a>
+                            </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-muted text-center py-3">No classes created yet.</td></tr>
+                        <tr><td colspan="5" class="text-muted text-center py-3">No classes created yet.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
