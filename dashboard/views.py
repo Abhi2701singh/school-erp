@@ -2,6 +2,7 @@ from datetime import date
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, Q
+from accounts.models import User
 from schools.models import School, Notice, AcademicSession
 from students.models import Student, ParentProfile
 from teachers.models import Teacher

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from accounts.models import User
 from schools.models import School, AcademicSession, Notice
 from schools.forms import SchoolForm, AcademicSessionForm, NoticeForm
 
@@ -17,8 +18,6 @@ def school_list_view(request):
 
     return render(request, 'schools/school_list.html', {'schools': schools})
 
-
-from accounts.models import User
 
 @login_required
 def school_create_view(request):
