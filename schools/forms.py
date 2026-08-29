@@ -2,6 +2,17 @@ from django import forms
 from schools.models import School, AcademicSession, Notice
 
 class SchoolForm(forms.ModelForm):
+    admin_username = forms.CharField(
+        required=False,
+        label="Admin Username",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. admin_dps (optional, auto-generated if empty)'})
+    )
+    admin_password = forms.CharField(
+        required=False,
+        label="Admin Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Password@123 (defaults to Password@123)'})
+    )
+
     class Meta:
         model = School
         fields = '__all__'
