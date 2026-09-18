@@ -1,0 +1,6 @@
+name = "edumanage-247-keepalive"
+main = "index.js"
+compatibility_date = "2024-09-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
