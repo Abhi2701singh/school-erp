@@ -11,7 +11,7 @@ export async function onRequest(context) {
             return asset;
           }
         } catch (e) {
-          // Fallback
+          // Fallback to backend
         }
       }
     }
@@ -54,21 +54,50 @@ export async function onRequest(context) {
 
     const response = await fetch(targetUrl.toString(), init);
 
-    // Handle redirects while preserving exact multi-cookie headers
+    // Build fresh response headers with separate Set-Cookie entries
+    const resHeaders = new Headers();
+    for (const [key, value] of response.headers.entries()) {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey !== "set-cookie" && lowerKey !== "location") {
+        resHeaders.set(key, value);
+      }
+    }
+
+    // Handle redirects
     if ([301, 302, 303, 307, 308].includes(response.status)) {
       const location = response.headers.get("Location");
       if (location) {
         const redirectedLocation = location.replace(backendOrigin, "").replace(/^https?:\/\/[^\/]+/, "");
         const cleanLocation = redirectedLocation.startsWith("/") ? redirectedLocation : "/" + redirectedLocation;
-        
-        const res = new Response(response.body, response);
-        res.headers.set("Location", cleanLocation);
-        return res;
+        resHeaders.set("Location", cleanLocation);
       }
     }
 
-    // Return response directly preserving exact response stream & headers
-    return new Response(response.body, response);
+    // Extract all Set-Cookie headers cleanly for Safari/Chrome compatibility
+    let rawCookies = [];
+    if (typeof response.headers.getSetCookie === "function") {
+      rawCookies = response.headers.getSetCookie();
+    } else {
+      const singleCookie = response.headers.get("Set-Cookie");
+      if (singleCookie) {
+        rawCookies = singleCookie.split(/,\s*(?=[^;=]+=[^;]+)/g);
+      }
+    }
+
+    if (rawCookies && rawCookies.length > 0) {
+      for (const cookie of rawCookies) {
+        if (!cookie) continue;
+        // Strip backend domain if present so cookie binds directly to pages.dev domain
+        const cleanCookie = cookie.replace(/Domain=[^;]+;?\s*/gi, "").trim();
+        resHeaders.append("Set-Cookie", cleanCookie);
+      }
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: resHeaders,
+    });
   } catch (err) {
     return new Response("Edge Gateway Exception: " + err.message + "\n" + err.stack, {
       status: 500,

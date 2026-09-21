@@ -64,7 +64,7 @@ class User(AbstractUser):
     profile_photo = models.ImageField(upload_to="profiles/", null=True, blank=True)
 
     def is_super_admin(self):
-        return self.role == self.Roles.SUPER_ADMIN or self.is_superuser
+        return self.role == self.Roles.SUPER_ADMIN or self.is_superuser or self.is_staff
 
     def is_school_admin(self):
         return self.role in [self.Roles.SCHOOL_ADMIN, self.Roles.PRINCIPAL]

@@ -7,7 +7,8 @@ from schools.forms import SchoolForm, AcademicSessionForm, NoticeForm
 
 @login_required
 def school_list_view(request):
-    if not request.user.is_super_admin():
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if not is_super:
         messages.error(request, "Access restricted to Super Admins.")
         return redirect('dashboard')
 
@@ -23,7 +24,8 @@ import datetime
 
 @login_required
 def school_create_view(request):
-    if not request.user.is_super_admin():
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if not is_super:
         messages.error(request, "Permission denied. Only Super Admin can register schools.")
         return redirect('dashboard')
 
@@ -88,7 +90,9 @@ def school_create_view(request):
 @login_required
 def school_edit_view(request, pk):
     school = get_object_or_404(School, pk=pk)
-    if not (request.user.is_super_admin() or (request.user.is_school_admin() and request.user.school == school)):
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    is_admin = request.user.is_school_admin() if callable(getattr(request.user, 'is_school_admin', None)) else bool(getattr(request.user, 'is_school_admin', False))
+    if not (is_super or (is_admin and request.user.school == school)):
         messages.error(request, "Permission denied.")
         return redirect('dashboard')
 
@@ -100,7 +104,7 @@ def school_edit_view(request, pk):
             form.save()
 
             # If Super Admin updated admin credentials
-            if request.user.is_super_admin():
+            if is_super:
                 admin_username = form.cleaned_data.get('admin_username')
                 admin_password = form.cleaned_data.get('admin_password')
 
@@ -122,7 +126,7 @@ def school_edit_view(request, pk):
                     )
 
             messages.success(request, f"School '{school.name}' details updated.")
-            return redirect('school_list' if request.user.is_super_admin() else 'dashboard')
+            return redirect('school_list' if is_super else 'dashboard')
     else:
         initial = {}
         if admin_user:
@@ -134,7 +138,8 @@ def school_edit_view(request, pk):
 
 @login_required
 def school_delete_view(request, pk):
-    if not request.user.is_super_admin():
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if not is_super:
         messages.error(request, "Permission denied. Only Super Admin can delete schools.")
         return redirect('dashboard')
 
