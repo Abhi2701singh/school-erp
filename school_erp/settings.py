@@ -132,8 +132,13 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Cloudflare Proxy SSL Header
+# Cloudflare Proxy SSL and Host Headers
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# CSRF Failure Handler
+CSRF_FAILURE_VIEW = 'accounts.views.custom_csrf_failure'
 
 # CSRF Trusted Origins for Cloudflare, Render & Local
 CSRF_TRUSTED_ORIGINS = [

@@ -6,10 +6,14 @@ from accounts.forms import LoginForm, UserForm
 from schools.models import School
 
 def login_view(request):
-    if request.user.is_authenticated:
+    if request.method == 'GET' and request.user.is_authenticated:
         return redirect('dashboard')
 
     if request.method == 'POST':
+        # If another account was active, log out first to switch cleanly
+        if request.user.is_authenticated:
+            logout(request)
+
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
@@ -22,6 +26,19 @@ def login_view(request):
         form = LoginForm()
 
     return render(request, 'accounts/login.html', {'form': form})
+
+
+def custom_csrf_failure(request, reason=""):
+    """
+    Resilient CSRF failure handler:
+    Automatically recovers from session expirations and proxy token shifts.
+    """
+    if 'login' in request.path or request.path == '/' or not request.user.is_authenticated:
+        messages.warning(request, "Security token refreshed. Please enter your login credentials.")
+        return redirect('login')
+
+    return render(request, 'accounts/csrf_error.html', {'reason': reason}, status=403)
+
 
 
 def logout_view(request):

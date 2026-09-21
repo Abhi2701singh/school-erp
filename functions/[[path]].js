@@ -80,7 +80,7 @@ export async function onRequest(context) {
     } else {
       const singleCookie = response.headers.get("Set-Cookie");
       if (singleCookie) {
-        rawCookies = singleCookie.split(/,\s*(?=[^;=]+=[^;]+)/g);
+        rawCookies = singleCookie.split(/,\s*(?=[a-zA-Z0-9_\-]+=[^;]+)/g);
       }
     }
 

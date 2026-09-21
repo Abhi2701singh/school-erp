@@ -1,17 +1,6 @@
-# Generated migration to delete all school, school admin, student, teacher records and retain superadmin
+# Migration history preserved, data deletion disabled
 
 from django.db import migrations
-
-def delete_all_school_data(apps, schema_editor):
-    School = apps.get_model('schools', 'School')
-    User = apps.get_model('accounts', 'User')
-
-    # Delete all schools (which cascades to classes, sections, subjects, students, teachers, etc.)
-    School.objects.all().delete()
-
-    # Delete any non-superadmin users
-    User.objects.filter(is_superuser=False).delete()
-    User.objects.exclude(username='admin').delete()
 
 def noop(apps, schema_editor):
     pass
@@ -27,5 +16,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(delete_all_school_data, noop),
+        migrations.RunPython(noop, noop),
     ]
+
