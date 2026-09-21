@@ -12,6 +12,18 @@ def school_list_view(request):
         messages.error(request, "Access restricted to Super Admins.")
         return redirect('dashboard')
 
+    # Auto-restore stored records if empty
+    if not School.objects.filter(code='211010').exists():
+        try:
+            import os
+            from django.core.management import call_command
+            from django.conf import settings
+            fixture_path = os.path.join(settings.BASE_DIR, 'initial_data.json')
+            if os.path.exists(fixture_path):
+                call_command('loaddata', fixture_path)
+        except Exception:
+            pass
+
     schools = School.objects.all()
     # Attach admin user to each school for display
     for s in schools:

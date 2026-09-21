@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # Local Multi-School ERP apps
-    'schools',
+    'schools.apps.SchoolsConfig',
     'accounts',
     'academics',
     'students',

@@ -12,12 +12,25 @@ from examinations.models import Exam, MarksEntry
 from fees.models import StudentFee, FeePayment
 from homework.models import Homework, StudyMaterial
 
+def ensure_initial_data():
+    try:
+        if not School.objects.filter(code='211010').exists():
+            import os
+            from django.core.management import call_command
+            from django.conf import settings
+            fixture_path = os.path.join(settings.BASE_DIR, 'initial_data.json')
+            if os.path.exists(fixture_path):
+                call_command('loaddata', fixture_path)
+    except Exception:
+        pass
+
 @login_required
 def dashboard_router_view(request):
     user = request.user
 
     # Super Admin Dashboard
     if user.is_super_admin():
+        ensure_initial_data()
         total_schools = School.objects.count()
         active_schools = School.objects.filter(is_active=True).count()
         total_students_all = Student.objects.count()
