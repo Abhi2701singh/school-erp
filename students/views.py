@@ -14,23 +14,16 @@ def student_list_view(request):
     class_id = request.GET.get('class_id', '')
     section_id = request.GET.get('section_id', '')
 
-    students = Student.objects.filter(school=request.school).select_related('current_class', 'current_section', 'academic_session')
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
 
-    if query:
-        students = students.filter(
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query) |
-            Q(admission_no__icontains=query) |
-            Q(father_name__icontains=query) |
-            Q(parent_phone__icontains=query)
-        )
-    if class_id:
-        students = students.filter(current_class_id=class_id)
-    if section_id:
-        students = students.filter(current_section_id=section_id)
-
-    classes = Class.objects.filter(school=request.school)
-    sections = Section.objects.filter(school=request.school)
+    if is_super and not request.school:
+        students = Student.objects.all().select_related('current_class', 'current_section', 'academic_session', 'school')
+        classes = Class.objects.all()
+        sections = Section.objects.all()
+    else:
+        students = Student.objects.filter(school=request.school).select_related('current_class', 'current_section', 'academic_session')
+        classes = Class.objects.filter(school=request.school)
+        sections = Section.objects.filter(school=request.school)
 
     return render(request, 'students/student_list.html', {
         'students': students,

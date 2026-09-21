@@ -7,7 +7,11 @@ from accounts.models import User
 
 @login_required
 def teacher_list_view(request):
-    teachers = Teacher.objects.filter(school=request.school).select_related('user').prefetch_related('assigned_classes', 'assigned_subjects')
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if is_super and not request.school:
+        teachers = Teacher.objects.all().select_related('user', 'school').prefetch_related('assigned_classes', 'assigned_subjects')
+    else:
+        teachers = Teacher.objects.filter(school=request.school).select_related('user').prefetch_related('assigned_classes', 'assigned_subjects')
     return render(request, 'teachers/teacher_list.html', {'teachers': teachers})
 
 
