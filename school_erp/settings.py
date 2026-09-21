@@ -110,6 +110,10 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # CSRF Trusted Origins for Cloudflare, Render & Local
 CSRF_TRUSTED_ORIGINS = [
+    'https://edumanage-school-erp.pages.dev',
+    'http://edumanage-school-erp.pages.dev',
+    'https://edumanage-school-erp.onrender.com',
+    'http://edumanage-school-erp.onrender.com',
     'https://*.pages.dev',
     'http://*.pages.dev',
     'https://*.workers.dev',

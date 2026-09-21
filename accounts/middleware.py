@@ -1,4 +1,5 @@
-from accounts.models import set_current_school, set_current_school, School
+from accounts.models import set_current_school
+from schools.models import School
 
 class TenantMiddleware:
     """
