@@ -12,19 +12,16 @@ from examinations.models import Exam, MarksEntry
 from fees.models import StudentFee, FeePayment
 from homework.models import Homework, StudyMaterial
 
-from schools.seed_data import seed_default_records
-
 @login_required
 def dashboard_router_view(request):
     user = request.user
 
     # Super Admin Dashboard
     if user.is_super_admin():
-        seed_default_records()
         total_schools = School.objects.count()
         active_schools = School.objects.filter(is_active=True).count()
-        total_students_all = Student.objects.count()
-        total_teachers_all = Teacher.objects.count()
+        total_students_all = Student.all_objects.count()
+        total_teachers_all = Teacher.all_objects.count()
         schools = School.objects.all()
         for s in schools:
             s.admin_user = User.objects.filter(school=s, role__in=[User.Roles.SCHOOL_ADMIN, User.Roles.PRINCIPAL]).first()

@@ -8,15 +8,11 @@ from academics.models import Class, Section
 from schools.models import AcademicSession
 from accounts.models import User
 
-from schools.seed_data import seed_default_records
-
 @login_required
 def student_list_view(request):
     query = request.GET.get('q', '')
     class_id = request.GET.get('class_id', '')
     section_id = request.GET.get('section_id', '')
-
-    seed_default_records()
 
     is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
 

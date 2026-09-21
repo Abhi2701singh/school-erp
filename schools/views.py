@@ -5,17 +5,12 @@ from accounts.models import User
 from schools.models import School, AcademicSession, Notice
 from schools.forms import SchoolForm, AcademicSessionForm, NoticeForm
 
-from schools.seed_data import seed_default_records
-
 @login_required
 def school_list_view(request):
     is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
     if not is_super:
         messages.error(request, "Access restricted to Super Admins.")
         return redirect('dashboard')
-
-    # Auto-seed/restore default records
-    seed_default_records()
 
     schools = School.objects.all()
     # Attach admin user to each school for display
