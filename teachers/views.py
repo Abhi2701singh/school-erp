@@ -5,11 +5,14 @@ from teachers.models import Teacher
 from teachers.forms import TeacherForm
 from accounts.models import User
 
+from schools.seed_data import seed_default_records
+
 @login_required
 def teacher_list_view(request):
+    seed_default_records()
     is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
     if is_super and not request.school:
-        teachers = Teacher.objects.all().select_related('user', 'school').prefetch_related('assigned_classes', 'assigned_subjects')
+        teachers = Teacher.all_objects.all().select_related('user', 'school').prefetch_related('assigned_classes', 'assigned_subjects')
     else:
         teachers = Teacher.objects.filter(school=request.school).select_related('user').prefetch_related('assigned_classes', 'assigned_subjects')
     return render(request, 'teachers/teacher_list.html', {'teachers': teachers})
