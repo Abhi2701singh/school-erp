@@ -1,0 +1,282 @@
+[
+{
+  "model": "sessions.session",
+  "pk": "3j1d1f6kq69bljm99mbd3effxpnucg6c",
+  "fields": {
+    "session_data": ".eJxVjMsOwiAQRf-FtSEWGB4u3fsNhGEGqRqalHZl_HfbpAvdnnPufYuY1qXGtfMcRxIXMShx-oWY8pPbbuiR2n2SeWrLPKLcE3nYLm8T8et6tH8HNfW6rbUKXg_Wg9fkCNG7swUL6IkwBM-QmIvhApRNCbwBQO0CcFGsbDDi8wX9WThD:1x0JaX:hdtPLR6MB7miHRuPs8pNwUZDbHwdIbaOpqoxJC17yYQ",
+    "expire_date": "2026-09-12T13:59:17.192Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "d7cqm3g3obkd19ekjm8y0sjakeeoj0hg",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pAZaOng0r1nIDAMUjVtUtqV8e7apAvd_vfef6kQt7WGrckSxqzOCtXpd0uRHzLtIN_jdJs1z9O6jEnvij5o09c5y_NyuH8HNbb6rcGLLSRUkHq2BExMDgU82yE7C77rXG9MtOIBMWFxAsa4ARJaZMrq_QHBYTav:1x8eyt:FqTMUixYEtQyPvRuV1W41URopwbuC1epopSkTcAIu30",
+    "expire_date": "2026-10-05T14:26:55.796Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "hkw3gnk0ubk6hv6lv7wrysagow784wvw",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pAZaOng0r1nIDAMUjVtUtqV8e7apAvd_vfef6kQt7WGrckSxqzOCtXpd0uRHzLtIN_jdJs1z9O6jEnvij5o09c5y_NyuH8HNbb6rcGLLSRUkHq2BExMDgU82yE7C77rXG9MtOIBMWFxAsa4ARJaZMrq_QHBYTav:1x0NXU:P6pxy6KKIiATCl1nnlzih26yZSb8mEcBMAhtZ_B8iOM",
+    "expire_date": "2026-09-12T18:12:24.807Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "y74evp58c1ziv2o6jg71hcdj2uuydgbk",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pAZaOng0r1nIDAMUjVtUtqV8e7apAvd_vfef6kQt7WGrckSxqzOCtXpd0uRHzLtIN_jdJs1z9O6jEnvij5o09c5y_NyuH8HNbb6rcGLLSRUkHq2BExMDgU82yE7C77rXG9MtOIBMWFxAsa4ARJaZMrq_QHBYTav:1x0NXb:LrcORtcIGg7RfJrR5HEjj3nm5xZPq7p2fsATXs16p6Y",
+    "expire_date": "2026-09-12T18:12:31.899Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "yvjeznbyl57qc3ujipkfvd5abfqjjzxc",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pAZaOng0r1nIDAMUjVtUtqV8e7apAvd_vfef6kQt7WGrckSxqzOCtXpd0uRHzLtIN_jdJs1z9O6jEnvij5o09c5y_NyuH8HNbb6rcGLLSRUkHq2BExMDgU82yE7C77rXG9MtOIBMWFxAsa4ARJaZMrq_QHBYTav:1x0NZz:ssaXZ6IidU-jWrjWq_tbfRXZpFHU5qc7TXyaxeCSg5I",
+    "expire_date": "2026-09-12T18:14:59.726Z"
+  }
+},
+{
+  "model": "schools.school",
+  "pk": 6,
+  "fields": {
+    "name": "ANGLE PUBLIC SCHOOL",
+    "code": "211010",
+    "logo": "school_logos/images_4pGBeIZ.jpeg",
+    "address": "xyz , 132 ewe , delhi",
+    "phone": "9876543210",
+    "email": "angle@gmail.com",
+    "website": null,
+    "principal_name": "Abhinav Singh",
+    "affiliation_no": "cbse",
+    "established_year": 2002,
+    "is_active": true,
+    "created_at": "2026-08-29T13:14:47.139Z",
+    "updated_at": "2026-08-29T13:14:47.139Z"
+  }
+},
+{
+  "model": "schools.academicsession",
+  "pk": 6,
+  "fields": {
+    "school": 6,
+    "name": "2025-2026",
+    "start_date": "2025-04-01",
+    "end_date": "2026-03-31",
+    "is_current": true
+  }
+},
+{
+  "model": "accounts.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$vW8Zy0qJyVEReih0ojX54C$x0W9sdWbmu17Pp/xwkA7m2YNsK+zJPPPzMovhAi1A2o=",
+    "last_login": "2026-09-21T17:47:43.667Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "Super",
+    "last_name": "Admin",
+    "email": "superadmin@test.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-21T19:45:56.563Z",
+    "role": "SUPER_ADMIN",
+    "school": null,
+    "phone": "",
+    "profile_photo": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$NhG9Yf46K2ryfuULYQ9Gf7$FLS7hom9pc4CnL34xr9MkeVFgajXPIhaYylCdCfuShk=",
+    "last_login": "2026-08-29T13:15:56.087Z",
+    "is_superuser": false,
+    "username": "angle",
+    "first_name": "ANGLE PUBLIC SCHOOL",
+    "last_name": "Admin",
+    "email": "angle@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-29T13:14:47.142Z",
+    "role": "SCHOOL_ADMIN",
+    "school": 6,
+    "phone": "",
+    "profile_photo": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$wQMZhoNT604KDWcJwGOuRN$ddJJ3UxiBfGRHRv/Q2TEUHXB5ozQLI3X4dwGNc/wgBs=",
+    "last_login": "2026-08-29T13:59:17.191Z",
+    "is_superuser": false,
+    "username": "aman",
+    "first_name": "Aman",
+    "last_name": "Singh",
+    "email": "xyz@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-29T13:50:25.927Z",
+    "role": "STUDENT",
+    "school": 6,
+    "phone": "",
+    "profile_photo": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.user",
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "aps_admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-29T14:07:19.999Z",
+    "role": "SCHOOL_ADMIN",
+    "school": 6,
+    "phone": "",
+    "profile_photo": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "academics.class",
+  "pk": 16,
+  "fields": {
+    "school": 6,
+    "name": "Nursery",
+    "numeric_value": 1
+  }
+},
+{
+  "model": "academics.class",
+  "pk": 17,
+  "fields": {
+    "school": 6,
+    "name": "LKG",
+    "numeric_value": 2
+  }
+},
+{
+  "model": "academics.class",
+  "pk": 18,
+  "fields": {
+    "school": 6,
+    "name": "UKG",
+    "numeric_value": 3
+  }
+},
+{
+  "model": "academics.section",
+  "pk": 20,
+  "fields": {
+    "school": 6,
+    "class_level": 16,
+    "name": "A",
+    "stream": "General"
+  }
+},
+{
+  "model": "academics.section",
+  "pk": 21,
+  "fields": {
+    "school": 6,
+    "class_level": 17,
+    "name": "A",
+    "stream": "General"
+  }
+},
+{
+  "model": "academics.section",
+  "pk": 22,
+  "fields": {
+    "school": 6,
+    "class_level": 18,
+    "name": "A",
+    "stream": "General"
+  }
+},
+{
+  "model": "academics.subject",
+  "pk": 5,
+  "fields": {
+    "school": 6,
+    "name": "math",
+    "code": "math101",
+    "subject_type": "THEORY",
+    "max_marks": "100.00",
+    "pass_marks": "33.00"
+  }
+},
+{
+  "model": "academics.subject",
+  "pk": 6,
+  "fields": {
+    "school": 6,
+    "name": "english",
+    "code": "eng102",
+    "subject_type": "THEORY",
+    "max_marks": "100.00",
+    "pass_marks": "33.00"
+  }
+},
+{
+  "model": "academics.subject",
+  "pk": 7,
+  "fields": {
+    "school": 6,
+    "name": "hindi",
+    "code": "hindi103",
+    "subject_type": "THEORY",
+    "max_marks": "100.00",
+    "pass_marks": "33.00"
+  }
+},
+{
+  "model": "students.student",
+  "pk": 2,
+  "fields": {
+    "school": 6,
+    "user": [
+      "aman"
+    ],
+    "admission_no": "nus101",
+    "roll_no": "101",
+    "first_name": "Aman",
+    "last_name": "Singh",
+    "dob": "2015-01-01",
+    "gender": "M",
+    "blood_group": "o+",
+    "photo": "student_photos/abhinav_pic-removebg-preview.jpg",
+    "govt_id": "1234 3456 5678",
+    "address": "ab , 180/18 , delhi",
+    "admission_date": "2026-08-29",
+    "academic_session": 6,
+    "current_class": 16,
+    "current_section": 20,
+    "father_name": "xyz singh",
+    "mother_name": "qwe singh",
+    "guardian_name": "xyz singh",
+    "parent_phone": "1234567890",
+    "parent_email": "xyz@gmail.com",
+    "parent_occupation": "engg.",
+    "status": "ACTIVE",
+    "created_at": "2026-08-29T13:50:26.104Z",
+    "updated_at": "2026-08-29T13:50:26.104Z"
+  }
+}
+]
