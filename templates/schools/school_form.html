@@ -95,6 +95,21 @@
                     </div>
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-semibold">School Logo</label>
+                        {% if school and school.logo %}
+                            <div class="d-flex align-items-center gap-2 mb-2 p-2 bg-light rounded border">
+                                <img src="{{ school.logo.url }}" class="rounded shadow-sm" style="width: 44px; height: 44px; object-fit: cover;">
+                                <div class="small">
+                                    <div class="fw-bold text-secondary">Current Logo</div>
+                                    <span class="text-muted">Upload a new file below to change</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div id="schoolLogoPreviewContainer" class="d-none mb-2 p-2 bg-light rounded border">
+                            <div class="d-flex align-items-center gap-2">
+                                <img id="schoolLogoPreview" class="rounded shadow-sm" style="width: 44px; height: 44px; object-fit: cover;">
+                                <small class="text-primary fw-semibold">New Selected Logo Preview</small>
+                            </div>
+                        </div>
                         {{ form.logo }}
                         {% if form.logo.errors %}
                             <div class="text-danger small mt-1">{{ form.logo.errors.0 }}</div>
@@ -149,6 +164,23 @@
         const nameInput = document.querySelector('input[name="name"]');
         const codeInput = document.querySelector('input[name="code"]');
         const adminUserInput = document.querySelector('input[name="admin_username"]');
+        const logoInput = document.querySelector('input[name="logo"]');
+        const logoPreviewContainer = document.getElementById('schoolLogoPreviewContainer');
+        const logoPreview = document.getElementById('schoolLogoPreview');
+
+        if (logoInput && logoPreview && logoPreviewContainer) {
+            logoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        logoPreview.src = evt.target.result;
+                        logoPreviewContainer.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
 
         if (nameInput && codeInput) {
             nameInput.addEventListener("input", function() {

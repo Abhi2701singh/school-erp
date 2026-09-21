@@ -10,6 +10,26 @@
             
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+
+                <!-- Profile Photo Card & Preview -->
+                <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 mb-4 border">
+                    <div id="photoPreviewContainer">
+                        {% if user_obj.profile_photo %}
+                            <img src="{{ user_obj.profile_photo.url }}" id="profilePhotoPreview" class="rounded-circle shadow-sm" style="width: 72px; height: 72px; object-fit: cover; border: 2px solid #4f46e5;">
+                        {% else %}
+                            <div id="profilePhotoFallback" class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white bg-primary shadow-sm" style="width: 72px; height: 72px; font-size: 1.5rem;">
+                                {{ user_obj.username|first|upper }}
+                            </div>
+                            <img id="profilePhotoPreview" class="rounded-circle shadow-sm d-none" style="width: 72px; height: 72px; object-fit: cover; border: 2px solid #4f46e5;">
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-6">{{ user_obj.get_full_name|default:user_obj.username }}</div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ user_obj.get_role_display }}</span>
+                        <div class="text-muted small mt-1">Upload a JPG or PNG image for your account avatar.</div>
+                    </div>
+                </div>
+
                 <div class="row g-3">
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-semibold">First Name</label>
@@ -28,7 +48,7 @@
                         {{ form.phone }}
                     </div>
                     <div class="col-12">
-                        <label class="form-label fw-semibold">Profile Photo</label>
+                        <label class="form-label fw-semibold">Change Profile Photo</label>
                         {{ form.profile_photo }}
                     </div>
                 </div>
@@ -41,5 +61,30 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const fileInput = document.querySelector('input[name="profile_photo"]');
+        const previewImg = document.getElementById('profilePhotoPreview');
+        const fallback = document.getElementById('profilePhotoFallback');
+
+        if (fileInput && previewImg) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        previewImg.src = evt.target.result;
+                        previewImg.classList.remove('d-none');
+                        if (fallback) fallback.classList.add('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
 

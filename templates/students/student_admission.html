@@ -99,6 +99,12 @@
                     </div>
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-semibold">Student Photo</label>
+                        <div id="studentPhotoPreviewContainer" class="d-none mb-2 p-2 bg-light rounded border">
+                            <div class="d-flex align-items-center gap-2">
+                                <img id="studentPhotoPreview" class="rounded shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+                                <small class="text-primary fw-semibold">Photo Preview Selected</small>
+                            </div>
+                        </div>
                         {{ form.photo }}
                     </div>
                     <div class="col-12">
@@ -148,6 +154,24 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        const photoInput = document.querySelector('input[name="photo"]');
+        const photoPreviewContainer = document.getElementById('studentPhotoPreviewContainer');
+        const photoPreview = document.getElementById('studentPhotoPreview');
+
+        if (photoInput && photoPreview && photoPreviewContainer) {
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        photoPreview.src = evt.target.result;
+                        photoPreviewContainer.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
         // Flatpickr for Date of Birth with quick Month and Year dropdown selection
         if (typeof flatpickr !== 'undefined') {
             flatpickr(".dob-picker", {
