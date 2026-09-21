@@ -2,7 +2,7 @@ export async function onRequest(context) {
   try {
     const url = new URL(context.request.url);
     
-    // 1. Serve static assets directly from Cloudflare Pages Edge
+    // 1. Static assets direct from Cloudflare Edge
     if (context.request.method === "GET" || context.request.method === "HEAD") {
       if (url.pathname.startsWith("/static/") || url.pathname === "/favicon.ico") {
         try {
@@ -11,23 +11,22 @@ export async function onRequest(context) {
             return asset;
           }
         } catch (e) {
-          // Fallback to backend
+          // Fallback
         }
       }
     }
 
-    // 2. Proxy dynamic requests through Cloudflare Global Edge
+    // 2. Proxy dynamic requests
     const backendHost = "edumanage-school-erp.onrender.com";
     const backendOrigin = "https://" + backendHost;
     const targetUrl = new URL(url.pathname + url.search, backendOrigin);
 
-    // Clone headers
     const newHeaders = new Headers(context.request.headers);
     newHeaders.set("Host", backendHost);
     newHeaders.set("X-Forwarded-Host", url.host);
     newHeaders.set("X-Forwarded-Proto", "https");
 
-    // Rewrite Origin & Referer to backendOrigin so Django CSRF/Origin checks always succeed
+    // Rewrite Origin and Referer so Django CSRF/Origin validation is 100% satisfied
     const origin = context.request.headers.get("Origin");
     if (origin) {
       newHeaders.set("Origin", backendOrigin);
@@ -55,21 +54,21 @@ export async function onRequest(context) {
 
     const response = await fetch(targetUrl.toString(), init);
 
-    // Build response headers
-    const responseHeaders = new Headers(response.headers);
-
-    // Rewrite redirect location to keep user seamlessly on Cloudflare domain (*.pages.dev)
-    const location = response.headers.get("Location");
-    if (location) {
-      const redirectedLocation = location.replace(backendOrigin, "").replace(/^https?:\/\/[^\/]+/, "");
-      responseHeaders.set("Location", redirectedLocation.startsWith("/") ? redirectedLocation : "/" + redirectedLocation);
+    // Handle redirects while preserving exact multi-cookie headers
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get("Location");
+      if (location) {
+        const redirectedLocation = location.replace(backendOrigin, "").replace(/^https?:\/\/[^\/]+/, "");
+        const cleanLocation = redirectedLocation.startsWith("/") ? redirectedLocation : "/" + redirectedLocation;
+        
+        const res = new Response(response.body, response);
+        res.headers.set("Location", cleanLocation);
+        return res;
+      }
     }
 
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    });
+    // Return response directly preserving exact response stream & headers
+    return new Response(response.body, response);
   } catch (err) {
     return new Response("Edge Gateway Exception: " + err.message + "\n" + err.stack, {
       status: 500,
