@@ -1,1 +1,2 @@
-web: gunicorn school_erp.wsgi:application
+web: python manage.py migrate --noinput && gunicorn school_erp.wsgi:application
+
