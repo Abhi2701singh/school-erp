@@ -19,6 +19,8 @@ def school_list_view(request):
     return render(request, 'schools/school_list.html', {'schools': schools})
 
 
+import datetime
+
 @login_required
 def school_create_view(request):
     if not request.user.is_super_admin():
@@ -29,42 +31,58 @@ def school_create_view(request):
         form = SchoolForm(request.POST, request.FILES)
         if form.is_valid():
             school = form.save()
-            # Automatically create initial 2025-2026 Academic Session for new school
-            AcademicSession.objects.create(
+            
+            # Automatically create initial current Academic Session for new school
+            current_year = datetime.date.today().year
+            session_name = f"{current_year}-{current_year + 1}"
+            AcademicSession.objects.get_or_create(
                 school=school,
-                name="2025-2026",
-                start_date="2025-04-01",
-                end_date="2026-03-31",
-                is_current=True
+                name=session_name,
+                defaults={
+                    'start_date': datetime.date(current_year, 4, 1),
+                    'end_date': datetime.date(current_year + 1, 3, 31),
+                    'is_current': True
+                }
             )
 
             # Automatically create School Admin user
-            admin_username = form.cleaned_data.get('admin_username') or f"admin_{school.code.lower()}"
+            admin_username = form.cleaned_data.get('admin_username')
+            if not admin_username:
+                admin_username = f"admin_{school.code.lower()}"
+            else:
+                admin_username = admin_username.strip().lower()
+
+            # Ensure admin_username is globally unique
+            base_username = admin_username
+            counter = 1
+            while User.objects.filter(username=admin_username).exists():
+                admin_username = f"{base_username}_{counter}"
+                counter += 1
+
             admin_password = form.cleaned_data.get('admin_password') or "Password@123"
             admin_email = school.email or f"{admin_username}@{school.code.lower()}.edu"
 
-            if not User.objects.filter(username=admin_username).exists():
-                User.objects.create_user(
-                    username=admin_username,
-                    email=admin_email,
-                    password=admin_password,
-                    role=User.Roles.SCHOOL_ADMIN,
-                    school=school,
-                    first_name=school.name,
-                    last_name="Admin"
-                )
-                messages.success(
-                    request,
-                    f"School '{school.name}' created successfully! School Admin Login -> Username: '{admin_username}' | Password: '{admin_password}'"
-                )
-            else:
-                messages.success(request, f"School '{school.name}' created successfully with initial Academic Session 2025-2026!")
+            User.objects.create_user(
+                username=admin_username,
+                email=admin_email,
+                password=admin_password,
+                role=User.Roles.SCHOOL_ADMIN,
+                school=school,
+                first_name=school.name,
+                last_name="Admin"
+            )
 
+            messages.success(
+                request,
+                f"School '{school.name}' registered successfully! Admin Login -> Username: '{admin_username}' | Password: '{admin_password}'"
+            )
             return redirect('school_list')
+        else:
+            messages.error(request, "Could not register school. Please review the errors below.")
     else:
-        form = SchoolForm()
+        form = SchoolForm(initial={'is_active': True})
 
-    return render(request, 'schools/school_form.html', {'form': form, 'title': 'Add New School'})
+    return render(request, 'schools/school_form.html', {'form': form, 'title': 'Register New School'})
 
 
 @login_required
