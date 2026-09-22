@@ -69,29 +69,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'school_erp.wsgi.application'
 
-# Database configuration (PostgreSQL in production if DATABASE_URL active, resilient SQLite fallback)
-db_config = dj_database_url.config(
-    default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-    conn_max_age=600,
-    conn_health_checks=True,
-)
-
-if os.getenv('DATABASE_URL') and 'postgres' in os.getenv('DATABASE_URL', ''):
-    try:
-        import psycopg2
-        test_conn = psycopg2.connect(os.getenv('DATABASE_URL'), connect_timeout=2)
-        test_conn.close()
-        DATABASES = {'default': db_config}
-    except Exception as db_err:
-        print(f"⚠️ PostgreSQL connection failed ({db_err}). Auto-switching to persistent SQLite...")
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
+# Database configuration (PostgreSQL in production when DATABASE_URL is set, SQLite for local development)
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 else:
-    DATABASES = {'default': db_config}
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
