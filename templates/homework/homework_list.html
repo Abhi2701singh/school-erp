@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="row g-4">
-    {% if user.is_teacher_user or user.is_school_admin %}
+    {% if user.role == 'TEACHER' or user.role == 'SCHOOL_ADMIN' or user.role == 'PRINCIPAL' or user.is_superuser or user.is_staff or user.is_teacher_user or user.is_school_admin %}
     <div class="col-12 col-lg-5">
         <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus text-primary me-2"></i> Post Homework Assignment</h5>
@@ -44,7 +44,7 @@
     </div>
     {% endif %}
 
-    <div class="{% if user.is_teacher_user or user.is_school_admin %}col-12 col-lg-7{% else %}col-12{% endif %}">
+    <div class="{% if user.role == 'TEACHER' or user.role == 'SCHOOL_ADMIN' or user.role == 'PRINCIPAL' or user.is_superuser or user.is_staff or user.is_teacher_user or user.is_school_admin %}col-12 col-lg-7{% else %}col-12{% endif %}">
         <div class="card card-custom p-3 p-sm-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold m-0"><i class="fa-solid fa-book-bookmark text-success me-2"></i> Assigned Homework Directory</h5>
@@ -88,10 +88,11 @@
                             </div>
                             <div>
                                 <div class="fw-bold text-dark" style="font-size: 0.92rem;">
-                                    Teacher: {{ hw.created_by.get_full_name|default:hw.created_by.username }}
+                                    Teacher: {% if hw.created_by %}{{ hw.created_by.get_full_name|default:hw.created_by.username }}{% else %}Assigned Teacher{% endif %}
                                 </div>
                                 <small class="text-muted">
-                                    Role: {{ hw.created_by.get_role_display }}
+                                    Role: {{ hw.created_by.get_role_display|default:"Teacher" }}
+                                    {% if hw.created_by.teacher_profile %} • {{ hw.created_by.teacher_profile.qualification }}{% endif %}
                                 </small>
                             </div>
                         </div>

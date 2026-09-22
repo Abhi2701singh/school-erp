@@ -6,9 +6,14 @@ from homework.forms import HomeworkForm, StudyMaterialForm
 
 @login_required
 def homework_list_view(request):
-    homeworks = Homework.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'created_by')
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
 
-    if request.method == 'POST' and (request.user.is_teacher_user() or request.user.is_school_admin()):
+    if is_super and not request.school:
+        homeworks = Homework.all_objects.all().select_related('class_level', 'section', 'subject', 'created_by')
+    else:
+        homeworks = Homework.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'created_by')
+
+    if request.method == 'POST' and (request.user.is_teacher_user() or request.user.is_school_admin() or is_super):
         form = HomeworkForm(request.POST, request.FILES, school=request.school)
         if form.is_valid():
             hw = form.save(commit=False)
@@ -25,8 +30,13 @@ def homework_list_view(request):
 
 @login_required
 def homework_delete_view(request, pk):
-    hw = get_object_or_404(Homework, pk=pk, school=request.school)
-    if not (request.user.is_teacher_user() or request.user.is_school_admin() or request.user.is_super_admin()):
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if is_super and not request.school:
+        hw = get_object_or_404(Homework.all_objects, pk=pk)
+    else:
+        hw = get_object_or_404(Homework, pk=pk, school=request.school)
+
+    if not (request.user.is_teacher_user() or request.user.is_school_admin() or is_super):
         messages.error(request, "Permission denied.")
         return redirect('homework_list')
 
@@ -41,9 +51,14 @@ def homework_delete_view(request, pk):
 
 @login_required
 def study_material_list_view(request):
-    materials = StudyMaterial.objects.filter(school=request.school).select_related('class_level', 'subject', 'uploaded_by')
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
 
-    if request.method == 'POST' and (request.user.is_teacher_user() or request.user.is_school_admin()):
+    if is_super and not request.school:
+        materials = StudyMaterial.all_objects.all().select_related('class_level', 'subject', 'uploaded_by')
+    else:
+        materials = StudyMaterial.objects.filter(school=request.school).select_related('class_level', 'subject', 'uploaded_by')
+
+    if request.method == 'POST' and (request.user.is_teacher_user() or request.user.is_school_admin() or is_super):
         form = StudyMaterialForm(request.POST, request.FILES, school=request.school)
         if form.is_valid():
             sm = form.save(commit=False)
@@ -60,8 +75,13 @@ def study_material_list_view(request):
 
 @login_required
 def study_material_delete_view(request, pk):
-    sm = get_object_or_404(StudyMaterial, pk=pk, school=request.school)
-    if not (request.user.is_teacher_user() or request.user.is_school_admin() or request.user.is_super_admin()):
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if is_super and not request.school:
+        sm = get_object_or_404(StudyMaterial.all_objects, pk=pk)
+    else:
+        sm = get_object_or_404(StudyMaterial, pk=pk, school=request.school)
+
+    if not (request.user.is_teacher_user() or request.user.is_school_admin() or is_super):
         messages.error(request, "Permission denied.")
         return redirect('study_material_list')
 
@@ -72,4 +92,5 @@ def study_material_delete_view(request, pk):
         return redirect('study_material_list')
 
     return render(request, 'homework/study_material_confirm_delete.html', {'material': sm})
+
 

@@ -98,7 +98,10 @@
                             <strong>{{ hw.title }}</strong>
                             <div class="small text-muted">{{ hw.class_level.name }}-{{ hw.section.name }} ({{ hw.subject.name }})</div>
                         </div>
-                        <span class="badge bg-light text-dark border">Due: {{ hw.due_date|date:"d M" }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light text-dark border">Due: {{ hw.due_date|date:"d M" }}</span>
+                            <a href="{% url 'homework_delete' hw.id %}" class="btn btn-sm btn-outline-danger py-0 px-2" title="Delete Homework"><i class="fa-solid fa-trash-can"></i></a>
+                        </div>
                     </li>
                 {% empty %}
                     <li class="list-group-item px-0 text-muted text-center py-4">No recent homework created.</li>

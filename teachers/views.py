@@ -85,3 +85,28 @@ def teacher_edit_view(request, pk):
         form = TeacherForm(instance=teacher, initial=initial, school=request.school)
 
     return render(request, 'teachers/teacher_form.html', {'form': form, 'title': f'Edit Teacher - {teacher.user.get_full_name()}'})
+
+
+@login_required
+def teacher_delete_view(request, pk):
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if not (request.user.is_school_admin() or is_super):
+        messages.error(request, "Permission denied.")
+        return redirect('teacher_list')
+
+    if is_super and not request.school:
+        teacher = get_object_or_404(Teacher.all_objects, pk=pk)
+    else:
+        teacher = get_object_or_404(Teacher, pk=pk, school=request.school)
+
+    if request.method == 'POST':
+        teacher_name = teacher.user.get_full_name() or teacher.user.username
+        user_account = teacher.user
+        teacher.delete()
+        if user_account:
+            user_account.delete()
+        messages.success(request, f"Teacher '{teacher_name}' deleted successfully.")
+        return redirect('teacher_list')
+
+    return render(request, 'teachers/teacher_confirm_delete.html', {'teacher': teacher})
+
