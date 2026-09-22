@@ -69,8 +69,8 @@
                                     <i class="fa-solid fa-paperclip me-1"></i> File
                                 </a>
                             {% endif %}
-                            {% if user.is_teacher_user or user.is_school_admin or user.is_super_admin %}
-                                <a href="{% url 'homework_delete' hw.id %}" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Homework Assignment">
+                            {% if user.role == 'TEACHER' or user.role == 'SCHOOL_ADMIN' or user.role == 'PRINCIPAL' or user.is_superuser or user.is_staff or user.is_teacher_user or user.is_school_admin %}
+                                <a href="{% url 'homework_delete' hw.id %}" class="btn btn-sm btn-danger text-white text-nowrap shadow-sm" title="Delete Homework Assignment">
                                     <i class="fa-solid fa-trash-can me-1"></i> Delete
                                 </a>
                             {% endif %}
@@ -83,24 +83,16 @@
                     <!-- Teacher info & dates footer -->
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 pt-2 border-top bg-light p-2 rounded-2">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-chalkboard-user text-primary fs-6"></i>
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                            </div>
                             <div>
-                                <strong class="text-dark">
-                                    {% if hw.created_by.get_full_name %}
-                                        {{ hw.created_by.get_full_name }}
-                                    {% else %}
-                                        {{ hw.created_by.username }}
-                                    {% endif %}
-                                </strong>
-                                <span class="badge bg-info-subtle text-info-emphasis border ms-1">
-                                    {% if hw.created_by.is_teacher_user %}
-                                        Teacher
-                                    {% elif hw.created_by.is_school_admin %}
-                                        School Admin
-                                    {% else %}
-                                        Faculty
-                                    {% endif %}
-                                </span>
+                                <div class="fw-bold text-dark" style="font-size: 0.92rem;">
+                                    Teacher: {{ hw.created_by.get_full_name|default:hw.created_by.username }}
+                                </div>
+                                <small class="text-muted">
+                                    Role: {{ hw.created_by.get_role_display }}
+                                </small>
                             </div>
                         </div>
                         <div class="text-end">

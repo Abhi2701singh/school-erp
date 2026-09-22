@@ -43,11 +43,17 @@ class CloudflareMiddleware:
                 status=500
             )
 
-        # 4. Attach Ray ID to response for edge debugging
-        if request.cf_ray and response and hasattr(response, '__setitem__'):
+        # 4. Attach Ray ID and No-Cache headers to response for instant freshness
+        if response and hasattr(response, '__setitem__'):
             try:
-                response['X-CF-Ray'] = request.cf_ray
+                if request.cf_ray:
+                    response['X-CF-Ray'] = request.cf_ray
+                if response.get('Content-Type', '').startswith('text/html'):
+                    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+                    response['Pragma'] = 'no-cache'
+                    response['Expires'] = '0'
             except Exception:
                 pass
 
         return response
+
