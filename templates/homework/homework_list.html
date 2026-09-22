@@ -46,26 +46,65 @@
 
     <div class="{% if user.is_teacher_user or user.is_school_admin %}col-12 col-lg-7{% else %}col-12{% endif %}">
         <div class="card card-custom p-3 p-sm-4">
-            <h5 class="fw-bold mb-3"><i class="fa-solid fa-book-bookmark text-success me-2"></i> Assigned Homework Directory</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-book-bookmark text-success me-2"></i> Assigned Homework Directory</h5>
+                <span class="badge bg-secondary">{{ homeworks|length }} Total</span>
+            </div>
+            
             <div class="d-flex flex-column gap-3">
                 {% for hw in homeworks %}
-                <div class="p-3 border rounded-3 bg-light">
-                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1 mb-2">
-                        <h6 class="fw-bold m-0 text-primary">{{ hw.title }}</h6>
-                        <span class="badge bg-primary">{{ hw.class_level.name }} - {{ hw.section.name }} | {{ hw.subject.name }}</span>
-                    </div>
-                    <p class="mb-2 text-dark">{{ hw.description|linebreaks }}</p>
-                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-                        <small class="text-muted"><i class="fa-solid fa-calendar me-1"></i> Due: <strong>{{ hw.due_date }}</strong> | By: {{ hw.created_by.get_full_name|default:hw.created_by.username }}</small>
-                        <div class="d-flex gap-2">
+                <div class="p-3 border rounded-3 bg-white shadow-sm">
+                    <!-- Title & Badges & Actions -->
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-2 pb-2 border-bottom">
+                        <div>
+                            <h6 class="fw-bold m-0 text-primary fs-6">{{ hw.title }}</h6>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                <span class="badge bg-primary"><i class="fa-solid fa-layer-group me-1"></i> Class {{ hw.class_level.name }} - {{ hw.section.name }}</span>
+                                <span class="badge bg-success"><i class="fa-solid fa-book me-1"></i> {{ hw.subject.name }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
                             {% if hw.attachment %}
-                                <a href="{{ hw.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank"><i class="fa-solid fa-download me-1"></i> Download</a>
+                                <a href="{{ hw.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank">
+                                    <i class="fa-solid fa-paperclip me-1"></i> File
+                                </a>
                             {% endif %}
-                            {% if user.is_teacher_user or user.is_school_admin %}
-                                <a href="{% url 'homework_delete' hw.id %}" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Assignment">
+                            {% if user.is_teacher_user or user.is_school_admin or user.is_super_admin %}
+                                <a href="{% url 'homework_delete' hw.id %}" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Homework Assignment">
                                     <i class="fa-solid fa-trash-can me-1"></i> Delete
                                 </a>
                             {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="mb-3 text-dark fs-7" style="white-space: pre-line;">{{ hw.description }}</p>
+
+                    <!-- Teacher info & dates footer -->
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 pt-2 border-top bg-light p-2 rounded-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-chalkboard-user text-primary fs-6"></i>
+                            <div>
+                                <strong class="text-dark">
+                                    {% if hw.created_by.get_full_name %}
+                                        {{ hw.created_by.get_full_name }}
+                                    {% else %}
+                                        {{ hw.created_by.username }}
+                                    {% endif %}
+                                </strong>
+                                <span class="badge bg-info-subtle text-info-emphasis border ms-1">
+                                    {% if hw.created_by.is_teacher_user %}
+                                        Teacher
+                                    {% elif hw.created_by.is_school_admin %}
+                                        School Admin
+                                    {% else %}
+                                        Faculty
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-danger-subtle text-danger border"><i class="fa-solid fa-clock me-1"></i> Due: {{ hw.due_date|date:"d M Y" }}</span>
                         </div>
                     </div>
                 </div>

@@ -54,9 +54,14 @@
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-book-open text-primary me-2"></i> Homework & Assignments</h5>
             <ul class="list-group list-group-flush">
                 {% for hw in homeworks %}
-                    <li class="list-group-item px-0">
-                        <div class="fw-semibold">{{ hw.title }} ({{ hw.subject.name }})</div>
-                        <small class="text-muted">Due Date: {{ hw.due_date }}</small>
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">{{ hw.title }} <span class="badge bg-light text-dark border">{{ hw.subject.name }}</span></div>
+                            <small class="text-muted">
+                                <i class="fa-solid fa-chalkboard-user me-1 text-primary"></i> By: <strong>{{ hw.created_by.get_full_name|default:hw.created_by.username }}</strong>
+                            </small>
+                        </div>
+                        <span class="badge bg-danger-subtle text-danger border">Due: {{ hw.due_date|date:"d M" }}</span>
                     </li>
                 {% empty %}
                     <li class="list-group-item px-0 text-muted">No pending homework.</li>
