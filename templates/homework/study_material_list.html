@@ -47,7 +47,7 @@
                             <th>Subject</th>
                             <th>Title</th>
                             <th>Uploaded</th>
-                            <th class="text-end">Download</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,7 +61,12 @@
                             </td>
                             <td class="text-nowrap"><small>{{ mat.uploaded_at|date:"d M Y" }}</small></td>
                             <td class="text-end text-nowrap">
-                                <a href="{{ mat.file.url }}" class="btn btn-sm btn-outline-danger" target="_blank"><i class="fa-solid fa-file-pdf me-1"></i> Open PDF</a>
+                                <a href="{{ mat.file.url }}" class="btn btn-sm btn-outline-primary me-1" target="_blank"><i class="fa-solid fa-file-pdf me-1"></i> PDF</a>
+                                {% if user.is_teacher_user or user.is_school_admin %}
+                                    <a href="{% url 'study_material_delete' mat.id %}" class="btn btn-sm btn-outline-danger" title="Delete Material">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% empty %}

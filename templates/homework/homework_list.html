@@ -56,10 +56,17 @@
                     </div>
                     <p class="mb-2 text-dark">{{ hw.description|linebreaks }}</p>
                     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-                        <small class="text-muted"><i class="fa-solid fa-calendar me-1"></i> Due: <strong>{{ hw.due_date }}</strong> | By: {{ hw.created_by.get_full_name }}</small>
-                        {% if hw.attachment %}
-                            <a href="{{ hw.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank"><i class="fa-solid fa-download me-1"></i> Download</a>
-                        {% endif %}
+                        <small class="text-muted"><i class="fa-solid fa-calendar me-1"></i> Due: <strong>{{ hw.due_date }}</strong> | By: {{ hw.created_by.get_full_name|default:hw.created_by.username }}</small>
+                        <div class="d-flex gap-2">
+                            {% if hw.attachment %}
+                                <a href="{{ hw.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank"><i class="fa-solid fa-download me-1"></i> Download</a>
+                            {% endif %}
+                            {% if user.is_teacher_user or user.is_school_admin %}
+                                <a href="{% url 'homework_delete' hw.id %}" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Assignment">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 {% empty %}
