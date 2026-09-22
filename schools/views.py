@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from accounts.models import User
 from schools.models import School, AcademicSession, Notice
 from schools.forms import SchoolForm, AcademicSessionForm, NoticeForm
@@ -192,16 +193,29 @@ def session_delete_view(request, pk):
 
 @login_required
 def notice_list_view(request):
-    if request.user.is_super_admin():
+    user = request.user
+    if user.is_super_admin():
         notices = Notice.objects.all()
+    elif user.is_teacher_user():
+        notices = Notice.objects.filter(school=request.school, is_active=True).filter(Q(target_role='ALL') | Q(target_role='TEACHER'))
+    elif user.is_student_user():
+        notices = Notice.objects.filter(school=request.school, is_active=True).filter(Q(target_role='ALL') | Q(target_role='STUDENT'))
+    elif user.is_parent_user():
+        notices = Notice.objects.filter(school=request.school, is_active=True).filter(Q(target_role='ALL') | Q(target_role='PARENT'))
     else:
-        notices = Notice.objects.filter(school=request.school, is_active=True)
+        # School Admin / Principal: see all notices of this school
+        notices = Notice.objects.filter(school=request.school)
 
-    if request.method == 'POST' and request.user.is_school_admin():
+    if request.method == 'POST':
+        if not (user.is_school_admin() or user.is_super_admin()):
+            messages.error(request, "Permission denied. Only School Admin/Principal can post notices.")
+            return redirect('notice_list')
+
         form = NoticeForm(request.POST, request.FILES)
         if form.is_valid():
             notice = form.save(commit=False)
             notice.school = request.school
+            notice.is_active = True
             notice.save()
             messages.success(request, "Notice published successfully!")
             return redirect('notice_list')

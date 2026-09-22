@@ -72,11 +72,11 @@ class AcademicSessionForm(forms.ModelForm):
 class NoticeForm(forms.ModelForm):
     class Meta:
         model = Notice
-        fields = ['title', 'content', 'target_role', 'attachment', 'is_active']
+        fields = ['title', 'content', 'target_role', 'attachment']
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Diwali Vacation Notice'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Write complete notice details here...'}),
             'target_role': forms.Select(attrs={'class': 'form-select'}),
             'attachment': forms.FileInput(attrs={'class': 'form-control'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+

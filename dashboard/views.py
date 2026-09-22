@@ -78,7 +78,7 @@ def dashboard_router_view(request):
         assigned_subjects = teacher_profile.assigned_subjects.all() if teacher_profile else []
         timetables = Timetable.objects.filter(teacher_user=user)
         homeworks = Homework.objects.filter(created_by=user)[:5]
-        notices = Notice.objects.filter(Q(target_role='ALL') | Q(target_role='TEACHER'), is_active=True)[:5]
+        notices = Notice.objects.filter(school=request.school, is_active=True).filter(Q(target_role='ALL') | Q(target_role='TEACHER'))[:5]
 
         return render(request, 'dashboard/teacher.html', {
             'teacher': teacher_profile,
@@ -105,7 +105,7 @@ def dashboard_router_view(request):
 
         homeworks = Homework.objects.filter(class_level=student.current_class, section=student.current_section)[:5]
         study_materials = StudyMaterial.objects.filter(class_level=student.current_class)[:5]
-        notices = Notice.objects.filter(Q(target_role='ALL') | Q(target_role='STUDENT'), is_active=True)[:5]
+        notices = Notice.objects.filter(school=request.school, is_active=True).filter(Q(target_role='ALL') | Q(target_role='STUDENT'))[:5]
         marks = student.marks.select_related('exam', 'subject')[:10]
         timetables = Timetable.objects.filter(class_level=student.current_class, section=student.current_section)
 
@@ -125,7 +125,7 @@ def dashboard_router_view(request):
     if user.is_parent_user():
         parent_profile = getattr(user, 'parent_profile', None)
         children = parent_profile.students.all() if parent_profile else []
-        notices = Notice.objects.filter(Q(target_role='ALL') | Q(target_role='PARENT'), is_active=True)[:5]
+        notices = Notice.objects.filter(school=request.school, is_active=True).filter(Q(target_role='ALL') | Q(target_role='PARENT'))[:5]
 
         return render(request, 'dashboard/parent.html', {
             'parent': parent_profile,

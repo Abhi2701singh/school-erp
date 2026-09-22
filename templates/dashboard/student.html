@@ -96,8 +96,63 @@
         </div>
     </div>
 </div>
+
+<!-- Notices & Study Materials Row -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-3 p-sm-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-bullhorn text-warning me-2"></i> School Notices</h5>
+                <a href="{% url 'notice_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="d-flex flex-column gap-3">
+                {% for notice in notices %}
+                    <div class="p-3 border rounded-3 bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="fw-bold m-0 text-primary">{{ notice.title }}</h6>
+                            <span class="badge bg-secondary">{{ notice.get_target_role_display }}</span>
+                        </div>
+                        <p class="mb-2 text-secondary small">{{ notice.content|truncatechars:120 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted"><i class="fa-solid fa-calendar me-1"></i> {{ notice.created_at|date:"d M Y, h:i A" }}</small>
+                            {% if notice.attachment %}
+                                <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-link p-0 text-decoration-none" target="_blank"><i class="fa-solid fa-paperclip me-1"></i> Attachment</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-muted text-center py-4">No announcements published for students.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-3 p-sm-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-file-pdf text-danger me-2"></i> Study Materials & Notes</h5>
+                <a href="{% url 'study_material_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for sm in study_materials %}
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ sm.title }}</strong>
+                            <div class="small text-muted">{{ sm.subject.name }}</div>
+                        </div>
+                        {% if sm.file %}
+                            <a href="{{ sm.file.url }}" class="btn btn-sm btn-outline-danger" target="_blank"><i class="fa-solid fa-download me-1"></i> Download</a>
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item px-0 text-muted text-center py-4">No study materials uploaded.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
 {% else %}
     <div class="alert alert-warning card-custom border-0">Student profile not linked to your user account.</div>
 {% endif %}
 {% endblock %}
+
 
