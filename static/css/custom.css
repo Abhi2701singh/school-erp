@@ -780,3 +780,14 @@ body {
         color: #000000 !important;
     }
 }
+
+/* Additional helper utility classes for Mockup Match */
+.hover-bg-light {
+    transition: background-color 0.2s ease;
+}
+.hover-bg-light:hover {
+    background-color: #f8fafc;
+}
+.border-bottom-subtle {
+    border-bottom: 1px solid #f1f5f9;
+}
