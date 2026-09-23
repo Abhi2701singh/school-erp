@@ -69,11 +69,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'school_erp.wsgi.application'
 
-# Database configuration (PostgreSQL in production when DATABASE_URL is set, SQLite for local development)
-if os.getenv('DATABASE_URL'):
+# Database configuration (Resilient PostgreSQL with automatic SQLite fallback if host is unreachable or suspended)
+DATABASE_URL = os.getenv('DATABASE_URL')
+USE_POSTGRES = False
+
+if DATABASE_URL:
+    try:
+        from urllib.parse import urlparse
+        import socket
+        parsed_db = urlparse(DATABASE_URL)
+        db_hostname = parsed_db.hostname
+        if db_hostname:
+            socket.gethostbyname(db_hostname)
+            USE_POSTGRES = True
+    except Exception as e:
+        print(f"[SETTINGS WARNING] DATABASE_URL host '{parsed_db.hostname if 'parsed_db' in locals() else 'unknown'}' cannot be reached ({e}). Falling back to local SQLite database.")
+        USE_POSTGRES = False
+
+if USE_POSTGRES:
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.getenv('DATABASE_URL'),
+            default=DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
         )
