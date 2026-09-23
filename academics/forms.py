@@ -50,6 +50,7 @@ class TimetableForm(forms.ModelForm):
             self.fields['section'].queryset = Section.objects.filter(school=school)
             self.fields['subject'].queryset = Subject.objects.filter(school=school)
             self.fields['teacher_user'].queryset = User.objects.filter(school=school, role=User.Roles.TEACHER)
+            self.fields['teacher_user'].label_from_instance = lambda obj: f"{obj.get_full_name() or obj.username}"
 
     class Meta:
         model = Timetable
@@ -60,7 +61,8 @@ class TimetableForm(forms.ModelForm):
             'subject': forms.Select(attrs={'class': 'form-select'}),
             'teacher_user': forms.Select(attrs={'class': 'form-select'}),
             'day': forms.Select(attrs={'class': 'form-select'}),
-            'period_number': forms.NumberInput(attrs={'class': 'form-control'}),
+            'period_number': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 9}),
             'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         }
+

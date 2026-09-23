@@ -113,36 +113,116 @@ def subject_delete_view(request, pk):
 
 @login_required
 def timetable_view(request):
-    timetables = Timetable.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'teacher_user')
-    class_id = request.GET.get('class_id')
-    section_id = request.GET.get('section_id')
+    classes = Class.objects.filter(school=request.school)
+    sections = Section.objects.filter(school=request.school)
 
-    if class_id:
-        timetables = timetables.filter(class_level_id=class_id)
-    if section_id:
-        timetables = timetables.filter(section_id=section_id)
+    selected_class_id = request.GET.get('class_id')
+    selected_section_id = request.GET.get('section_id')
 
+    # Auto-resolve class & section if not provided
+    if request.user.is_student_user() and hasattr(request.user, 'student_profile'):
+        student = request.user.student_profile
+        if not selected_class_id and student.current_class_id:
+            selected_class_id = str(student.current_class_id)
+        if not selected_section_id and student.current_section_id:
+            selected_section_id = str(student.current_section_id)
+    elif request.user.is_parent_user():
+        first_child = request.user.children.first()
+        if first_child:
+            if not selected_class_id and first_child.current_class_id:
+                selected_class_id = str(first_child.current_class_id)
+            if not selected_section_id and first_child.current_section_id:
+                selected_section_id = str(first_child.current_section_id)
+
+    if not selected_class_id and classes.exists():
+        first_tt = Timetable.objects.filter(school=request.school).first()
+        if first_tt:
+            selected_class_id = str(first_tt.class_level_id)
+            if not selected_section_id:
+                selected_section_id = str(first_tt.section_id)
+        else:
+            selected_class_id = str(classes.first().id)
+
+    if selected_class_id and not selected_section_id:
+        first_sec = sections.filter(class_level_id=selected_class_id).first()
+        if first_sec:
+            selected_section_id = str(first_sec.id)
+
+    # Filter timetables for the selected class and section
+    timetables_qs = Timetable.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'teacher_user')
+    if selected_class_id:
+        timetables_qs = timetables_qs.filter(class_level_id=selected_class_id)
+    if selected_section_id:
+        timetables_qs = timetables_qs.filter(section_id=selected_section_id)
+
+    selected_class_obj = None
+    selected_section_obj = None
+    if selected_class_id:
+        selected_class_obj = classes.filter(id=selected_class_id).first()
+    if selected_section_id:
+        selected_section_obj = sections.filter(id=selected_section_id).first()
+
+    # Form handling (Add Timetable Period)
     if request.method == 'POST' and request.user.is_school_admin():
         form = TimetableForm(request.POST, school=request.school)
         if form.is_valid():
             tt = form.save(commit=False)
             tt.school = request.school
             tt.save()
-            messages.success(request, "Timetable period added.")
-            return redirect('timetable')
+            messages.success(request, f"Timetable period for '{tt.subject.name}' added successfully.")
+            return redirect(f"/academics/timetable/?class_id={tt.class_level_id}&section_id={tt.section_id}")
     else:
-        form = TimetableForm(school=request.school)
+        initial_data = {}
+        if selected_class_id:
+            initial_data['class_level'] = selected_class_id
+        if selected_section_id:
+            initial_data['section'] = selected_section_id
+        form = TimetableForm(school=request.school, initial=initial_data)
 
-    classes = Class.objects.filter(school=request.school)
-    sections = Section.objects.filter(school=request.school)
+    DAYS_LIST = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    MORNING_PERIODS = [1, 2, 3, 4]
+    AFTERNOON_PERIODS = [5, 6, 7, 8, 9]
+
+    # Map existing timetables by (day, period_number)
+    tt_map = {}
+    for tt in timetables_qs:
+        tt_map[(tt.day, tt.period_number)] = tt
+
+    grid_rows = []
+    for day in DAYS_LIST:
+        morning_cells = []
+        for p in MORNING_PERIODS:
+            morning_cells.append({
+                'period': p,
+                'item': tt_map.get((day, p)),
+            })
+
+        afternoon_cells = []
+        for p in AFTERNOON_PERIODS:
+            afternoon_cells.append({
+                'period': p,
+                'item': tt_map.get((day, p)),
+            })
+
+        grid_rows.append({
+            'day': day,
+            'day_display': day.upper(),
+            'morning': morning_cells,
+            'afternoon': afternoon_cells,
+        })
 
     return render(request, 'academics/timetable.html', {
-        'timetables': timetables,
+        'grid_rows': grid_rows,
+        'timetables': timetables_qs,
         'form': form,
         'classes': classes,
         'sections': sections,
-        'selected_class': class_id,
-        'selected_section': section_id,
+        'selected_class': selected_class_id,
+        'selected_section': selected_section_id,
+        'selected_class_obj': selected_class_obj,
+        'selected_section_obj': selected_section_obj,
+        'morning_periods': MORNING_PERIODS,
+        'afternoon_periods': AFTERNOON_PERIODS,
     })
 
 
@@ -153,9 +233,13 @@ def timetable_delete_view(request, pk):
         return redirect('timetable')
 
     tt = get_object_or_404(Timetable, pk=pk, school=request.school)
-    if request.method == 'POST':
+    class_id = tt.class_level_id
+    section_id = tt.section_id
+
+    if request.method == 'POST' or request.GET.get('confirm') == '1':
         tt.delete()
-        messages.success(request, "Timetable period deleted.")
-        return redirect('timetable')
+        messages.success(request, "Timetable period deleted successfully.")
+        return redirect(f"/academics/timetable/?class_id={class_id}&section_id={section_id}")
 
     return render(request, 'academics/timetable_confirm_delete.html', {'timetable': tt})
+
