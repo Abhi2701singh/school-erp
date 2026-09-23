@@ -5,12 +5,17 @@
 
 {% block content %}
 <div class="card card-custom p-3 p-sm-4 mb-4">
-    <h4 class="fw-bold mb-3"><i class="fa-solid fa-award text-primary me-2"></i> Enter Subject Exam Marks</h4>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 pb-3 border-bottom">
+        <div>
+            <h3 class="fw-bold m-0 text-dark"><i class="fa-solid fa-award text-primary me-2"></i> Exam Marks Entry</h3>
+            <p class="text-muted m-0 mt-1" style="font-size: 0.9rem;">Enter and evaluate student examination scores</p>
+        </div>
+    </div>
     
     <form method="get" class="row g-2 g-sm-3">
         <div class="col-12 col-sm-6 col-md-3">
-            <label class="form-label fw-semibold mb-1">Select Exam</label>
-            <select name="exam_id" class="form-select" required>
+            <label class="form-label fw-semibold mb-1 small text-muted">Exam Term</label>
+            <select name="exam_id" class="form-select form-select-sm rounded-pill" required onchange="this.form.submit()">
                 <option value="">-- Select Exam --</option>
                 {% for e in exams %}
                     <option value="{{ e.id }}" {% if selected_exam and selected_exam.id == e.id %}selected{% endif %}>{{ e.name }} ({{ e.class_level.name }})</option>
@@ -18,8 +23,8 @@
             </select>
         </div>
         <div class="col-12 col-sm-6 col-md-3">
-            <label class="form-label fw-semibold mb-1">Select Subject</label>
-            <select name="subject_id" class="form-select" required>
+            <label class="form-label fw-semibold mb-1 small text-muted">Subject</label>
+            <select name="subject_id" class="form-select form-select-sm rounded-pill" required onchange="this.form.submit()">
                 <option value="">-- Select Subject --</option>
                 {% for s in subjects %}
                     <option value="{{ s.id }}" {% if selected_subject and selected_subject.id == s.id %}selected{% endif %}>{{ s.name }} (Max: {{ s.max_marks }})</option>
@@ -27,8 +32,8 @@
             </select>
         </div>
         <div class="col-12 col-sm-6 col-md-3">
-            <label class="form-label fw-semibold mb-1">Select Section</label>
-            <select name="section_id" class="form-select" required>
+            <label class="form-label fw-semibold mb-1 small text-muted">Section</label>
+            <select name="section_id" class="form-select form-select-sm rounded-pill" required onchange="this.form.submit()">
                 <option value="">-- Select Section --</option>
                 {% for sec in sections %}
                     <option value="{{ sec.id }}" {% if selected_section == sec.id|stringformat:"i" %}selected{% endif %}>{{ sec.class_level.name }} - {{ sec.name }}</option>
@@ -36,7 +41,7 @@
             </select>
         </div>
         <div class="col-12 col-sm-6 col-md-3 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-list-check me-1"></i> Load Students</button>
+            <button type="submit" class="btn btn-primary btn-sm rounded-pill w-100 py-2"><i class="fa-solid fa-arrows-rotate me-1"></i> Load Students</button>
         </div>
     </form>
 </div>

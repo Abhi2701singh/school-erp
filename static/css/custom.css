@@ -1,28 +1,40 @@
 /* ==========================================================================
-   EduManage ERP - Responsive Custom Stylesheet
+   EduManage ERP - Ultra-Modern Responsive Stylesheet
+   Design system inspired by modern dashboard aesthetics
    ========================================================================== */
 
 :root {
     --sidebar-width: 260px;
-    --primary-color: #4f46e5;
-    --primary-hover: #4338ca;
-    --bg-body: #f8fafc;
-    --sidebar-bg: #0f172a;
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-subtle: #eff6ff;
+    --bg-body: #f1f5f9;
+    --sidebar-bg: #0b132b;
     --sidebar-color: #94a3b8;
-    --sidebar-active-bg: #1e293b;
+    --sidebar-hover-bg: #1e293b;
+    --sidebar-active-bg: #2563eb;
     --card-border-radius: 16px;
     --top-navbar-height: 70px;
+    
+    /* Vibrant Status Palette */
+    --color-blue: #3b82f6;
+    --color-green: #10b981;
+    --color-teal: #06b6d4;
+    --color-amber: #f59e0b;
+    --color-rose: #f43f5e;
+    --color-purple: #8b5cf6;
 }
 
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     background-color: var(--bg-body);
-    color: #334155;
+    color: #1e293b;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* ==========================================================================
-   1. Sidebar & Off-Canvas Drawer (Responsive)
+   1. Sidebar Navigation (Deep Midnight Navy with Royal Blue Active Pill)
    ========================================================================== */
 
 #sidebar {
@@ -36,12 +48,12 @@ body {
     z-index: 1050;
     overflow-y: auto;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
 }
 
 #sidebar .brand-header {
     padding: 1.25rem 1.25rem;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -49,22 +61,23 @@ body {
 }
 
 #sidebar .brand-logo {
-    width: 38px;
-    height: 38px;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: white;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 #sidebar .nav-section-title {
-    padding: 0.85rem 1.25rem 0.4rem;
-    font-size: 0.7rem;
+    padding: 1.1rem 1.25rem 0.4rem;
+    font-size: 0.68rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -73,7 +86,7 @@ body {
 
 #sidebar ul.nav-links {
     list-style: none;
-    padding: 0 0.75rem 1.5rem;
+    padding: 0 0.85rem 2rem;
     margin: 0;
 }
 
@@ -81,20 +94,27 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0.65rem 0.9rem;
+    padding: 0.68rem 1rem;
     color: var(--sidebar-color);
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     margin-bottom: 4px;
 }
 
-#sidebar ul.nav-links li a:hover,
+#sidebar ul.nav-links li a:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: #ffffff;
+    transform: translateX(3px);
+}
+
 #sidebar ul.nav-links li a.active {
     background-color: var(--sidebar-active-bg);
     color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
 }
 
 #sidebar ul.nav-links li a i {
@@ -111,7 +131,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(15, 23, 42, 0.6);
+    background-color: rgba(11, 19, 43, 0.65);
     backdrop-filter: blur(4px);
     z-index: 1040;
     opacity: 0;
@@ -124,7 +144,6 @@ body {
     visibility: visible;
 }
 
-/* Close button inside sidebar header (mobile only) */
 .sidebar-close-btn {
     background: transparent;
     border: none;
@@ -182,13 +201,14 @@ body {
     height: var(--top-navbar-height);
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
-    padding: 0 1.5rem;
+    padding: 0 1.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 1000;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 @media (max-width: 575.98px) {
@@ -199,7 +219,7 @@ body {
 }
 
 .navbar-toggle-btn {
-    background: #f1f5f9;
+    background: #f8fafc;
     border: 1px solid #e2e8f0;
     color: #334155;
     font-size: 1.1rem;
@@ -215,41 +235,132 @@ body {
 }
 
 .tenant-badge {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: #f8fafc;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
     font-weight: 600;
-    font-size: 0.82rem;
-    padding: 6px 12px;
+    font-size: 0.88rem;
+    padding: 7px 14px;
     border-radius: 20px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    max-width: 260px;
+    gap: 8px;
+    max-width: 280px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 @media (max-width: 575.98px) {
     .tenant-badge {
-        font-size: 0.75rem;
+        font-size: 0.78rem;
         padding: 4px 10px;
-        max-width: 150px;
+        max-width: 140px;
     }
 }
 
-.user-dropdown .user-avatar {
+/* Global Search Pill in Navbar */
+.global-search-wrapper {
+    position: relative;
+    max-width: 340px;
+    width: 100%;
+}
+
+.global-search-input {
+    border-radius: 24px !important;
+    padding-left: 36px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    font-size: 0.88rem !important;
+    height: 38px;
+    transition: all 0.2s ease;
+}
+
+.global-search-input:focus {
+    background: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+.global-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+/* Notification Button */
+.notif-btn {
     width: 38px;
     height: 38px;
     border-radius: 50%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    cursor: pointer;
+    position: relative;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.notif-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.notif-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+}
+
+/* User Profile Badge in Header */
+.user-profile-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px 4px 4px;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.user-profile-badge:hover {
+    background: #e2e8f0;
+}
+
+.user-avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #ffffff;
+    background: #2563eb;
     object-fit: cover;
-    background-color: #cbd5e1;
     flex-shrink: 0;
 }
 
-/* Dynamic Content Container */
+/* Content Container */
 .content-container {
-    padding: 1.75rem;
+    padding: 1.75rem 2rem;
     flex: 1;
     width: 100%;
 }
@@ -261,215 +372,396 @@ body {
 }
 
 /* ==========================================================================
-   3. Cards, Stat Cards & Containers
+   3. Cards & Modern Stat Cards (With Trend Badges)
    ========================================================================== */
 
 .card-custom {
     background: #ffffff;
     border-radius: var(--card-border-radius);
     border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.stat-card {
-    padding: 1.25rem;
+.stat-card-modern {
+    padding: 1.25rem 1.35rem;
     border-radius: var(--card-border-radius);
     background: #ffffff;
     border: 1px solid #e2e8f0;
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    align-items: flex-start;
+    gap: 1.1rem;
+    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.04);
     height: 100%;
+    position: relative;
+    transition: all 0.2s ease;
 }
 
-.stat-card h3 {
-    font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+.stat-card-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.08);
 }
 
-.stat-icon {
+.stat-icon-modern {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.35rem;
+    color: #ffffff;
     flex-shrink: 0;
 }
 
-@media (max-width: 575.98px) {
-    .stat-card {
-        padding: 1rem;
-        gap: 0.85rem;
-    }
-    .stat-icon {
-        width: 42px;
-        height: 42px;
-        font-size: 1.15rem;
-    }
+.stat-icon-blue { background: #3b82f6; }
+.stat-icon-green { background: #10b981; }
+.stat-icon-teal { background: #06b6d4; }
+.stat-icon-amber { background: #f59e0b; }
+.stat-icon-rose { background: #f43f5e; }
+.stat-icon-purple { background: #8b5cf6; }
+
+.stat-number {
+    font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.stat-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+/* Trend Badges (e.g. ↑ 12% / ↓ 2%) */
+.trend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+}
+
+.trend-up {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.trend-down {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Micro Stat Cards for Directory & Modules */
+.stat-micro-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.stat-micro-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: white;
+    flex-shrink: 0;
 }
 
 /* ==========================================================================
-   4. Tables & Scrollable Containers
+   4. Interactive Charts & Donut Overlay
+   ========================================================================== */
+
+.chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.chart-donut-wrapper {
+    position: relative;
+    width: 100%;
+    height: 220px;
+}
+
+.chart-donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+
+.chart-donut-center-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.chart-donut-center-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Custom Chart Legend Badges */
+.chart-legend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+.chart-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+/* ==========================================================================
+   5. Tables, Badges & Pagination
    ========================================================================== */
 
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 8px;
+    border-radius: 12px;
 }
 
 .table {
     margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
-.table-hover tbody tr:hover {
+.table thead th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.85rem 1rem;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 0.9rem 1rem;
+    font-size: 0.88rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table-hover tbody tr:hover td {
     background-color: #f8fafc;
 }
 
-.table th {
+/* Modern Pill Badges */
+.badge-pill-modern {
+    padding: 5px 12px;
+    border-radius: 20px;
     font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: #475569;
-    white-space: nowrap;
-    padding: 0.75rem 0.85rem;
-}
-
-.table td {
-    padding: 0.75rem 0.85rem;
-    font-size: 0.88rem;
-    vertical-align: middle;
-}
-
-/* Smooth custom scrollbars for table containers */
-.table-responsive::-webkit-scrollbar {
-    height: 6px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* ==========================================================================
-   5. Horizontally Scrollable Tab Navigation (Mobile Touch-Friendly)
-   ========================================================================== */
-
-.nav-pills-scrollable {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.25rem;
-    scrollbar-width: none; /* Firefox */
-}
-
-.nav-pills-scrollable::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-}
-
-.nav-pills-scrollable .nav-item {
-    flex: 0 0 auto;
-}
-
-.nav-pills-scrollable .nav-link {
-    white-space: nowrap;
-    border-radius: 10px;
-    padding: 0.55rem 1rem;
-    font-size: 0.88rem;
-    color: #475569;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-}
-
-.nav-pills-scrollable .nav-link.active {
-    background-color: var(--primary-color);
-    color: #ffffff;
-    border-color: var(--primary-color);
-}
-
-/* ==========================================================================
-   6. Touch-Friendly Elements & Form Controls
-   ========================================================================== */
-
-.btn {
-    border-radius: 10px;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 4px;
+}
+
+.badge-active { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-inactive { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+.badge-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.badge-paid { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-defaulter { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* Action Buttons */
+.btn-action-view {
+    padding: 4px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #2563eb;
+    color: #2563eb;
+    background: transparent;
+    text-decoration: none;
     transition: all 0.2s ease;
 }
 
-.btn-sm {
-    padding: 0.35rem 0.75rem;
-    font-size: 0.82rem;
-    border-radius: 8px;
+.btn-action-view:hover {
+    background: #2563eb;
+    color: #ffffff;
 }
 
-.btn-lg {
-    padding: 0.7rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 12px;
+/* Custom Pagination */
+.pagination-modern {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination-modern .page-link {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.pagination-modern .page-item.active .page-link {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+/* ==========================================================================
+   6. Attendance Selector Radio Pills
+   ========================================================================== */
+
+.attendance-pill-group {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.btn-attendance {
+    padding: 5px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-check:checked + .btn-attendance-present {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.btn-check:checked + .btn-attendance-absent {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+}
+
+.btn-check:checked + .btn-attendance-leave {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+/* ==========================================================================
+   7. Fee Receipts & Invoices (With Realistic PAID Stamp)
+   ========================================================================== */
+
+.receipt-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--card-border-radius);
+    padding: 1.75rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.paid-stamp {
+    position: absolute;
+    bottom: 80px;
+    right: 35px;
+    border: 3px solid #10b981;
+    color: #10b981;
+    font-weight: 900;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 8px;
+    letter-spacing: 0.15em;
+    transform: rotate(-10deg);
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   8. Buttons & Form Styling
+   ========================================================================== */
+
+.btn-primary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.55rem 1.15rem;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
 }
 
 .form-control, .form-select {
     border-radius: 10px;
     border: 1px solid #cbd5e1;
-    padding: 0.55rem 0.85rem;
+    padding: 0.6rem 0.9rem;
     font-size: 0.9rem;
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Action button groups inside table rows */
-.table-action-btns {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: flex-end;
-    white-space: nowrap;
-}
-
-/* ==========================================================================
-   7. Printable Documents (ID Card, Fee Receipt, Report Card)
-   ========================================================================== */
-
-.printable-wrapper {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem;
-}
-
-@media (max-width: 575.98px) {
-    .printable-wrapper {
-        padding: 0.75rem;
-    }
-}
-
-/* Print Media Rules */
+/* Print Media */
 @media print {
     #sidebar,
     #top-navbar,
@@ -487,12 +779,4 @@ body {
         background: #ffffff !important;
         color: #000000 !important;
     }
-    .card-custom,
-    .stat-card,
-    .receipt-card,
-    .report-card-container {
-        box-shadow: none !important;
-        border: 1px solid #cbd5e1 !important;
-    }
 }
-

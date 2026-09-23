@@ -1,3 +1,4 @@
+from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -10,20 +11,45 @@ from accounts.models import User
 
 @login_required
 def student_list_view(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     class_id = request.GET.get('class_id', '')
     section_id = request.GET.get('section_id', '')
+    status_filter = request.GET.get('status', '')
 
     is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
 
     if is_super and not request.school:
-        students = Student.all_objects.all().select_related('current_class', 'current_section', 'academic_session', 'school')
+        base_qs = Student.all_objects.all().select_related('current_class', 'current_section', 'academic_session', 'school')
         classes = Class.all_objects.all()
         sections = Section.all_objects.all()
     else:
-        students = Student.objects.filter(school=request.school).select_related('current_class', 'current_section', 'academic_session')
+        base_qs = Student.objects.filter(school=request.school).select_related('current_class', 'current_section', 'academic_session')
         classes = Class.objects.filter(school=request.school)
         sections = Section.objects.filter(school=request.school)
+
+    # Micro Stats
+    total_students = base_qs.count()
+    total_boys = base_qs.filter(gender='M').count()
+    total_girls = base_qs.filter(gender='F').count()
+    new_admissions = base_qs.filter(admission_date__year=date.today().year).count()
+    if new_admissions == 0 and total_students > 0:
+        new_admissions = total_students
+
+    # Apply Filters
+    students = base_qs
+    if query:
+        students = students.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(admission_no__icontains=query) |
+            Q(parent_phone__icontains=query)
+        )
+    if class_id:
+        students = students.filter(current_class_id=class_id)
+    if section_id:
+        students = students.filter(current_section_id=section_id)
+    if status_filter:
+        students = students.filter(status=status_filter)
 
     return render(request, 'students/student_list.html', {
         'students': students,
@@ -32,6 +58,11 @@ def student_list_view(request):
         'query': query,
         'selected_class': class_id,
         'selected_section': section_id,
+        'selected_status': status_filter,
+        'total_students': total_students,
+        'total_boys': total_boys,
+        'total_girls': total_girls,
+        'new_admissions': new_admissions,
     })
 
 

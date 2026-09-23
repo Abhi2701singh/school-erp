@@ -3,104 +3,183 @@
 {% block title %}Student Directory - EduManage ERP{% endblock %}
 
 {% block content %}
+<!-- Page Header -->
 <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4">
     <div>
-        <h3 class="fw-bold m-0">Student Directory</h3>
-        <p class="text-muted m-0">Manage student admissions and profiles</p>
+        <h3 class="fw-bold m-0 text-dark">Student Directory</h3>
+        <p class="text-muted m-0 mt-1" style="font-size: 0.9rem;">Manage all students, view profiles and admission details</p>
     </div>
     {% if user.is_school_admin %}
     <div>
-        <a href="{% url 'student_admission' %}" class="btn btn-primary">
-            <i class="fa-solid fa-user-plus me-2"></i> New Admission
+        <a href="{% url 'student_admission' %}" class="btn btn-primary rounded-pill px-3 py-2 shadow-sm">
+            <i class="fa-solid fa-plus me-1"></i> Add New Student
         </a>
     </div>
     {% endif %}
 </div>
 
-<div class="card card-custom p-3 p-sm-4 mb-4">
-    <form method="get" class="row g-2">
-        <div class="col-12 col-md-4">
-            <input type="text" name="q" class="form-control" placeholder="Search by Name / Adm No / Mobile..." value="{{ query }}">
+<!-- 4 Micro Summary Cards Row -->
+<div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-micro-card">
+            <div class="stat-micro-icon stat-icon-blue">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold m-0 text-dark">{{ total_students }}</h4>
+                <small class="text-muted">Total Students</small>
+            </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3">
-            <select name="class_id" class="form-select">
-                <option value="">-- All Classes --</option>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-micro-card">
+            <div class="stat-micro-icon stat-icon-teal">
+                <i class="fa-solid fa-child"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold m-0 text-dark">{{ total_boys }}</h4>
+                <small class="text-muted">Boys</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-micro-card">
+            <div class="stat-micro-icon stat-icon-rose">
+                <i class="fa-solid fa-child-dress"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold m-0 text-dark">{{ total_girls }}</h4>
+                <small class="text-muted">Girls</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-micro-card">
+            <div class="stat-micro-icon stat-icon-green">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold m-0 text-dark">{{ new_admissions }}</h4>
+                <small class="text-muted">New Admissions</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter & Search Toolbar -->
+<div class="card card-custom p-3 p-sm-4 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-12 col-sm-6 col-md-2">
+            <select name="class_id" class="form-select form-select-sm rounded-pill" onchange="this.form.submit()">
+                <option value="">All Classes</option>
                 {% for c in classes %}
                     <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="col-12 col-sm-6 col-md-3">
-            <select name="section_id" class="form-select">
-                <option value="">-- All Sections --</option>
+        <div class="col-12 col-sm-6 col-md-2">
+            <select name="section_id" class="form-select form-select-sm rounded-pill" onchange="this.form.submit()">
+                <option value="">All Sections</option>
                 {% for s in sections %}
                     <option value="{{ s.id }}" {% if selected_section == s.id|stringformat:"i" %}selected{% endif %}>{{ s.class_level.name }} - {{ s.name }}</option>
                 {% endfor %}
             </select>
         </div>
+        <div class="col-12 col-sm-6 col-md-2">
+            <select name="status" class="form-select form-select-sm rounded-pill" onchange="this.form.submit()">
+                <option value="">All Status</option>
+                <option value="ACTIVE" {% if selected_status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                <option value="INACTIVE" {% if selected_status == 'INACTIVE' %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="position-relative">
+                <i class="fa-solid fa-magnifying-glass position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 0.85rem;"></i>
+                <input type="text" name="q" class="form-control form-control-sm rounded-pill ps-4" style="padding-left: 36px !important;" placeholder="Search by name or admission no..." value="{{ query }}">
+            </div>
+        </div>
         <div class="col-12 col-md-2">
-            <button type="submit" class="btn btn-secondary w-100"><i class="fa-solid fa-search me-1"></i> Filter</button>
+            <button type="submit" class="btn btn-secondary btn-sm w-100 rounded-pill"><i class="fa-solid fa-filter me-1"></i> Filter</button>
         </div>
     </form>
 </div>
 
+<!-- Student Data Table -->
 <div class="card card-custom p-3 p-sm-4">
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead class="table-light">
+            <thead>
                 <tr>
-                    <th>Adm No</th>
+                    <th>#</th>
+                    <th>Photo</th>
+                    <th>Admission No</th>
                     <th>Student Name</th>
-                    <th>Username</th>
                     <th>Class & Section</th>
-                    <th>Father Name</th>
-                    <th>Parent Phone</th>
+                    <th>Parent Contact</th>
                     <th>Status</th>
-                    <th class="text-end">Actions</th>
+                    <th class="text-end">Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for student in students %}
                 <tr>
-                    <td><span class="badge bg-secondary">{{ student.admission_no }}</span></td>
-                    <td class="fw-bold text-nowrap">
+                    <td class="text-muted small">{{ forloop.counter }}</td>
+                    <td>
                         {% if student.photo %}
-                            <img src="{{ student.photo.url }}" class="rounded-circle me-2" style="width:32px; height:32px; object-fit:cover;">
-                        {% endif %}
-                        {{ student.first_name }} {{ student.last_name }}
-                    </td>
-                    <td>
-                        {% if student.user %}
-                            <code class="text-primary fw-bold">{{ student.user.username }}</code>
+                            <img src="{{ student.photo.url }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
                         {% else %}
-                            <span class="text-muted small">-</span>
+                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem;">
+                                {{ student.first_name|first }}
+                            </div>
                         {% endif %}
                     </td>
-                    <td class="text-nowrap">{{ student.current_class.name }} - {{ student.current_section.name }}</td>
-                    <td>{{ student.father_name|default:"-" }}</td>
-                    <td>{{ student.parent_phone|default:"-" }}</td>
+                    <td><span class="font-monospace text-muted small fw-semibold">{{ student.admission_no }}</span></td>
                     <td>
-                        <span class="badge {% if student.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}">
+                        <a href="{% url 'student_profile' student.id %}" class="fw-bold text-dark text-decoration-none">
+                            {{ student.first_name }} {{ student.last_name }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                            {{ student.current_class.name }} - {{ student.current_section.name }}
+                        </span>
+                    </td>
+                    <td class="text-muted small">{{ student.parent_phone|default:"-" }}</td>
+                    <td>
+                        <span class="badge-pill-modern {% if student.status == 'ACTIVE' %}badge-active{% else %}badge-inactive{% endif %}">
                             {{ student.get_status_display }}
                         </span>
                     </td>
                     <td class="text-end text-nowrap">
-                        <a href="{% url 'student_profile' student.id %}" class="btn btn-sm btn-outline-primary me-1" title="Profile"><i class="fa-solid fa-user me-1"></i> Profile</a>
-                        <a href="{% url 'collect_fee' student.id %}" class="btn btn-sm btn-outline-success me-1" title="Fees"><i class="fa-solid fa-money-bill me-1"></i> Fees</a>
-                        <a href="{% url 'student_id_card' student.id %}" class="btn btn-sm btn-outline-dark me-1" target="_blank" title="ID Card"><i class="fa-solid fa-id-card"></i></a>
+                        <a href="{% url 'student_profile' student.id %}" class="btn-action-view me-1">View</a>
+                        <a href="{% url 'collect_fee' student.id %}" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 me-1" title="Collect Fee"><i class="fa-solid fa-money-bill me-1"></i> Fee</a>
                         {% if user.is_school_admin %}
-                        <a href="{% url 'student_delete' student.id %}" class="btn btn-sm btn-outline-danger" title="Delete Student"><i class="fa-solid fa-trash-can"></i></a>
+                        <a href="{% url 'student_delete' student.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Delete Student"><i class="fa-solid fa-trash-can"></i></a>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">No students found matching the criteria.</td>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-user-slash fs-2 mb-2 d-block text-secondary"></i>
+                        No students found matching your criteria.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Table Pagination Footer -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top">
+        <small class="text-muted">Showing 1 to {{ students|length }} of {{ total_students }} students</small>
+        <ul class="pagination-modern">
+            <li class="page-item"><a class="page-link" href="#"><i class="fa-solid fa-chevron-left" style="font-size: 0.7rem;"></i></a></li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#"><i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></a></li>
+        </ul>
+    </div>
 </div>
 {% endblock %}
-

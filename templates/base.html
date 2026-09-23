@@ -101,34 +101,47 @@
     <div id="main-wrapper">
         <!-- Top Navbar -->
         <header id="top-navbar">
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 gap-md-3">
                 <button id="sidebarToggle" class="navbar-toggle-btn d-lg-none" type="button" aria-label="Toggle navigation">
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
                 {% if request.school %}
-                    <span class="tenant-badge" title="{{ request.school.name }} ({{ request.school.code }})">
-                        <i class="fa-solid fa-school"></i> 
-                        <span class="text-truncate">{{ request.school.name }}</span>
-                    </span>
+                    <div class="tenant-badge" title="{{ request.school.name }} ({{ request.school.code }})">
+                        <i class="fa-solid fa-school text-primary"></i> 
+                        <span class="text-truncate fw-bold">{{ request.school.name }}</span>
+                    </div>
                 {% elif user.is_super_admin %}
-                    <span class="badge bg-purple text-white p-2" style="background:#8b5cf6;"><i class="fa-solid fa-globe"></i> Super Admin</span>
+                    <span class="badge bg-purple text-white p-2" style="background:#8b5cf6;"><i class="fa-solid fa-globe me-1"></i> Super Admin</span>
                 {% endif %}
             </div>
 
+            <!-- Global Central Search -->
+            <div class="global-search-wrapper d-none d-md-block">
+                <i class="fa-solid fa-magnifying-glass global-search-icon"></i>
+                <input type="text" class="form-control global-search-input" placeholder="Search students, teachers, fees..." id="globalSearchInput">
+            </div>
+
+            <!-- Right Profile & Actions -->
             <div class="d-flex align-items-center gap-2 gap-sm-3">
-                <div class="text-end d-none d-md-block">
-                    <div class="fw-bold fs-7">{{ user.get_full_name|default:user.username }}</div>
-                    <small class="text-muted" style="font-size: 0.78rem;">{{ user.get_role_display }}</small>
-                </div>
-                <a href="{% url 'profile' %}" class="d-flex align-items-center text-decoration-none">
+                <a href="{% url 'notice_list' %}" class="notif-btn" title="Announcements & Notices">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge"></span>
+                </a>
+
+                <a href="{% url 'profile' %}" class="user-profile-badge">
                     {% if user.profile_photo %}
-                        <img src="{{ user.profile_photo.url }}" class="user-avatar" alt="Avatar">
+                        <img src="{{ user.profile_photo.url }}" class="user-avatar-circle" alt="Avatar">
                     {% else %}
-                        <div class="user-avatar d-flex align-items-center justify-content-center fw-bold text-white bg-primary">
+                        <div class="user-avatar-circle">
                             {{ user.username|first|upper }}
                         </div>
                     {% endif %}
+                    <div class="d-none d-sm-block text-start pe-1">
+                        <div class="fw-bold fs-7 text-dark line-clamp-1" style="font-size: 0.85rem; line-height: 1.1;">{{ user.get_full_name|default:user.username }}</div>
+                        <small class="text-muted" style="font-size: 0.72rem;">{{ user.get_role_display }}</small>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-muted d-none d-sm-inline-block" style="font-size: 0.7rem;"></i>
                 </a>
             </div>
         </header>

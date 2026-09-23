@@ -16,32 +16,45 @@
     </div>
 </div>
 
-<!-- Stat Cards -->
+<!-- Stat Cards Row -->
 <div class="row g-3 g-md-4 mb-4">
     <div class="col-12 col-sm-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-icon bg-success text-white"><i class="fa-solid fa-clipboard-user"></i></div>
-            <div>
-                <h3 class="fw-bold mb-0">{{ att_pct }}%</h3>
-                <small class="text-muted">Attendance Rate</small>
+        <div class="stat-card-modern">
+            <div class="stat-icon-modern stat-icon-green">
+                <i class="fa-solid fa-clipboard-user"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="stat-number">{{ att_pct }}%</div>
+                <div class="stat-label">Attendance Rate</div>
+                <span class="trend-badge trend-up"><i class="fa-solid fa-check"></i> Good</span>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-icon bg-danger text-white"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-            <div>
-                <h3 class="fw-bold mb-0">₹{{ total_due|floatformat:2 }}</h3>
-                <small class="text-muted">Pending Fee Dues</small>
+        <div class="stat-card-modern">
+            <div class="stat-icon-modern stat-icon-rose">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="stat-number">₹{{ total_due|floatformat:0 }}</div>
+                <div class="stat-label">Pending Fee Dues</div>
+                {% if total_due > 0 %}
+                    <span class="trend-badge trend-down">Due</span>
+                {% else %}
+                    <span class="trend-badge trend-up">All Cleared</span>
+                {% endif %}
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-4">
-        <div class="stat-card">
-            <div class="stat-icon bg-primary text-white"><i class="fa-solid fa-book-bookmark"></i></div>
-            <div>
-                <h3 class="fw-bold mb-0">{{ homeworks|length }}</h3>
-                <small class="text-muted">Active Assignments</small>
+        <div class="stat-card-modern">
+            <div class="stat-icon-modern stat-icon-blue">
+                <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="stat-number">{{ homeworks|length }}</div>
+                <div class="stat-label">Active Assignments</div>
+                <span class="trend-badge trend-up">This Week</span>
             </div>
         </div>
     </div>
