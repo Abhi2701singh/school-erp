@@ -96,11 +96,18 @@ class StudentFee(TenantModel):
         """
         if not self.student_id or not self.school_id:
             return Decimal('0.00')
-        past_fees = StudentFee.objects.filter(
-            school=self.school,
-            student=self.student,
-            due_date__lt=self.due_date
-        ).exclude(pk=self.pk)
+        if self.due_date:
+            past_fees = StudentFee.objects.filter(
+                school=self.school,
+                student=self.student,
+                due_date__lt=self.due_date
+            ).exclude(pk=self.pk)
+        else:
+            past_fees = StudentFee.objects.filter(
+                school=self.school,
+                student=self.student,
+                pk__lt=self.pk if self.pk else 0
+            ).exclude(pk=self.pk)
         return sum([f.net_due for f in past_fees], Decimal('0.00'))
 
     @property
@@ -112,11 +119,18 @@ class StudentFee(TenantModel):
         """Return list of past unpaid fee objects for itemized display."""
         if not self.student_id or not self.school_id:
             return []
-        past_fees = StudentFee.objects.filter(
-            school=self.school,
-            student=self.student,
-            due_date__lt=self.due_date
-        ).exclude(pk=self.pk).select_related('fee_head', 'academic_session')
+        if self.due_date:
+            past_fees = StudentFee.objects.filter(
+                school=self.school,
+                student=self.student,
+                due_date__lt=self.due_date
+            ).exclude(pk=self.pk).select_related('fee_head', 'academic_session')
+        else:
+            past_fees = StudentFee.objects.filter(
+                school=self.school,
+                student=self.student,
+                pk__lt=self.pk if self.pk else 0
+            ).exclude(pk=self.pk).select_related('fee_head', 'academic_session')
         return [f for f in past_fees if f.net_due > Decimal('0.00')]
 
     @property

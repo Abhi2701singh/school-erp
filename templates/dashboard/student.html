@@ -173,9 +173,11 @@
                                 <div class="fw-bold text-dark">{{ fee.fee_head.name }}</div>
                                 <small class="text-muted">{{ fee.academic_session.name }}</small>
                                 {% if fee.previous_arrears > 0 %}
-                                    <span class="badge bg-danger-subtle text-danger border d-block mt-1" style="font-size: 0.7rem;">
-                                        Includes ₹{{ fee.previous_arrears|floatformat:0 }} Past Arrears
-                                    </span>
+                                    <div class="mt-1">
+                                        <span class="badge bg-danger-subtle text-danger border" style="font-size: 0.72rem;">
+                                            <i class="fa-solid fa-clock-rotate-left me-1"></i>Includes ₹{{ fee.previous_arrears|floatformat:2 }} Past Arrears
+                                        </span>
+                                    </div>
                                 {% endif %}
                             </td>
                             <td class="text-nowrap small">
@@ -189,6 +191,11 @@
                             <td class="text-success fw-semibold">₹{{ fee.amount_paid|floatformat:2 }}</td>
                             <td class="fw-bold {% if fee.net_due > 0 %}text-danger{% else %}text-success{% endif %} fs-6">
                                 ₹{{ fee.net_due|floatformat:2 }}
+                                {% if fee.previous_arrears > 0 %}
+                                    <div class="small text-muted fw-normal" style="font-size: 0.72rem;">
+                                        (With Arrears: <strong class="text-danger">₹{{ fee.total_payable_with_arrears|floatformat:2 }}</strong>)
+                                    </div>
+                                {% endif %}
                             </td>
                             <td>
                                 {% if fee.status == 'PAID' %}

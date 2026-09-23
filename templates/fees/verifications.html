@@ -165,9 +165,11 @@
                                                     <select name="payment_mode" class="form-select">
                                                         <option value="UPI" {% if claim.payment_mode == 'UPI' %}selected{% endif %}>UPI / QR Code</option>
                                                         <option value="BANK_TRANSFER" {% if claim.payment_mode == 'BANK_TRANSFER' %}selected{% endif %}>Bank Transfer / NEFT / IMPS</option>
-                                                        <option value="ONLINE" {% if claim.payment_mode == 'NET_BANKING' or claim.payment_mode == 'CARD' %}selected{% endif %}>Online Gateway / Card</option>
+                                                        <option value="ONLINE" {% if claim.payment_mode == 'NET_BANKING' %}selected{% endif %}>Online Gateway</option>
+                                                        <option value="CARD" {% if claim.payment_mode == 'CARD' %}selected{% endif %}>Debit / Credit Card</option>
                                                         <option value="CHEQUE" {% if claim.payment_mode == 'CHEQUE' %}selected{% endif %}>Cheque / Demand Draft</option>
                                                         <option value="CASH" {% if claim.payment_mode == 'CASH_DEPOSIT' %}selected{% endif %}>Cash Deposit</option>
+                                                        <option value="OTHER" {% if claim.payment_mode == 'OTHER' %}selected{% endif %}>Other Payment Mode</option>
                                                     </select>
                                                 </div>
 
