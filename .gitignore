@@ -7,4 +7,5 @@ staticfiles/
 bin/
 .wrangler/
 .DS_Store
+media/
 

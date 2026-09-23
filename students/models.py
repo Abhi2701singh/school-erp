@@ -49,6 +49,18 @@ class Student(TenantModel):
         ordering = ['current_class', 'current_section', 'roll_no', 'first_name']
         unique_together = ('school', 'admission_no')
 
+    def get_past_unpaid_arrears(self):
+        """Calculate total unpaid arrears from past due dates."""
+        from datetime import date
+        from decimal import Decimal
+        past_fees = self.fees.filter(due_date__lt=date.today())
+        return sum([f.net_due for f in past_fees], Decimal('0.00'))
+
+    def get_total_outstanding_fees(self):
+        """Calculate total outstanding dues across all assigned fees."""
+        from decimal import Decimal
+        return sum([f.net_due for f in self.fees.all()], Decimal('0.00'))
+
     def __str__(self):
         full_name = f"{self.first_name} {self.last_name}".strip()
         return f"{full_name} (Adm: {self.admission_no} | Class: {self.current_class.name}-{self.current_section.name})"

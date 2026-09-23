@@ -10,7 +10,9 @@ urlpatterns = [
 
     # Student & Parent Fee Portal ("My Fees")
     path('my-fees/', views.my_fees_view, name='my_fees'),
+    path('challan/<int:fee_id>/', views.fee_challan_view, name='fee_challan'),
     path('submit-claim/<int:fee_id>/', views.submit_payment_claim_view, name='submit_payment_claim'),
+    path('claims/<int:submission_id>/slip/', views.claim_acknowledgement_view, name='claim_acknowledgement'),
     path('claims/<int:submission_id>/cancel/', views.cancel_payment_claim_view, name='cancel_payment_claim'),
 
     # Admin Payment Verification Panel

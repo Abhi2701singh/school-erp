@@ -883,3 +883,214 @@ class ProductionFeeSystemComprehensiveTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Payment Claim Pending Verification")
         self.assertContains(response, "/fees/verifications/")
+
+    # -------------------------------------------------------------
+    # TEST 23: Student Dashboard Fee Section & Payment History
+    # -------------------------------------------------------------
+    def test_student_dashboard_fee_section_and_history(self):
+        # Create a submission for student 1
+        claim = PaymentSubmission.objects.create(
+            school=self.school_a,
+            student_fee=self.fee_due_tuition,
+            student=self.student_1,
+            submission_no="CLM-STU-001",
+            amount=Decimal("2500.00"),
+            payment_date=date.today(),
+            payment_mode="UPI",
+            transaction_id="STU-TXN-12345",
+            status="PENDING_VERIFICATION"
+        )
+
+        self.client.login(username="student_rahul", password="password123")
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Student Fee Section")
+        self.assertContains(response, "CLM-STU-001")
+        self.assertContains(response, "STU-TXN-12345")
+        self.assertContains(response, "Tuition Fee - September")
+        self.assertContains(response, "Pending Verification")
+
+    # -------------------------------------------------------------
+    # TEST 24: Partial Payment and Overpayment Validation Logic
+    # -------------------------------------------------------------
+    def test_partial_payment_and_overpayment_workflow(self):
+        # Create a ₹5,000 fee for student 1
+        fee_5000 = StudentFee.objects.create(
+            school=self.school_a,
+            academic_session=self.session_a,
+            student=self.student_1,
+            fee_head=self.fee_head_tuition,
+            amount_due=Decimal("5000.00"),
+            due_date=date(2026, 10, 31),
+            status="PENDING"
+        )
+
+        # 1. Overpayment test: Student attempts to pay ₹6,000 (rejected)
+        form_over = PaymentClaimSubmissionForm(
+            data={
+                'amount': '6000.00',
+                'payment_date': date.today().isoformat(),
+                'payment_mode': 'UPI',
+                'transaction_id': 'OVERPAY-6000',
+            },
+            student_fee=fee_5000,
+            school=self.school_a
+        )
+        self.assertFalse(form_over.is_valid())
+        self.assertIn('amount', form_over.errors)
+
+        # 2. Partial payment test: Student pays ₹3,000 (accepted)
+        self.client.login(username="student_rahul", password="password123")
+        proof_file = SimpleUploadedFile("partial_proof.jpg", b"partial_receipt_bytes", content_type="image/jpeg")
+        post_data = {
+            'amount': '3000.00',
+            'payment_date': date.today().isoformat(),
+            'payment_mode': 'UPI',
+            'transaction_id': 'PARTIAL-3000-UTR',
+            'bank_name': 'PhonePe',
+            'proof_file': proof_file,
+            'student_note': 'Paying partial amount ₹3,000 of ₹5,000 fee'
+        }
+        res_sub = self.client.post(f"/fees/submit-claim/{fee_5000.id}/", post_data)
+        self.assertEqual(res_sub.status_code, 302)
+
+        claim_partial = PaymentSubmission.objects.filter(transaction_id='PARTIAL-3000-UTR').first()
+        self.assertIsNotNone(claim_partial)
+        self.assertEqual(claim_partial.amount, Decimal("3000.00"))
+
+        # Admin approves the partial payment of ₹3,000
+        self.client.login(username="admin_a", password="password123")
+        res_app = self.client.post(f"/fees/verifications/{claim_partial.id}/approve/", {
+            'verified_amount': '3000.00',
+            'payment_mode': 'UPI',
+            'admin_notes': 'Partial payment approved',
+            'confirm_checkbox': 'on',
+        })
+        self.assertEqual(res_app.status_code, 302)
+
+        # Verify ledger state: ₹3,000 paid, ₹2,000 remaining balance pending
+        fee_5000.refresh_from_db()
+        self.assertEqual(fee_5000.amount_paid, Decimal("3000.00"))
+        self.assertEqual(fee_5000.net_due, Decimal("2000.00"))
+        self.assertEqual(fee_5000.status, 'PARTIAL')
+
+    # -------------------------------------------------------------
+    # TEST 25: Previous Unpaid Arrears Carried Forward into Next Month
+    # -------------------------------------------------------------
+    def test_previous_unpaid_arrears_carried_forward_to_next_month(self):
+        # Student 1 has unpaid August fee of ₹1,000 (past due date)
+        fee_aug = StudentFee.objects.create(
+            school=self.school_a,
+            academic_session=self.session_a,
+            student=self.student_1,
+            fee_head=self.fee_head_tuition,
+            amount_due=Decimal("1000.00"),
+            due_date=date(2026, 8, 31),
+            status="OVERDUE"
+        )
+        # Next month September fee of ₹2,500
+        fee_sep = StudentFee.objects.create(
+            school=self.school_a,
+            academic_session=self.session_a,
+            student=self.student_1,
+            fee_head=self.fee_head_transport,
+            amount_due=Decimal("2500.00"),
+            due_date=date(2026, 9, 30),
+            status="PENDING"
+        )
+
+        # Check arrears calculation on September fee
+        self.assertGreaterEqual(fee_sep.previous_arrears, Decimal("1000.00"))
+        self.assertEqual(fee_sep.total_payable_with_arrears, fee_sep.net_due + fee_sep.previous_arrears)
+
+        # Student opens My Fees portal -> should see past arrears banner and breakdown
+        self.client.login(username="student_rahul", password="password123")
+        response = self.client.get("/fees/my-fees/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Past Due Arrears Notice")
+        self.assertContains(response, "Includes ₹")
+
+    # -------------------------------------------------------------
+    # TEST 26: Fee Challan & Submission Acknowledgement Slips
+    # -------------------------------------------------------------
+    def test_fee_challan_and_claim_acknowledgement_slips(self):
+        self.client.login(username="student_rahul", password="password123")
+
+        # 1. View / Print Fee Challan
+        res_challan = self.client.get(f"/fees/challan/{self.fee_due_tuition.id}/")
+        self.assertEqual(res_challan.status_code, 200)
+        self.assertContains(res_challan, "FEE PAYMENT CHALLAN")
+        self.assertContains(res_challan, "Rahul Kumar")
+        self.assertContains(res_challan, "Tuition Fee - September")
+
+        # 2. Create a submission and view Acknowledgement Slip
+        claim = PaymentSubmission.objects.create(
+            school=self.school_a,
+            student_fee=self.fee_due_tuition,
+            student=self.student_1,
+            submission_no="CLM-SLIP-TEST-01",
+            amount=Decimal("2500.00"),
+            payment_date=date.today(),
+            payment_mode="UPI",
+            transaction_id="SLIP-UTR-9988",
+            status="PENDING_VERIFICATION"
+        )
+        res_slip = self.client.get(f"/fees/claims/{claim.id}/slip/")
+        self.assertEqual(res_slip.status_code, 200)
+        self.assertContains(res_slip, "ONLINE PAYMENT SUBMISSION SLIP")
+        self.assertContains(res_slip, "CLM-SLIP-TEST-01")
+        self.assertContains(res_slip, "SLIP-UTR-9988")
+
+    # -------------------------------------------------------------
+    # TEST 27: End-to-End Self Service Payment Lifecycle
+    # -------------------------------------------------------------
+    def test_e2e_student_payment_to_admin_approval_lifecycle(self):
+        # Step 1: Student views dues in portal
+        self.client.login(username="student_rahul", password="password123")
+        res_myfees = self.client.get("/fees/my-fees/")
+        self.assertEqual(res_myfees.status_code, 200)
+
+        # Step 2: Student downloads challan and submits payment proof
+        proof = SimpleUploadedFile("gpay_receipt.jpg", b"gpay_screenshot_data", content_type="image/jpeg")
+        res_submit = self.client.post(f"/fees/submit-claim/{self.fee_due_tuition.id}/", {
+            'amount': '2500.00',
+            'payment_date': date.today().isoformat(),
+            'payment_mode': 'UPI',
+            'transaction_id': 'GPAY-UTR-2026-99',
+            'bank_name': 'Google Pay / SBI',
+            'proof_file': proof,
+            'student_note': 'Full tuition fee paid via GPay'
+        })
+        self.assertEqual(res_submit.status_code, 302)
+
+        # Step 3: Admin sees pending claim in Verifications Panel
+        self.client.login(username="admin_a", password="password123")
+        res_verify = self.client.get("/fees/verifications/?status=PENDING_VERIFICATION")
+        self.assertEqual(res_verify.status_code, 200)
+        self.assertContains(res_verify, "GPAY-UTR-2026-99")
+
+        claim = PaymentSubmission.objects.get(transaction_id='GPAY-UTR-2026-99')
+        self.assertEqual(claim.status, 'PENDING_VERIFICATION')
+
+        # Step 4: Admin clicks Approve (Verify)
+        res_approve = self.client.post(f"/fees/verifications/{claim.id}/approve/", {
+            'verified_amount': '2500.00',
+            'payment_mode': 'UPI',
+            'admin_notes': 'Bank credit verified in passbook',
+            'confirm_checkbox': 'on',
+        })
+        self.assertEqual(res_approve.status_code, 302)
+
+        # Step 5: Student portal reflects PAID status and student can view receipt
+        self.client.login(username="student_rahul", password="password123")
+        claim.refresh_from_db()
+        self.assertEqual(claim.status, 'VERIFIED')
+
+        payment = FeePayment.objects.get(submission=claim)
+        self.assertEqual(payment.status, 'VERIFIED')
+
+        res_receipt = self.client.get(f"/fees/receipt/{payment.id}/")
+        self.assertEqual(res_receipt.status_code, 200)
+        self.assertContains(res_receipt, payment.receipt_no)
+        self.assertContains(res_receipt, "PAID")
+

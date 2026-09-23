@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Submission Slip - {{ submission.submission_no }}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f8fafc;
+            padding: 1.5rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b;
+        }
+        .slip-card {
+            max-width: 780px;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            margin: 0 auto;
+        }
+        .status-stamp {
+            border: 2px dashed #f59e0b;
+            color: #b45309;
+            background: #fef3c7;
+            padding: 0.35rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0 !important; background: white !important; }
+            .slip-card { border: none !important; box-shadow: none !important; padding: 0 !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="slip-card">
+    <!-- Header -->
+    <div class="row align-items-center mb-4 border-bottom pb-3">
+        <div class="col-8">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold m-0 text-primary">{{ student_fee.school.name }}</h3>
+                    <p class="text-muted m-0 small">{{ student_fee.school.address }} | Ph: {{ student_fee.school.phone }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 text-end">
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">ONLINE PAYMENT SUBMISSION SLIP</span>
+            <div class="fw-bold text-dark mt-1" style="font-size: 1.05rem;">#{{ submission.submission_no }}</div>
+            <small class="text-muted">Submitted: {{ submission.submitted_at|date:"d M Y, h:i A" }}</small>
+        </div>
+    </div>
+
+    <!-- Notice / Status Banner -->
+    <div class="alert {% if submission.status == 'VERIFIED' %}alert-success{% elif submission.status == 'REJECTED' %}alert-danger{% else %}alert-warning{% endif %} d-flex align-items-center justify-content-between p-3 rounded-3 mb-4">
+        <div>
+            <h6 class="fw-bold m-0">
+                {% if submission.status == 'VERIFIED' %}
+                    <i class="fa-solid fa-circle-check me-2"></i> Payment Verified & Approved
+                {% elif submission.status == 'REJECTED' %}
+                    <i class="fa-solid fa-circle-xmark me-2"></i> Payment Claim Rejected
+                {% else %}
+                    <i class="fa-solid fa-clock-rotate-left me-2"></i> Payment Proof Submitted — Pending Verification
+                {% endif %}
+            </h6>
+            <small>
+                {% if submission.status == 'VERIFIED' %}
+                    Official ERP receipt has been issued.
+                {% elif submission.status == 'REJECTED' %}
+                    Reason: {{ submission.rejection_reason|default:"Transaction could not be verified." }}
+                {% else %}
+                    School accounts department will verify the bank transaction and approve your payment.
+                {% endif %}
+            </small>
+        </div>
+        <div class="text-end">
+            <span class="status-stamp">{{ submission.get_status_display }}</span>
+        </div>
+    </div>
+
+    <!-- Particulars -->
+    <div class="row mb-4 p-3 bg-light rounded-3 g-3">
+        <div class="col-6">
+            <div class="text-muted small">STUDENT DETAILS</div>
+            <div class="fw-bold text-dark fs-6">{{ student.first_name }} {{ student.last_name }}</div>
+            <small class="text-secondary">
+                <strong>Admission No:</strong> {{ student.admission_no }}<br>
+                <strong>Class & Section:</strong> {{ student.current_class.name }} - {{ student.current_section.name }}<br>
+                <strong>Session:</strong> {{ student_fee.academic_session.name }}
+            </small>
+        </div>
+        <div class="col-6 text-end">
+            <div class="text-muted small">TRANSACTION CLAIM DETAILS</div>
+            <div class="fw-bold text-dark">{{ submission.get_payment_mode_display }}</div>
+            <small class="text-secondary">
+                <strong>UTR / Transaction Ref:</strong> <code class="text-dark fw-bold">{{ submission.transaction_id }}</code><br>
+                <strong>Bank / App:</strong> {{ submission.bank_name|default:"Online Transfer" }}<br>
+                <strong>Payment Date:</strong> {{ submission.payment_date|date:"d M Y" }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <table class="table table-bordered align-middle mb-4">
+        <thead class="table-light">
+            <tr>
+                <th>Description / Fee Head</th>
+                <th class="text-end">Total Due</th>
+                <th class="text-end">Amount Submitted for Review</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>{{ student_fee.fee_head.name }}</strong>
+                    {% if submission.student_note %}
+                        <br><small class="text-muted">Note: {{ submission.student_note }}</small>
+                    {% endif %}
+                </td>
+                <td class="text-end">₹{{ student_fee.amount_due|floatformat:2 }}</td>
+                <td class="text-end fw-bold text-primary fs-5">₹{{ submission.amount|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr class="table-light">
+                <th colspan="2" class="text-end">Submitted Payment Claim Total:</th>
+                <th class="text-end fw-bold text-primary fs-5">₹{{ submission.amount|floatformat:2 }}</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Footer Notes -->
+    <div class="border-top pt-3 text-muted small">
+        <p class="m-0">
+            <strong>Important:</strong> This document is an electronic acknowledgement of student payment proof submission.
+            The official ERP receipt will be available on the portal once confirmed by the school administration.
+        </p>
+    </div>
+</div>
+
+<!-- Bottom Actions -->
+<div class="no-print text-center mt-4 d-flex flex-wrap justify-content-center gap-3">
+    <button onclick="window.print()" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+        <i class="fa-solid fa-print me-2"></i> Print Acknowledgement Slip
+    </button>
+    {% if submission.status == 'VERIFIED' and submission.official_payment %}
+        <a href="{% url 'fee_receipt' submission.official_payment.id %}" class="btn btn-success btn-lg rounded-pill px-4 shadow-sm">
+            <i class="fa-solid fa-receipt me-2"></i> View Official Receipt
+        </a>
+    {% endif %}
+    <a href="{% url 'my_fees' %}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to My Fees
+    </a>
+</div>
+
+</body>
+</html>

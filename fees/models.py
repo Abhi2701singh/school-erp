@@ -89,6 +89,37 @@ class StudentFee(TenantModel):
         return bool(self.due_date and date.today() > self.due_date and self.net_due > Decimal('0.00'))
 
     @property
+    def previous_arrears(self):
+        """
+        Calculate total unpaid arrears/dues from previous fees for this student.
+        Includes all earlier fee records for this student with due_date < this due_date.
+        """
+        if not self.student_id or not self.school_id:
+            return Decimal('0.00')
+        past_fees = StudentFee.objects.filter(
+            school=self.school,
+            student=self.student,
+            due_date__lt=self.due_date
+        ).exclude(pk=self.pk)
+        return sum([f.net_due for f in past_fees], Decimal('0.00'))
+
+    @property
+    def total_payable_with_arrears(self):
+        """Total payable including this fee's net due + past unpaid arrears."""
+        return self.net_due + self.previous_arrears
+
+    def get_past_unpaid_fee_items(self):
+        """Return list of past unpaid fee objects for itemized display."""
+        if not self.student_id or not self.school_id:
+            return []
+        past_fees = StudentFee.objects.filter(
+            school=self.school,
+            student=self.student,
+            due_date__lt=self.due_date
+        ).exclude(pk=self.pk).select_related('fee_head', 'academic_session')
+        return [f for f in past_fees if f.net_due > Decimal('0.00')]
+
+    @property
     def has_pending_submission(self):
         return self.submissions.filter(status='PENDING_VERIFICATION').exists()
 

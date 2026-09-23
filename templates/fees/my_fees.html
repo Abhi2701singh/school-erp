@@ -94,10 +94,31 @@
     </div>
 </div>
 
+<!-- Past Arrears Carried Forward Alert (If Applicable) -->
+{% if total_past_arrears > 0 %}
+<div class="alert alert-warning card-custom border-start border-4 border-danger p-3 mb-4 shadow-xs">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation text-danger fs-4"></i>
+            <div>
+                <strong class="text-dark d-block">Past Due Arrears Notice (पिछली बकाया फीस):</strong>
+                <span class="text-secondary small">
+                    You have previous unpaid fee arrears of <strong class="text-danger">₹{{ total_past_arrears|floatformat:2 }}</strong> from earlier due dates carried forward into your total outstanding balance. Please clear all dues to maintain good standing.
+                </span>
+            </div>
+        </div>
+        <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill">Arrears: ₹{{ total_past_arrears|floatformat:0 }}</span>
+    </div>
+</div>
+{% endif %}
+
 <!-- Section 1: Fee Dues Table -->
 <div class="card card-custom p-3 p-sm-4 mb-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check text-primary me-2"></i> Current Fee Dues & Schedule</h5>
+        <div>
+            <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check text-primary me-2"></i> Current Fee Dues & Schedule</h5>
+            <small class="text-muted">Itemized schedule with arrears carry-forward and online payment options</small>
+        </div>
         <span class="text-muted small">Academic Year Fees</span>
     </div>
 
@@ -122,6 +143,11 @@
                     <td>
                         <div class="fw-bold text-dark">{{ fee.fee_head.name }}</div>
                         <small class="text-muted">{{ fee.fee_head.description|truncatechars:40 }}</small>
+                        {% if fee.previous_arrears > 0 %}
+                            <span class="badge bg-danger-subtle text-danger border d-block mt-1" style="font-size: 0.7rem;">
+                                Includes ₹{{ fee.previous_arrears|floatformat:0 }} Past Arrears
+                            </span>
+                        {% endif %}
                     </td>
                     <td><span class="badge bg-light text-dark border">{{ fee.academic_session.name }}</span></td>
                     <td class="text-nowrap">
@@ -150,9 +176,12 @@
                         {% endif %}
                     </td>
                     <td class="text-end text-nowrap">
+                        <a href="{% url 'fee_challan' fee.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-2 me-1" title="Download Official Fee Challan / Bill">
+                            <i class="fa-solid fa-file-invoice me-1"></i> Challan
+                        </a>
                         {% if fee.net_due > 0 %}
                             {% if fee.has_pending_submission %}
-                                <button class="btn btn-sm btn-outline-warning" disabled title="A claim is currently under review by administration">
+                                <button class="btn btn-sm btn-outline-warning rounded-pill px-3" disabled title="A claim is currently under review by administration">
                                     <i class="fa-solid fa-clock me-1"></i> In Review
                                 </button>
                             {% else %}
@@ -178,8 +207,10 @@
 <!-- Section 2: Payment Proof Claims Submitted (Under Review / History) -->
 <div class="card card-custom p-3 p-sm-4 mb-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h5 class="fw-bold m-0"><i class="fa-solid fa-file-shield text-info me-2"></i> Payment Proof Claims & Verification History</h5>
-        <small class="text-muted">Student-submitted verification requests</small>
+        <div>
+            <h5 class="fw-bold m-0"><i class="fa-solid fa-file-shield text-info me-2"></i> Payment Proof Claims & Verification History</h5>
+            <small class="text-muted">Complete track record of all fee proofs submitted and administrative review outcomes</small>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -189,12 +220,13 @@
                     <th>Claim #</th>
                     <th>Fee Particulars</th>
                     <th>Claimed Amount</th>
+                    <th>Submitted Date & Time</th>
                     <th>Payment Date</th>
                     <th>Mode</th>
                     <th>UTR / Txn ID</th>
                     <th>Status</th>
                     <th>Proof File</th>
-                    <th class="text-end">Details</th>
+                    <th class="text-end">Slip / Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -203,6 +235,7 @@
                     <td><span class="badge bg-light text-dark border">{{ sub.submission_no }}</span></td>
                     <td class="fw-semibold">{{ sub.student_fee.fee_head.name }}</td>
                     <td class="fw-bold text-dark">₹{{ sub.amount|floatformat:2 }}</td>
+                    <td class="small">{{ sub.submitted_at|date:"d M Y, h:i A" }}</td>
                     <td>{{ sub.payment_date|date:"d M Y" }}</td>
                     <td><span class="badge bg-light text-primary border">{{ sub.get_payment_mode_display }}</span></td>
                     <td><code class="text-dark">{{ sub.transaction_id }}</code></td>
@@ -227,10 +260,13 @@
                         {% endif %}
                     </td>
                     <td class="text-end text-nowrap">
+                        <a href="{% url 'claim_acknowledgement' sub.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-2 me-1" title="Download Submission Slip">
+                            <i class="fa-solid fa-print me-1"></i> Slip
+                        </a>
                         {% if sub.status == 'PENDING_VERIFICATION' %}
                             <form method="post" action="{% url 'cancel_payment_claim' sub.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this pending payment claim?');">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel Claim">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Cancel Claim">
                                     <i class="fa-solid fa-xmark"></i> Cancel
                                 </button>
                             </form>
@@ -239,7 +275,7 @@
                                 <i class="fa-solid fa-receipt me-1"></i> Official Receipt
                             </a>
                         {% elif sub.status == 'REJECTED' %}
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ sub.id }}">
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2" data-bs-toggle="modal" data-bs-target="#rejectModal{{ sub.id }}">
                                 <i class="fa-solid fa-info-circle me-1"></i> Reason
                             </button>
                             
@@ -270,7 +306,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-3">No payment claims submitted yet.</td>
+                    <td colspan="10" class="text-center text-muted py-3">No payment claims submitted yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -281,8 +317,10 @@
 <!-- Section 3: Official Verified Receipts -->
 <div class="card card-custom p-3 p-sm-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt text-success me-2"></i> Official ERP Receipts</h5>
-        <small class="text-muted">Issued by School ERP</small>
+        <div>
+            <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt text-success me-2"></i> Official ERP Receipts</h5>
+            <small class="text-muted">Authenticated receipts issued by School Accounts with tamper-proof QR verification</small>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -292,7 +330,7 @@
                     <th>Receipt #</th>
                     <th>Fee Category</th>
                     <th>Amount Paid</th>
-                    <th>Payment Date</th>
+                    <th>Payment Date & Time</th>
                     <th>Payment Mode</th>
                     <th>Transaction Ref</th>
                     <th>Status</th>
@@ -313,7 +351,7 @@
                     </td>
                     <td class="text-end">
                         <a href="{% url 'fee_receipt' payment.id %}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-xs">
-                            <i class="fa-solid fa-print me-1"></i> View / Print
+                            <i class="fa-solid fa-print me-1"></i> View / Print Receipt
                         </a>
                     </td>
                 </tr>

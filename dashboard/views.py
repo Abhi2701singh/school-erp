@@ -206,8 +206,27 @@ def dashboard_router_view(request):
         pres_att = attendances.filter(status='P').count()
         att_pct = round((pres_att / tot_att) * 100, 1) if tot_att > 0 else 100.0
 
-        fees = student.fees.all()
-        total_due = sum([f.net_due for f in fees])
+        # Comprehensive Fee Analytics
+        from decimal import Decimal
+        from fees.models import PaymentSubmission
+        today_dt = date.today()
+        fees = student.fees.select_related('fee_head', 'academic_session').prefetch_related('submissions').all()
+        total_invoiced = sum([f.amount_due for f in fees], Decimal('0.00'))
+        total_paid = sum([f.amount_paid for f in fees], Decimal('0.00'))
+        total_due = sum([f.net_due for f in fees], Decimal('0.00'))
+        total_under_review = sum([f.under_review_amount for f in fees], Decimal('0.00'))
+        past_arrears = sum([f.net_due for f in fees if f.due_date and f.due_date < today_dt], Decimal('0.00'))
+        current_dues = sum([f.net_due for f in fees if not f.due_date or f.due_date >= today_dt], Decimal('0.00'))
+
+        # Payment submissions history
+        submissions = PaymentSubmission.objects.filter(
+            school=request.school, student=student
+        ).select_related('student_fee__fee_head', 'official_payment').order_by('-submitted_at')[:5]
+
+        # Verified official receipts
+        verified_payments = FeePayment.objects.filter(
+            school=request.school, student_fee__student=student, status='VERIFIED'
+        ).select_related('student_fee__fee_head').order_by('-payment_date')[:5]
 
         homeworks = Homework.objects.filter(class_level=student.current_class, section=student.current_section)[:5]
         study_materials = StudyMaterial.objects.filter(class_level=student.current_class)[:5]
@@ -218,8 +237,15 @@ def dashboard_router_view(request):
         return render(request, 'dashboard/student.html', {
             'student': student,
             'att_pct': att_pct,
-            'total_due': total_due,
             'fees': fees,
+            'total_invoiced': total_invoiced,
+            'total_paid': total_paid,
+            'total_due': total_due,
+            'total_under_review': total_under_review,
+            'past_arrears': past_arrears,
+            'current_dues': current_dues,
+            'submissions': submissions,
+            'verified_payments': verified_payments,
             'homeworks': homeworks,
             'study_materials': study_materials,
             'notices': notices,

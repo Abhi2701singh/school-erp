@@ -68,15 +68,7 @@
                                 {% endif %}
                             </td>
                             <td class="text-end text-nowrap">
-                                {% if user.is_student_user and user.student_profile %}
-                                    <a href="{% url 'report_card' user.student_profile.id exam.id %}" class="btn btn-sm btn-primary">
-                                        <i class="fa-solid fa-file-lines me-1"></i> View Report Card
-                                    </a>
-                                {% elif user.is_teacher_user or user.is_school_admin %}
-                                    <a href="{% url 'marks_entry' %}?exam_id={{ exam.id }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fa-solid fa-award me-1"></i> Enter Marks
-                                    </a>
-                                {% endif %}
+                                <a href="{% url 'marks_entry' %}?exam_id={{ exam.id }}" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-award me-1"></i> Enter Marks</a>
                             </td>
                         </tr>
                         {% empty %}

@@ -274,6 +274,11 @@ def my_fees_view(request):
     total_pending = sum([f.net_due for f in student_fees], Decimal('0.00'))
     total_under_review = sum([f.under_review_amount for f in student_fees], Decimal('0.00'))
 
+    # Past Unpaid Arrears / Previous Dues Calculation
+    today_dt = date.today()
+    total_past_arrears = sum([f.net_due for f in student_fees if f.due_date and f.due_date < today_dt], Decimal('0.00'))
+    current_fees_due = sum([f.net_due for f in student_fees if not f.due_date or f.due_date >= today_dt], Decimal('0.00'))
+
     # Payment Claims / Submissions
     submissions = PaymentSubmission.objects.filter(
         school=request.school, student=student
@@ -295,6 +300,62 @@ def my_fees_view(request):
         'total_discount': total_discount,
         'total_pending': total_pending,
         'total_under_review': total_under_review,
+        'total_past_arrears': total_past_arrears,
+        'current_fees_due': current_fees_due,
+    })
+
+
+@login_required
+def fee_challan_view(request, fee_id):
+    """
+    Generate Official Fee Challan / Proforma Invoice / Payment Slip.
+    Displays current fee, itemized previous unpaid arrears, bank transfer details & QR instructions.
+    """
+    student_fee = get_object_or_404(
+        StudentFee.objects.select_related('student', 'fee_head', 'academic_session', 'student__current_class', 'student__current_section', 'school'),
+        pk=fee_id,
+        school=request.school
+    )
+
+    if not user_can_access_student(request.user, student_fee.student):
+        return HttpResponseForbidden("You do not have authorization to view this fee challan.")
+
+    previous_arrears = student_fee.previous_arrears
+    past_unpaid_items = student_fee.get_past_unpaid_fee_items()
+    total_payable = student_fee.total_payable_with_arrears
+    session_year = student_fee.academic_session.name[:4] if (student_fee.academic_session and student_fee.academic_session.name) else '2026'
+    challan_no = f"CHL-{session_year}-{student_fee.pk:06d}"
+
+    return render(request, 'fees/fee_challan.html', {
+        'student_fee': student_fee,
+        'student': student_fee.student,
+        'previous_arrears': previous_arrears,
+        'past_unpaid_items': past_unpaid_items,
+        'total_payable': total_payable,
+        'challan_no': challan_no,
+        'issue_date': date.today(),
+    })
+
+
+@login_required
+def claim_acknowledgement_view(request, submission_id):
+    """
+    Download/Print Payment Proof Submission Acknowledgement Slip.
+    Issued immediately upon student submitting payment claim before admin verification.
+    """
+    submission = get_object_or_404(
+        PaymentSubmission.objects.select_related('student', 'student_fee', 'student_fee__fee_head', 'student_fee__academic_session', 'student__current_class', 'student__current_section', 'school', 'official_payment'),
+        pk=submission_id,
+        school=request.school
+    )
+
+    if not user_can_access_student(request.user, submission.student):
+        return HttpResponseForbidden("You do not have authorization to view this payment claim slip.")
+
+    return render(request, 'fees/claim_acknowledgement.html', {
+        'submission': submission,
+        'student': submission.student,
+        'student_fee': submission.student_fee,
     })
 
 
@@ -326,6 +387,10 @@ def submit_payment_claim_view(request, fee_id):
             "A payment claim for this fee is already under review by school administration. Please wait for verification."
         )
         return redirect('my_fees')
+
+    previous_arrears = student_fee.previous_arrears
+    past_unpaid_items = student_fee.get_past_unpaid_fee_items()
+    total_payable = student_fee.total_payable_with_arrears
 
     if request.method == 'POST':
         form = PaymentClaimSubmissionForm(
@@ -385,6 +450,9 @@ def submit_payment_claim_view(request, fee_id):
     return render(request, 'fees/submit_payment_claim.html', {
         'student_fee': student_fee,
         'form': form,
+        'previous_arrears': previous_arrears,
+        'past_unpaid_items': past_unpaid_items,
+        'total_payable': total_payable,
     })
 
 
