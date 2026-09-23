@@ -231,7 +231,13 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-3">No fee records found.</td>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <div class="py-2">
+                                    <i class="fa-solid fa-file-circle-check text-success fs-3 d-block mb-2"></i>
+                                    <strong class="text-dark">No fee dues found for your account (कोई बकाया फीस नहीं है).</strong>
+                                    <p class="small text-muted mb-0">All fees are cleared or school administration has not assigned fee structures for this session yet.</p>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
