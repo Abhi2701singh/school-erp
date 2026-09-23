@@ -70,9 +70,12 @@
                             <td class="text-end text-nowrap">
                                 <a href="{{ mat.file.url }}" class="btn btn-sm btn-outline-primary me-1" target="_blank"><i class="fa-solid fa-file-pdf me-1"></i> PDF</a>
                                 {% if user.role == 'TEACHER' or user.role == 'SCHOOL_ADMIN' or user.role == 'PRINCIPAL' or user.is_superuser or user.is_staff or user.is_teacher_user or user.is_school_admin %}
-                                    <a href="{% url 'study_material_delete' mat.id %}" class="btn btn-sm btn-danger text-white" title="Delete Material">
-                                        <i class="fa-solid fa-trash-can me-1"></i> Delete
-                                    </a>
+                                    <form method="post" action="{% url 'study_material_delete' mat.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this study material? (क्या आप यह स्टडी मटेरियल डिलीट करना चाहते हैं?)');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger text-white" title="Delete Material">
+                                            <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                        </button>
+                                    </form>
                                 {% endif %}
                             </td>
                         </tr>

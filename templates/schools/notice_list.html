@@ -50,7 +50,12 @@
                                     <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank"><i class="fa-solid fa-paperclip me-1"></i> View Attachment</a>
                                 {% endif %}
                                 {% if user.is_school_admin %}
-                                    <a href="{% url 'notice_delete' notice.id %}" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Notice"><i class="fa-solid fa-trash-can me-1"></i> Delete</a>
+                                    <form method="post" action="{% url 'notice_delete' notice.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this announcement? (क्या आप यह नोटिस डिलीट करना चाहते हैं?)');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Notice">
+                                            <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                        </button>
+                                    </form>
                                 {% endif %}
                             </div>
                         </div>

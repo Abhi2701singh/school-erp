@@ -70,9 +70,12 @@
                                 </a>
                             {% endif %}
                             {% if user.role == 'TEACHER' or user.role == 'SCHOOL_ADMIN' or user.role == 'PRINCIPAL' or user.is_superuser or user.is_staff or user.is_teacher_user or user.is_school_admin %}
-                                <a href="{% url 'homework_delete' hw.id %}" class="btn btn-sm btn-danger text-white text-nowrap shadow-sm" title="Delete Homework Assignment">
-                                    <i class="fa-solid fa-trash-can me-1"></i> Delete
-                                </a>
+                                <form method="post" action="{% url 'homework_delete' hw.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this homework assignment? (क्या आप यह होमवर्क डिलीट करना चाहते हैं?)');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger text-white text-nowrap shadow-sm" title="Delete Homework Assignment">
+                                        <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                    </button>
+                                </form>
                             {% endif %}
                         </div>
                     </div>
