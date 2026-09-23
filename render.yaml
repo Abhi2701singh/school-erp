@@ -8,6 +8,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.8"
+      - key: DATABASE_URL
+        value: "postgresql://neondb_owner:npg_qfPUM0B2ORhi@ep-cold-river-awfrnqdh.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require"
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
