@@ -82,12 +82,28 @@ def attendance_report_view(request):
     month = request.GET.get('month', date.today().month)
     year = request.GET.get('year', date.today().year)
 
+    # Auto-default for student and parent
+    student_user_profile = getattr(request.user, 'student_profile', None)
+    if not class_id and not section_id:
+        if student_user_profile:
+            class_id = str(student_user_profile.current_class_id)
+            section_id = str(student_user_profile.current_section_id)
+        elif request.user.is_parent_user():
+            parent_profile = getattr(request.user, 'parent_profile', None)
+            first_child = parent_profile.students.filter(school=request.school).first() if parent_profile else None
+            if first_child:
+                class_id = str(first_child.current_class_id)
+                section_id = str(first_child.current_section_id)
+
     classes = Class.objects.filter(school=request.school)
     sections = Section.objects.filter(school=request.school)
 
     report_data = []
     if class_id and section_id:
         students = Student.objects.filter(school=request.school, current_class_id=class_id, current_section_id=section_id, status='ACTIVE')
+        if student_user_profile:
+            students = students.filter(id=student_user_profile.id)
+
         for student in students:
             atts = StudentAttendance.objects.filter(
                 school=request.school,

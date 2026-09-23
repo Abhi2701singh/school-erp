@@ -4,110 +4,263 @@
 
 {% block content %}
 {% if student %}
-<div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4">
-    <div>
-        <h3 class="fw-bold m-0">Welcome, {{ student.first_name }} {{ student.last_name }}</h3>
-        <p class="text-muted m-0">Class: <strong>{{ student.current_class.name }} - {{ student.current_section.name }}</strong> | Roll No: <strong>{{ student.roll_no }}</strong></p>
-    </div>
-    <div>
-        <a href="{% url 'student_id_card' student.id %}" class="btn btn-outline-primary" target="_blank">
-            <i class="fa-solid fa-id-card me-2"></i> Print ID Card
-        </a>
+<!-- Student Profile & Quick Actions Banner -->
+<div class="card card-custom p-3 p-sm-4 mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            {% if student.photo %}
+                <img src="{{ student.photo.url }}" class="rounded-circle border border-2 border-primary" style="width: 64px; height: 64px; object-fit: cover;" alt="Student Photo">
+            {% else %}
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 64px; height: 64px; font-size: 1.5rem;">
+                    {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h3 class="fw-bold m-0 text-dark">{{ student.first_name }} {{ student.last_name }}</h3>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="fa-solid fa-user-graduate me-1"></i> Student</span>
+                </div>
+                <div class="text-muted small mt-1 d-flex flex-wrap gap-2 gap-sm-3">
+                    <span><i class="fa-solid fa-layer-group text-primary me-1"></i> Class: <strong>{{ student.current_class.name }} - {{ student.current_section.name }}</strong></span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-hashtag text-primary me-1"></i> Roll No: <strong>{{ student.roll_no|default:"01" }}</strong></span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-id-badge text-primary me-1"></i> Adm No: <strong>{{ student.admission_no }}</strong></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Action Buttons -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'my_fees' %}" class="btn btn-primary px-3 shadow-sm">
+                <i class="fa-solid fa-wallet me-1"></i> My Fees & Pay
+            </a>
+            <a href="{% url 'homework_list' %}" class="btn btn-outline-primary px-3">
+                <i class="fa-solid fa-book-bookmark me-1"></i> Homework
+            </a>
+            <a href="{% url 'attendance_report' %}" class="btn btn-outline-secondary px-3">
+                <i class="fa-solid fa-calendar-check me-1"></i> Attendance
+            </a>
+            <a href="{% url 'student_id_card' student.id %}" class="btn btn-outline-dark px-3" target="_blank">
+                <i class="fa-solid fa-id-card me-1"></i> Print ID
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- Stat Cards Row -->
+<!-- 3 KPI Stat Cards Row -->
 <div class="row g-3 g-md-4 mb-4">
-    <div class="col-12 col-sm-6 col-md-4">
-        <div class="stat-card-modern">
-            <div class="stat-icon-modern stat-icon-green">
-                <i class="fa-solid fa-clipboard-user"></i>
+    <div class="col-12 col-md-4">
+        <a href="{% url 'attendance_report' %}" class="text-decoration-none">
+            <div class="stat-card-modern h-100">
+                <div class="stat-icon-modern stat-icon-green">
+                    <i class="fa-solid fa-clipboard-user"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="stat-number">{{ att_pct }}%</div>
+                    <div class="stat-label">Attendance Rate</div>
+                    <span class="trend-badge trend-up"><i class="fa-solid fa-arrow-right me-1"></i> View Attendance History</span>
+                </div>
             </div>
-            <div class="flex-grow-1">
-                <div class="stat-number">{{ att_pct }}%</div>
-                <div class="stat-label">Attendance Rate</div>
-                <span class="trend-badge trend-up"><i class="fa-solid fa-check"></i> Good</span>
-            </div>
-        </div>
+        </a>
     </div>
-    <div class="col-12 col-sm-6 col-md-4">
+
+    <div class="col-12 col-md-4">
         <a href="{% url 'my_fees' %}" class="text-decoration-none">
-            <div class="stat-card-modern">
+            <div class="stat-card-modern h-100" style="{% if total_due > 0 %}border-left: 4px solid #ef4444;{% else %}border-left: 4px solid #10b981;{% endif %}">
                 <div class="stat-icon-modern stat-icon-rose">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                 </div>
                 <div class="flex-grow-1">
-                    <div class="stat-number">₹{{ total_due|floatformat:0 }}</div>
-                    <div class="stat-label">Fee Portal / Dues</div>
+                    <div class="stat-number {% if total_due > 0 %}text-danger{% else %}text-success{% endif %}">₹{{ total_due|floatformat:0 }}</div>
+                    <div class="stat-label">Pending Fee Dues</div>
                     {% if total_due > 0 %}
-                        <span class="trend-badge trend-down">Pay Now</span>
+                        <span class="badge bg-danger text-white px-2 py-1"><i class="fa-solid fa-credit-card me-1"></i> Pay Fee / Submit Proof →</span>
                     {% else %}
-                        <span class="trend-badge trend-up">All Cleared</span>
+                        <span class="badge bg-success text-white px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i> All Cleared / View Receipts →</span>
                     {% endif %}
                 </div>
             </div>
         </a>
     </div>
-    <div class="col-12 col-sm-6 col-md-4">
-        <div class="stat-card-modern">
-            <div class="stat-icon-modern stat-icon-blue">
-                <i class="fa-solid fa-book-bookmark"></i>
+
+    <div class="col-12 col-md-4">
+        <a href="{% url 'homework_list' %}" class="text-decoration-none">
+            <div class="stat-card-modern h-100">
+                <div class="stat-icon-modern stat-icon-blue">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="stat-number">{{ homeworks|length }}</div>
+                    <div class="stat-label">Active Assignments</div>
+                    <span class="trend-badge trend-up"><i class="fa-solid fa-arrow-right me-1"></i> View & Do Homework</span>
+                </div>
             </div>
-            <div class="flex-grow-1">
-                <div class="stat-number">{{ homeworks|length }}</div>
-                <div class="stat-label">Active Assignments</div>
-                <span class="trend-badge trend-up">This Week</span>
-            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Dedicated Section: My Fee Breakdown & Direct Actions -->
+<div class="card card-custom p-3 p-sm-4 mb-4">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 pb-2 border-bottom">
+        <div>
+            <h5 class="fw-bold m-0 text-dark"><i class="fa-solid fa-wallet text-primary me-2"></i> My Fee Breakdown & Payment Actions</h5>
+            <small class="text-muted">Review your fee heads, pending dues, and submit online payment proofs directly.</small>
         </div>
+        <a href="{% url 'my_fees' %}" class="btn btn-sm btn-primary text-nowrap">
+            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Full Fee Portal & Receipts
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle table-hover m-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fee Category / Head</th>
+                    <th>Due Date</th>
+                    <th>Total Invoiced</th>
+                    <th>Paid Amount</th>
+                    <th>Net Balance Due</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in fees %}
+                <tr>
+                    <td>
+                        <div class="fw-bold text-dark">{{ fee.fee_head.name }}</div>
+                        <small class="text-muted">{{ fee.academic_session.name }}</small>
+                    </td>
+                    <td>
+                        <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>{{ fee.due_date|date:"d M Y" }}</small>
+                    </td>
+                    <td class="fw-semibold">₹{{ fee.amount_due|floatformat:0 }}</td>
+                    <td class="text-success fw-bold">₹{{ fee.amount_paid|floatformat:0 }}</td>
+                    <td class="fw-bold {% if fee.net_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                        ₹{{ fee.net_due|floatformat:0 }}
+                    </td>
+                    <td>
+                        {% if fee.status == 'PAID' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-circle-check me-1"></i> Paid</span>
+                        {% elif fee.status == 'PENDING_VERIFICATION' or fee.under_review_amount > 0 %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle"><i class="fa-solid fa-clock me-1"></i> Under Review</span>
+                        {% elif fee.status == 'PARTIAL' %}
+                            <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="fa-solid fa-chart-pie me-1"></i> Partially Paid</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fa-solid fa-circle-exclamation me-1"></i> Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if fee.net_due > 0 %}
+                            <a href="{% url 'submit_payment_claim' fee.id %}" class="btn btn-sm btn-primary shadow-sm">
+                                <i class="fa-solid fa-credit-card me-1"></i> Pay / Submit Proof
+                            </a>
+                        {% else %}
+                            <a href="{% url 'my_fees' %}" class="btn btn-sm btn-outline-success">
+                                <i class="fa-solid fa-receipt me-1"></i> Receipt
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        <i class="fa-solid fa-check-circle text-success fs-3 d-block mb-2"></i>
+                        No pending fee records found. All dues are cleared!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
 <!-- Homework & Exam Results Row -->
 <div class="row g-4 mb-4">
+    <!-- Homework & Assignments -->
     <div class="col-12 col-lg-6">
         <div class="card card-custom p-3 p-sm-4 h-100">
-            <h5 class="fw-bold mb-3"><i class="fa-solid fa-book-open text-primary me-2"></i> Homework & Assignments</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-book-open text-primary me-2"></i> Homework & Assignments</h5>
+                <a href="{% url 'homework_list' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fa-solid fa-eye me-1"></i> View All ({{ homeworks|length }})
+                </a>
+            </div>
             <ul class="list-group list-group-flush">
                 {% for hw in homeworks %}
-                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="fw-semibold">{{ hw.title }} <span class="badge bg-light text-dark border">{{ hw.subject.name }}</span></div>
-                            <small class="text-muted">
-                                <i class="fa-solid fa-chalkboard-user me-1 text-primary"></i> By: <strong>{{ hw.created_by.get_full_name|default:hw.created_by.username }}</strong>
-                            </small>
+                    <li class="list-group-item px-0 py-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                            <div>
+                                <h6 class="fw-bold text-dark m-0">{{ hw.title }}</h6>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle mt-1">{{ hw.subject.name }}</span>
+                            </div>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-nowrap">
+                                <i class="fa-regular fa-clock me-1"></i> Due: {{ hw.due_date|date:"d M Y" }}
+                            </span>
                         </div>
-                        <span class="badge bg-danger-subtle text-danger border">Due: {{ hw.due_date|date:"d M" }}</span>
+                        <p class="text-muted small mb-2 text-truncate" style="max-width: 480px;">{{ hw.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fa-solid fa-chalkboard-user text-primary me-1"></i> By: <strong>{{ hw.created_by.get_full_name|default:hw.created_by.username }}</strong>
+                            </small>
+                            <div class="d-flex gap-2">
+                                {% if hw.attachment %}
+                                    <a href="{{ hw.attachment.url }}" class="btn btn-xs btn-outline-secondary" target="_blank"><i class="fa-solid fa-paperclip me-1"></i> File</a>
+                                {% endif %}
+                                <a href="{% url 'homework_list' %}" class="btn btn-xs btn-primary"><i class="fa-solid fa-arrow-right me-1"></i> Open</a>
+                            </div>
+                        </div>
                     </li>
                 {% empty %}
-                    <li class="list-group-item px-0 text-muted">No pending homework.</li>
+                    <li class="list-group-item px-0 text-muted text-center py-4">
+                        <i class="fa-solid fa-circle-check text-success fs-4 d-block mb-2"></i>
+                        No pending homework assigned.
+                    </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
+
+    <!-- Exam Marks & Report Cards -->
     <div class="col-12 col-lg-6">
         <div class="card card-custom p-3 p-sm-4 h-100">
-            <h5 class="fw-bold mb-3"><i class="fa-solid fa-award text-warning me-2"></i> Recent Marks & Exam Results</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-award text-warning me-2"></i> Recent Marks & Report Cards</h5>
+                <a href="{% url 'exam_list' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fa-solid fa-file-lines me-1"></i> All Exams
+                </a>
+            </div>
             <div class="table-responsive">
-                <table class="table table-sm align-middle">
+                <table class="table table-sm align-middle m-0">
                     <thead class="table-light">
                         <tr>
                             <th>Exam</th>
                             <th>Subject</th>
                             <th>Marks</th>
                             <th>Grade</th>
+                            <th class="text-end">Report</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for mark in marks %}
                             <tr>
-                                <td>{{ mark.exam.name }}</td>
+                                <td class="fw-semibold text-nowrap">{{ mark.exam.name }}</td>
                                 <td>{{ mark.subject.name }}</td>
                                 <td class="fw-bold">{{ mark.total_marks_obtained }} / {{ mark.subject.max_marks }}</td>
                                 <td><span class="badge bg-info">{{ mark.grade }}</span></td>
+                                <td class="text-end">
+                                    <a href="{% url 'report_card' student.id mark.exam.id %}" class="btn btn-xs btn-outline-primary text-nowrap">
+                                        <i class="fa-solid fa-file-invoice me-1"></i> Card
+                                    </a>
+                                </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="4" class="text-muted text-center py-3">No exam results published yet.</td>
+                                <td colspan="5" class="text-muted text-center py-4">
+                                    <i class="fa-solid fa-chart-simple text-muted fs-4 d-block mb-2"></i>
+                                    No exam results published yet.
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -119,15 +272,16 @@
 
 <!-- Notices & Study Materials Row -->
 <div class="row g-4 mb-4">
+    <!-- School Notices -->
     <div class="col-12 col-lg-6">
         <div class="card card-custom p-3 p-sm-4 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                 <h5 class="fw-bold m-0"><i class="fa-solid fa-bullhorn text-warning me-2"></i> School Notices</h5>
                 <a href="{% url 'notice_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <div class="d-flex flex-column gap-3">
                 {% for notice in notices %}
-                    <div class="p-3 border rounded-3 bg-light">
+                    <div class="p-3 border rounded-3 bg-light shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <h6 class="fw-bold m-0 text-primary">{{ notice.title }}</h6>
                             <span class="badge bg-secondary">{{ notice.get_target_role_display }}</span>
@@ -146,18 +300,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Study Materials -->
     <div class="col-12 col-lg-6">
         <div class="card card-custom p-3 p-sm-4 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                 <h5 class="fw-bold m-0"><i class="fa-solid fa-file-pdf text-danger me-2"></i> Study Materials & Notes</h5>
                 <a href="{% url 'study_material_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <ul class="list-group list-group-flush">
                 {% for sm in study_materials %}
-                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                    <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-bottom">
                         <div>
-                            <strong>{{ sm.title }}</strong>
-                            <div class="small text-muted">{{ sm.subject.name }}</div>
+                            <strong class="text-dark">{{ sm.title }}</strong>
+                            <div class="small text-muted"><i class="fa-solid fa-book me-1 text-primary"></i> {{ sm.subject.name }}</div>
                         </div>
                         {% if sm.file %}
                             <a href="{{ sm.file.url }}" class="btn btn-sm btn-outline-danger" target="_blank"><i class="fa-solid fa-download me-1"></i> Download</a>
@@ -170,8 +326,12 @@
         </div>
     </div>
 </div>
+
 {% else %}
-    <div class="alert alert-warning card-custom border-0">Student profile not linked to your user account.</div>
+    <div class="alert alert-warning card-custom border-0 p-4">
+        <h5><i class="fa-solid fa-triangle-exclamation me-2"></i> Student Profile Not Linked</h5>
+        <p class="m-0">Your user account is not currently linked to an active student record in this school. Please contact your school administrator.</p>
+    </div>
 {% endif %}
 {% endblock %}
 

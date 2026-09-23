@@ -99,9 +99,12 @@
                 <li><a href="{% url 'notice_list' %}" class="{% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}"><i class="fa-solid fa-bullhorn"></i> Noticeboard</a></li>
             {% elif user.is_student_user or user.is_parent_user %}
                 <div class="nav-section-title">Student Portal</div>
-                <li><a href="{% url 'my_fees' %}" class="{% if 'fees' in request.resolver_match.app_names or request.resolver_match.url_name == 'my_fees' or request.resolver_match.url_name == 'submit_payment_claim' %}active{% endif %}"><i class="fa-solid fa-wallet"></i> My Fees & Receipts</a></li>
+                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-house"></i> Student Dashboard</a></li>
+                <li><a href="{% url 'my_fees' %}" class="{% if 'fees' in request.resolver_match.app_names or request.resolver_match.url_name == 'my_fees' or request.resolver_match.url_name == 'submit_payment_claim' or request.resolver_match.url_name == 'fee_receipt' %}active{% endif %}"><i class="fa-solid fa-wallet"></i> My Fees & Receipts</a></li>
                 <li><a href="{% url 'homework_list' %}" class="{% if request.resolver_match.url_name == 'homework_list' %}active{% endif %}"><i class="fa-solid fa-book-bookmark"></i> Homework & Tasks</a></li>
                 <li><a href="{% url 'study_material_list' %}" class="{% if request.resolver_match.url_name == 'study_material_list' %}active{% endif %}"><i class="fa-solid fa-file-pdf"></i> Study Materials</a></li>
+                <li><a href="{% url 'attendance_report' %}" class="{% if request.resolver_match.url_name == 'attendance_report' %}active{% endif %}"><i class="fa-solid fa-calendar-check"></i> Attendance Record</a></li>
+                <li><a href="{% url 'exam_list' %}" class="{% if request.resolver_match.url_name == 'exam_list' or request.resolver_match.url_name == 'report_card' %}active{% endif %}"><i class="fa-solid fa-award"></i> Exams & Report Cards</a></li>
                 <li><a href="{% url 'timetable' %}" class="{% if request.resolver_match.url_name == 'timetable' %}active{% endif %}"><i class="fa-solid fa-clock"></i> Timetable</a></li>
                 <li><a href="{% url 'notice_list' %}" class="{% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}"><i class="fa-solid fa-bullhorn"></i> Notices</a></li>
             {% endif %}

@@ -117,6 +117,14 @@ def timetable_view(request):
     class_id = request.GET.get('class_id')
     section_id = request.GET.get('section_id')
 
+    # Auto-default for student
+    if not class_id and not section_id:
+        if request.user.is_student_user() and getattr(request.user, 'student_profile', None):
+            class_id = str(request.user.student_profile.current_class_id)
+            section_id = str(request.user.student_profile.current_section_id)
+        elif request.user.is_teacher_user():
+            timetables = timetables.filter(teacher_user=request.user)
+
     if class_id:
         timetables = timetables.filter(class_level_id=class_id)
     if section_id:
