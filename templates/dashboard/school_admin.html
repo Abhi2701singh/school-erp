@@ -28,6 +28,23 @@
     </div>
 </div>
 
+{% if pending_verifications_count and pending_verifications_count > 0 %}
+<div class="alert alert-warning border-0 shadow-sm rounded-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4 p-3 px-4">
+    <div class="d-flex align-items-center gap-3">
+        <div class="bg-warning bg-opacity-25 text-warning rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; min-width: 44px;">
+            <i class="fa-solid fa-clock-rotate-left fa-lg text-dark"></i>
+        </div>
+        <div>
+            <h6 class="fw-bold mb-0 text-dark">Action Required: {{ pending_verifications_count }} Payment Claim{{ pending_verifications_count|pluralize }} Pending Verification</h6>
+            <small class="text-muted">Students or parents have uploaded payment proofs awaiting school verification.</small>
+        </div>
+    </div>
+    <a href="{% url 'fee_verifications' %}" class="btn btn-warning btn-sm rounded-pill fw-bold px-4 py-2 text-dark shadow-xs text-nowrap">
+        <i class="fa-solid fa-shield-check me-1"></i> Review Claims
+    </a>
+</div>
+{% endif %}
+
 <!-- 4 Modern Stat Cards Row -->
 <div class="row g-3 g-md-4 mb-4">
     <!-- Total Students -->
@@ -66,36 +83,38 @@
 
     <!-- Fee Collected -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card-modern">
-            <div class="stat-icon-modern stat-icon-teal">
-                <i class="fa-solid fa-indian-rupee-sign"></i>
-            </div>
-            <div class="flex-grow-1">
-                <div class="stat-number">₹{{ fee_collected_display }}</div>
-                <div class="stat-label">Fee Collected</div>
-                <div class="d-flex align-items-center gap-1" style="font-size: 0.78rem;">
-                    <span class="text-success fw-bold">↑ 18%</span>
-                    <span class="text-muted">vs last month</span>
+        <a href="{% url 'fee_reconciliation' %}" class="text-decoration-none">
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern stat-icon-teal">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="stat-number">₹{{ fee_collected_display }}</div>
+                    <div class="stat-label">Fee Reconciliation</div>
+                    <div class="d-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                        <span class="text-success fw-bold">Audit Reports</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Fee Defaulters -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card-modern">
-            <div class="stat-icon-modern stat-icon-amber">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <div class="flex-grow-1">
-                <div class="stat-number">{{ defaulters_count_display }}</div>
-                <div class="stat-label">Fee Defaulters</div>
-                <div class="d-flex align-items-center gap-1" style="font-size: 0.78rem;">
-                    <span class="text-danger fw-bold">↓ 2%</span>
-                    <span class="text-muted">vs last month</span>
+        <a href="{% url 'fee_defaulters' %}" class="text-decoration-none">
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern stat-icon-amber">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="stat-number">{{ defaulters_count_display }}</div>
+                    <div class="stat-label">Fee Defaulters</div>
+                    <div class="d-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                        <span class="text-danger fw-bold">View Dues</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 

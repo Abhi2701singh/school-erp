@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Refunds & Chargebacks - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold m-0"><i class="fa-solid fa-arrow-rotate-left text-primary me-2"></i> Fee Refunds & Chargebacks</h3>
+        <p class="text-muted m-0">Manage student fee refund requests and process bank settlements</p>
+    </div>
+</div>
+
+<div class="card card-custom p-3 p-sm-4 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Refund #</th>
+                    <th>Student Name</th>
+                    <th>Original Receipt</th>
+                    <th>Fee Category</th>
+                    <th>Refund Amount</th>
+                    <th>Refund Mode</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ref in refunds %}
+                <tr>
+                    <td><span class="badge bg-light text-dark border">{{ ref.refund_no }}</span></td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ ref.payment.student_fee.student.first_name }} {{ ref.payment.student_fee.student.last_name }}</div>
+                        <small class="text-muted">Adm: {{ ref.payment.student_fee.student.admission_no }}</small>
+                    </td>
+                    <td><a href="{% url 'fee_receipt' ref.payment.id %}" class="fw-bold text-decoration-none">#{{ ref.payment.receipt_no }}</a></td>
+                    <td>{{ ref.payment.student_fee.fee_head.name }}</td>
+                    <td class="fw-bold text-danger fs-6">₹{{ ref.amount|floatformat:2 }}</td>
+                    <td><span class="badge bg-light text-primary border">{{ ref.refund_mode }}</span></td>
+                    <td><small class="text-muted">{{ ref.reason|truncatechars:35 }}</small></td>
+                    <td>
+                        {% if ref.status == 'REQUESTED' %}
+                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i> Requested</span>
+                        {% elif ref.status == 'PROCESSED' %}
+                            <span class="badge bg-success"><i class="fa-solid fa-check-circle me-1"></i> Completed</span>
+                        {% elif ref.status == 'REJECTED' %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ ref.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if ref.status == 'REQUESTED' and user.is_school_admin %}
+                            <form method="post" action="{% url 'process_refund' ref.id %}" style="display: inline-block;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="APPROVE_PROCESS">
+                                <button type="submit" class="btn btn-sm btn-success rounded-pill px-3 me-1" onclick="return confirm('Approve and process this refund?');">
+                                    <i class="fa-solid fa-check me-1"></i> Approve & Settle
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'process_refund' ref.id %}" style="display: inline-block;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="REJECT">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Reject this refund request?');">
+                                    <i class="fa-solid fa-xmark me-1"></i> Reject
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="small text-muted">{{ ref.processed_at|date:"d M Y"|default:"-" }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">No refund requests recorded.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

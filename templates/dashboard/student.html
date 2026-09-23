@@ -31,20 +31,22 @@
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-4">
-        <div class="stat-card-modern">
-            <div class="stat-icon-modern stat-icon-rose">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
+        <a href="{% url 'my_fees' %}" class="text-decoration-none">
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern stat-icon-rose">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="stat-number">₹{{ total_due|floatformat:0 }}</div>
+                    <div class="stat-label">Fee Portal / Dues</div>
+                    {% if total_due > 0 %}
+                        <span class="trend-badge trend-down">Pay Now</span>
+                    {% else %}
+                        <span class="trend-badge trend-up">All Cleared</span>
+                    {% endif %}
+                </div>
             </div>
-            <div class="flex-grow-1">
-                <div class="stat-number">₹{{ total_due|floatformat:0 }}</div>
-                <div class="stat-label">Pending Fee Dues</div>
-                {% if total_due > 0 %}
-                    <span class="trend-badge trend-down">Due</span>
-                {% else %}
-                    <span class="trend-badge trend-up">All Cleared</span>
-                {% endif %}
-            </div>
-        </div>
+        </a>
     </div>
     <div class="col-12 col-sm-6 col-md-4">
         <div class="stat-card-modern">

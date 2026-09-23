@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Financial Audit Trail - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold m-0"><i class="fa-solid fa-shield-halved text-primary me-2"></i> Financial Audit Trail</h3>
+        <p class="text-muted m-0">Permanent, immutable application-level transaction & security logs (OWASP Compliance)</p>
+    </div>
+    <div>
+        <span class="badge bg-secondary px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i> Tamper-Evident Immutable Log</span>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card card-custom p-3 mb-4 shadow-xs">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+            <select name="action" class="form-select" onchange="this.form.submit()">
+                <option value="">-- All Actions --</option>
+                <option value="PAYMENT_CLAIM_SUBMITTED" {% if action_filter == 'PAYMENT_CLAIM_SUBMITTED' %}selected{% endif %}>PAYMENT_CLAIM_SUBMITTED</option>
+                <option value="PAYMENT_APPROVED" {% if action_filter == 'PAYMENT_APPROVED' %}selected{% endif %}>PAYMENT_APPROVED</option>
+                <option value="PAYMENT_REJECTED" {% if action_filter == 'PAYMENT_REJECTED' %}selected{% endif %}>PAYMENT_REJECTED</option>
+                <option value="PAYMENT_COLLECTED_COUNTER" {% if action_filter == 'PAYMENT_COLLECTED_COUNTER' %}selected{% endif %}>PAYMENT_COLLECTED_COUNTER</option>
+                <option value="PAYMENT_REVERSED" {% if action_filter == 'PAYMENT_REVERSED' %}selected{% endif %}>PAYMENT_REVERSED</option>
+                <option value="FEE_ADJUSTMENT" {% if action_filter == 'FEE_ADJUSTMENT' %}selected{% endif %}>FEE_ADJUSTMENT</option>
+                <option value="REFUND_PROCESSED" {% if action_filter == 'REFUND_PROCESSED' %}selected{% endif %}>REFUND_PROCESSED</option>
+                <option value="DAILY_CLOSING_SUBMITTED" {% if action_filter == 'DAILY_CLOSING_SUBMITTED' %}selected{% endif %}>DAILY_CLOSING_SUBMITTED</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-2">
+            <a href="{% url 'fee_audit_logs' %}" class="btn btn-outline-secondary w-100">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Audit Trail Table -->
+<div class="card card-custom p-3 p-sm-4 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+            <thead class="table-light">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Actor (User)</th>
+                    <th>Action</th>
+                    <th>Student</th>
+                    <th>Amount</th>
+                    <th>Status Transition</th>
+                    <th>IP Address</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td class="text-nowrap text-muted">{{ log.created_at|date:"d M Y, h:i:s A" }}</td>
+                    <td>
+                        <strong class="text-dark">{{ log.user.username|default:"System" }}</strong>
+                        {% if log.user %}
+                            <small class="text-muted d-block">{{ log.user.get_role_display }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge 
+                            {% if 'APPROVED' in log.action or 'COLLECTED' in log.action %}bg-success
+                            {% elif 'REJECTED' in log.action or 'REVERSED' in log.action %}bg-danger
+                            {% elif 'CLAIM' in log.action %}bg-warning text-dark
+                            {% else %}bg-primary{% endif %}">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if log.student %}
+                            <strong>{{ log.student.first_name }} {{ log.student.last_name }}</strong><br>
+                            <small class="text-muted">{{ log.student.admission_no }}</small>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold text-nowrap">
+                        {% if log.amount %}
+                            ₹{{ log.amount|floatformat:2 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if log.old_status or log.new_status %}
+                            <span class="badge bg-light text-secondary border">{{ log.old_status|default:"-" }}</span>
+                            <i class="fa-solid fa-arrow-right text-muted mx-1" style="font-size: 0.7rem;"></i>
+                            <span class="badge bg-light text-dark border">{{ log.new_status|default:"-" }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td><code>{{ log.ip_address|default:"127.0.0.1" }}</code></td>
+                    <td>
+                        {% if log.details %}
+                            <button type="button" class="btn btn-xs btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#details{{ log.id }}">
+                                <i class="fa-solid fa-code me-1"></i> View
+                            </button>
+                            <div class="collapse mt-2" id="details{{ log.id }}">
+                                <pre class="bg-light p-2 rounded small m-0 border" style="max-width: 250px; overflow-x: auto;">{{ log.details|pprint }}</pre>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">No audit logs recorded matching this filter.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -78,6 +78,12 @@ class User(AbstractUser):
     def is_parent_user(self):
         return self.role == self.Roles.PARENT
 
+    def is_accountant(self):
+        return self.role == self.Roles.ACCOUNTANT
+
+    def can_manage_fees(self):
+        return self.role in [self.Roles.SCHOOL_ADMIN, self.Roles.PRINCIPAL, self.Roles.ACCOUNTANT] or self.is_super_admin()
+
     def __str__(self):
         role_label = self.get_role_display()
         school_label = self.school.name if self.school else "Global"

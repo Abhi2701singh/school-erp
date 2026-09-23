@@ -11,6 +11,10 @@ from accounts.models import User
 
 @login_required
 def student_list_view(request):
+    if request.user.is_student_user() or request.user.is_parent_user():
+        messages.error(request, "Access restricted to school staff.")
+        return redirect('dashboard')
+
     query = request.GET.get('q', '').strip()
     class_id = request.GET.get('class_id', '')
     section_id = request.GET.get('section_id', '')
@@ -177,10 +181,15 @@ def student_delete_view(request, pk):
 
 @login_required
 def student_profile_view(request, pk):
+    from fees.utils import user_can_access_student
     if request.user.is_super_admin():
         student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'academic_session', 'school', 'user'), pk=pk)
     else:
         student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'academic_session', 'school', 'user'), pk=pk, school=request.school)
+
+    if not (request.user.is_teacher_user() or user_can_access_student(request.user, student)):
+        messages.error(request, "You do not have authorization to view this student's profile.")
+        return redirect('dashboard')
 
     if request.method == 'POST' and request.user.is_school_admin():
         doc_form = StudentDocumentForm(request.POST, request.FILES)
@@ -219,8 +228,14 @@ def student_profile_view(request, pk):
 
 @login_required
 def student_id_card_view(request, pk):
+    from fees.utils import user_can_access_student
     if request.user.is_super_admin():
         student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'school'), pk=pk)
     else:
         student = get_object_or_404(Student.objects.select_related('current_class', 'current_section', 'school'), pk=pk, school=request.school)
+
+    if not (request.user.is_teacher_user() or user_can_access_student(request.user, student)):
+        messages.error(request, "You do not have authorization to view this student ID card.")
+        return redirect('dashboard')
+
     return render(request, 'students/student_id_card.html', {'student': student})

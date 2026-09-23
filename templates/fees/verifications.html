@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Verifications - EduManage ERP{% endblock %}
+
+{% block content %}
+<!-- Header Row -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold m-0"><i class="fa-solid fa-clipboard-check text-primary me-2"></i> Payment Verification Panel</h3>
+        <p class="text-muted m-0">Review, verify, and authorize student online fee payments & proof uploads</p>
+    </div>
+    <div>
+        <span class="badge {% if pending_count > 0 %}bg-warning text-dark{% else %}bg-success{% endif %} fs-6 px-3 py-2 rounded-pill shadow-xs">
+            <i class="fa-solid fa-bell me-1"></i> Pending Verifications: <strong>{{ pending_count }}</strong>
+        </span>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card card-custom p-3 mb-4 shadow-xs">
+    <form method="get" class="row g-2 align-items-center">
+        <!-- Status Filter -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="PENDING_VERIFICATION" {% if status_filter == 'PENDING_VERIFICATION' %}selected{% endif %}>Pending Verification ({{ pending_count }})</option>
+                <option value="VERIFIED" {% if status_filter == 'VERIFIED' %}selected{% endif %}>Verified / Approved</option>
+                <option value="REJECTED" {% if status_filter == 'REJECTED' %}selected{% endif %}>Rejected Claims</option>
+                <option value="ALL" {% if status_filter == 'ALL' %}selected{% endif %}>All Statuses</option>
+            </select>
+        </div>
+
+        <!-- Class Filter -->
+        <div class="col-12 col-sm-6 col-md-3">
+            <select name="class_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- All Classes --</option>
+                {% for c in classes %}
+                    <option value="{{ c.id }}" {% if class_filter == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Search Input -->
+        <div class="col-12 col-md-4">
+            <div class="input-group">
+                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search student name, adm no, UTR, claim #">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </div>
+
+        <!-- Reset -->
+        <div class="col-12 col-md-2 text-md-end">
+            <a href="{% url 'fee_verifications' %}" class="btn btn-outline-secondary w-100"><i class="fa-solid fa-rotate-left me-1"></i> Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Claims List / Table -->
+<div class="card card-custom p-3 p-sm-4 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Claim #</th>
+                    <th>Student Info</th>
+                    <th>Fee Category</th>
+                    <th>Submitted Amount</th>
+                    <th>Mode & Txn Ref</th>
+                    <th>Date</th>
+                    <th>Proof</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in claims %}
+                <tr>
+                    <td><span class="badge bg-light text-dark border">{{ claim.submission_no }}</span></td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ claim.student.first_name }} {{ claim.student.last_name }}</div>
+                        <small class="text-muted">Adm: <strong>{{ claim.student.admission_no }}</strong> | Class: {{ claim.student.current_class.name }}-{{ claim.student.current_section.name }}</small>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">{{ claim.student_fee.fee_head.name }}</div>
+                        <small class="text-muted">Net Due: ₹{{ claim.student_fee.net_due|floatformat:2 }}</small>
+                    </td>
+                    <td>
+                        <span class="fw-bold text-success fs-6">₹{{ claim.amount|floatformat:2 }}</span>
+                    </td>
+                    <td>
+                        <div class="badge bg-light text-primary border">{{ claim.get_payment_mode_display }}</div>
+                        <div class="small text-muted text-truncate" style="max-width: 150px;" title="{{ claim.transaction_id }}">
+                            <code>{{ claim.transaction_id }}</code>
+                        </div>
+                        {% if claim.bank_name %}
+                            <small class="text-muted d-block">{{ claim.bank_name }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap small">
+                        {{ claim.payment_date|date:"d M Y" }}<br>
+                        <small class="text-muted">{{ claim.submitted_at|date:"h:i A" }}</small>
+                    </td>
+                    <td>
+                        {% if claim.proof_file %}
+                            <a href="{% url 'fee_proof_download' claim.id %}" target="_blank" class="btn btn-sm btn-outline-primary shadow-xs">
+                                <i class="fa-solid fa-file-image me-1"></i> View Proof
+                            </a>
+                        {% else %}
+                            <span class="badge bg-light text-muted border">No file</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if claim.status == 'PENDING_VERIFICATION' %}
+                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-hourglass-half me-1"></i> Pending</span>
+                        {% elif claim.status == 'VERIFIED' %}
+                            <span class="badge bg-success"><i class="fa-solid fa-check-circle me-1"></i> Verified</span>
+                        {% elif claim.status == 'REJECTED' %}
+                            <span class="badge bg-danger"><i class="fa-solid fa-times-circle me-1"></i> Rejected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ claim.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if claim.status == 'PENDING_VERIFICATION' %}
+                            <div class="btn-group">
+                                <!-- Approve Button (Triggers Double-Confirmation Modal) -->
+                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 me-1" data-bs-toggle="modal" data-bs-target="#approveModal{{ claim.id }}">
+                                    <i class="fa-solid fa-check me-1"></i> Approve
+                                </button>
+                                <!-- Reject Button (Triggers Rejection Modal) -->
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#rejectModal{{ claim.id }}">
+                                    <i class="fa-solid fa-xmark me-1"></i> Reject
+                                </button>
+                            </div>
+
+                            <!-- APPROVE CONFIRMATION MODAL -->
+                            <div class="modal fade" id="approveModal{{ claim.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header bg-success text-white">
+                                            <h5 class="modal-title fw-bold"><i class="fa-solid fa-check-circle me-2"></i> Confirm Payment Verification</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form method="post" action="{% url 'approve_payment_claim' claim.id %}">
+                                            {% csrf_token %}
+                                            <div class="modal-body">
+                                                <div class="p-3 bg-light rounded-3 mb-3 border">
+                                                    <div class="row g-2 small">
+                                                        <div class="col-6"><strong>Student:</strong> {{ claim.student.first_name }} {{ claim.student.last_name }}</div>
+                                                        <div class="col-6"><strong>Adm No:</strong> {{ claim.student.admission_no }}</div>
+                                                        <div class="col-6"><strong>Fee Category:</strong> {{ claim.student_fee.fee_head.name }}</div>
+                                                        <div class="col-6"><strong>Current Net Due:</strong> ₹{{ claim.student_fee.net_due|floatformat:2 }}</div>
+                                                        <div class="col-6"><strong>Transaction / UTR:</strong> <code>{{ claim.transaction_id }}</code></div>
+                                                        <div class="col-6"><strong>Claim Date:</strong> {{ claim.payment_date|date:"d M Y" }}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Verified Credit Amount (₹) <span class="text-danger">*</span></label>
+                                                    <input type="number" name="verified_amount" value="{{ claim.amount }}" step="0.01" class="form-control fw-bold fs-5 text-success" required>
+                                                    <small class="text-muted">Must match exact bank statement / gateway credit.</small>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Payment Mode</label>
+                                                    <select name="payment_mode" class="form-select">
+                                                        <option value="UPI" {% if claim.payment_mode == 'UPI' %}selected{% endif %}>UPI / QR Code</option>
+                                                        <option value="BANK_TRANSFER" {% if claim.payment_mode == 'BANK_TRANSFER' %}selected{% endif %}>Bank Transfer / NEFT / IMPS</option>
+                                                        <option value="ONLINE" {% if claim.payment_mode == 'NET_BANKING' or claim.payment_mode == 'CARD' %}selected{% endif %}>Online Gateway / Card</option>
+                                                        <option value="CHEQUE" {% if claim.payment_mode == 'CHEQUE' %}selected{% endif %}>Cheque / Demand Draft</option>
+                                                        <option value="CASH" {% if claim.payment_mode == 'CASH_DEPOSIT' %}selected{% endif %}>Cash Deposit</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Admin Verification Notes</label>
+                                                    <input type="text" name="admin_notes" class="form-control" placeholder="Optional notes (e.g. Bank credit matched in SBI A/C)">
+                                                </div>
+
+                                                <!-- Mandatory Verification Checkbox -->
+                                                <div class="form-check p-3 bg-warning-subtle rounded-3 border border-warning">
+                                                    <input class="form-check-input" type="checkbox" name="confirm_checkbox" id="confirmCheck{{ claim.id }}" required>
+                                                    <label class="form-check-label fw-semibold text-dark" for="confirmCheck{{ claim.id }}">
+                                                        ☑ I confirm that I have verified the bank credit / proof details for this payment.
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm">
+                                                    <i class="fa-solid fa-check-circle me-1"></i> Confirm & Approve Payment
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- REJECT CONFIRMATION MODAL -->
+                            <div class="modal fade" id="rejectModal{{ claim.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i> Reject Payment Claim</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form method="post" action="{% url 'reject_payment_claim' claim.id %}">
+                                            {% csrf_token %}
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to reject claim <strong>#{{ claim.submission_no }}</strong> for <strong>{{ claim.student.first_name }}</strong> (₹{{ claim.amount }})?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Mandatory Rejection Reason <span class="text-danger">*</span></label>
+                                                    <textarea name="rejection_reason" rows="3" class="form-control" placeholder="Please specify why this claim is rejected (e.g. UTR not matching statement, payment not received, fraudulent screenshot)..." required></textarea>
+                                                    <small class="text-muted">This reason will be recorded in the audit trail and visible to the student.</small>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm">
+                                                    <i class="fa-solid fa-trash-can me-1"></i> Reject Claim
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif claim.status == 'VERIFIED' and claim.official_payment %}
+                            <a href="{% url 'fee_receipt' claim.official_payment.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                <i class="fa-solid fa-receipt me-1"></i> Receipt
+                            </a>
+                        {% elif claim.status == 'REJECTED' %}
+                            <span class="text-muted small" title="{{ claim.rejection_reason }}">{{ claim.rejection_reason|truncatechars:20 }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">No payment claims match the selected filter.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

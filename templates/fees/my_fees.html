@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+
+{% block title %}My Fees - EduManage ERP{% endblock %}
+
+{% block content %}
+<!-- Header & Child Selector (if Parent) -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold m-0"><i class="fa-solid fa-wallet text-primary me-2"></i> Student Fee Portal</h3>
+        <p class="text-muted m-0">
+            Student: <strong>{{ student.first_name }} {{ student.last_name }}</strong> | 
+            Adm No: <strong>{{ student.admission_no }}</strong> | 
+            Class: <strong>{{ student.current_class.name }} - {{ student.current_section.name }}</strong>
+        </p>
+    </div>
+
+    {% if linked_children|length > 1 %}
+    <div class="d-flex align-items-center gap-2">
+        <label class="fw-semibold text-muted small text-nowrap">Switch Child:</label>
+        <div class="dropdown">
+            <button class="btn btn-outline-primary btn-sm dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                <i class="fa-solid fa-user-graduate me-1"></i> {{ student.first_name }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                {% for child in linked_children %}
+                    <li>
+                        <a class="dropdown-item {% if child.id == student.id %}active{% endif %}" href="?student_id={{ child.id }}">
+                            {{ child.first_name }} {{ child.last_name }} (Class {{ child.current_class.name }})
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 5 KPI Stat Cards Row -->
+<div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card-modern">
+            <div class="stat-icon-modern stat-icon-blue">
+                <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="stat-number">₹{{ total_fee|floatformat:0 }}</div>
+                <div class="stat-label">Total Invoiced</div>
+                <small class="text-muted">Academic Session</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="stat-card-modern">
+            <div class="stat-icon-modern stat-icon-green">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="stat-number text-success">₹{{ total_paid|floatformat:0 }}</div>
+                <div class="stat-label">Total Paid</div>
+                <span class="badge bg-success-subtle text-success">Verified</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="stat-card-modern">
+            <div class="stat-icon-modern stat-icon-amber">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="stat-number text-warning">₹{{ total_under_review|floatformat:0 }}</div>
+                <div class="stat-label">Under Review</div>
+                <span class="badge bg-warning-subtle text-warning">Pending Proofs</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="stat-card-modern">
+            <div class="stat-icon-modern stat-icon-rose">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="stat-number {% if total_pending > 0 %}text-danger{% else %}text-success{% endif %}">₹{{ total_pending|floatformat:0 }}</div>
+                <div class="stat-label">Outstanding Balance</div>
+                {% if total_pending > 0 %}
+                    <span class="badge bg-danger-subtle text-danger">Payment Due</span>
+                {% else %}
+                    <span class="badge bg-success-subtle text-success">All Cleared</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 1: Fee Dues Table -->
+<div class="card card-custom p-3 p-sm-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check text-primary me-2"></i> Current Fee Dues & Schedule</h5>
+        <span class="text-muted small">Academic Year Fees</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Fee Category</th>
+                    <th>Session</th>
+                    <th>Due Date</th>
+                    <th>Amount Due</th>
+                    <th>Discount / Waiver</th>
+                    <th>Paid</th>
+                    <th>Net Balance</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in student_fees %}
+                <tr>
+                    <td>
+                        <div class="fw-bold text-dark">{{ fee.fee_head.name }}</div>
+                        <small class="text-muted">{{ fee.fee_head.description|truncatechars:40 }}</small>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ fee.academic_session.name }}</span></td>
+                    <td class="text-nowrap">
+                        {{ fee.due_date|date:"d M Y" }}
+                        {% if fee.is_overdue %}
+                            <br><small class="text-danger fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i>Overdue</small>
+                        {% endif %}
+                    </td>
+                    <td class="fw-semibold">₹{{ fee.amount_due|floatformat:2 }}</td>
+                    <td class="text-muted">₹{{ fee.amount_discount|floatformat:2 }}</td>
+                    <td class="text-success fw-semibold">₹{{ fee.amount_paid|floatformat:2 }}</td>
+                    <td class="fw-bold {% if fee.net_due > 0 %}text-danger{% else %}text-success{% endif %} fs-6">
+                        ₹{{ fee.net_due|floatformat:2 }}
+                    </td>
+                    <td>
+                        {% if fee.status == 'PAID' %}
+                            <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i> Paid</span>
+                        {% elif fee.has_pending_submission %}
+                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-hourglass-half me-1"></i> Under Review</span>
+                        {% elif fee.status == 'PARTIAL' %}
+                            <span class="badge bg-info text-dark">Partially Paid</span>
+                        {% elif fee.is_overdue %}
+                            <span class="badge bg-danger">Overdue</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if fee.net_due > 0 %}
+                            {% if fee.has_pending_submission %}
+                                <button class="btn btn-sm btn-outline-warning" disabled title="A claim is currently under review by administration">
+                                    <i class="fa-solid fa-clock me-1"></i> In Review
+                                </button>
+                            {% else %}
+                                <a href="{% url 'submit_payment_claim' fee.id %}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-xs">
+                                    <i class="fa-solid fa-upload me-1"></i> Pay / Submit Proof
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Cleared</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">No fee records found for this student.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 2: Payment Proof Claims Submitted (Under Review / History) -->
+<div class="card card-custom p-3 p-sm-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold m-0"><i class="fa-solid fa-file-shield text-info me-2"></i> Payment Proof Claims & Verification History</h5>
+        <small class="text-muted">Student-submitted verification requests</small>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Claim #</th>
+                    <th>Fee Particulars</th>
+                    <th>Claimed Amount</th>
+                    <th>Payment Date</th>
+                    <th>Mode</th>
+                    <th>UTR / Txn ID</th>
+                    <th>Status</th>
+                    <th>Proof File</th>
+                    <th class="text-end">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr>
+                    <td><span class="badge bg-light text-dark border">{{ sub.submission_no }}</span></td>
+                    <td class="fw-semibold">{{ sub.student_fee.fee_head.name }}</td>
+                    <td class="fw-bold text-dark">₹{{ sub.amount|floatformat:2 }}</td>
+                    <td>{{ sub.payment_date|date:"d M Y" }}</td>
+                    <td><span class="badge bg-light text-primary border">{{ sub.get_payment_mode_display }}</span></td>
+                    <td><code class="text-dark">{{ sub.transaction_id }}</code></td>
+                    <td>
+                        {% if sub.status == 'PENDING_VERIFICATION' %}
+                            <span class="badge bg-warning text-dark"><i class="fa-solid fa-hourglass-half me-1"></i> Pending Verification</span>
+                        {% elif sub.status == 'VERIFIED' %}
+                            <span class="badge bg-success"><i class="fa-solid fa-check-circle me-1"></i> Verified & Paid</span>
+                        {% elif sub.status == 'REJECTED' %}
+                            <span class="badge bg-danger"><i class="fa-solid fa-times-circle me-1"></i> Rejected</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ sub.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sub.proof_file %}
+                            <a href="{% url 'fee_proof_download' sub.id %}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="fa-solid fa-paperclip me-1"></i> View Proof
+                            </a>
+                        {% else %}
+                            <span class="text-muted small">None</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if sub.status == 'PENDING_VERIFICATION' %}
+                            <form method="post" action="{% url 'cancel_payment_claim' sub.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this pending payment claim?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel Claim">
+                                    <i class="fa-solid fa-xmark"></i> Cancel
+                                </button>
+                            </form>
+                        {% elif sub.status == 'VERIFIED' and sub.official_payment %}
+                            <a href="{% url 'fee_receipt' sub.official_payment.id %}" class="btn btn-sm btn-success rounded-pill px-3">
+                                <i class="fa-solid fa-receipt me-1"></i> Official Receipt
+                            </a>
+                        {% elif sub.status == 'REJECTED' %}
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ sub.id }}">
+                                <i class="fa-solid fa-info-circle me-1"></i> Reason
+                            </button>
+                            
+                            <!-- Rejection Reason Modal -->
+                            <div class="modal fade" id="rejectModal{{ sub.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h6 class="modal-title fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i> Payment Claim Rejected</h6>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <p>Your payment submission <strong>#{{ sub.submission_no }}</strong> for <strong>₹{{ sub.amount }}</strong> was not verified by the administration.</p>
+                                            <div class="alert alert-danger mb-3">
+                                                <strong>Reason given by Admin:</strong><br>
+                                                {{ sub.rejection_reason|default:"Transaction could not be verified in the school bank account. Please check UTR or re-submit with correct proof." }}
+                                            </div>
+                                            <p class="small text-muted mb-0">You can submit a new payment proof with correct transaction details from the dues section above.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-3">No payment claims submitted yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 3: Official Verified Receipts -->
+<div class="card card-custom p-3 p-sm-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt text-success me-2"></i> Official ERP Receipts</h5>
+        <small class="text-muted">Issued by School ERP</small>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Receipt #</th>
+                    <th>Fee Category</th>
+                    <th>Amount Paid</th>
+                    <th>Payment Date</th>
+                    <th>Payment Mode</th>
+                    <th>Transaction Ref</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in verified_payments %}
+                <tr>
+                    <td><strong class="text-primary">{{ payment.receipt_no }}</strong></td>
+                    <td class="fw-semibold">{{ payment.student_fee.fee_head.name }}</td>
+                    <td class="fw-bold text-success">₹{{ payment.amount_paid|floatformat:2 }}</td>
+                    <td>{{ payment.payment_date|date:"d M Y, h:i A" }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ payment.get_payment_mode_display }}</span></td>
+                    <td><code class="text-muted">{{ payment.transaction_id|default:"Cash Counter" }}</code></td>
+                    <td>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-circle-check me-1"></i> PAID</span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'fee_receipt' payment.id %}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-xs">
+                            <i class="fa-solid fa-print me-1"></i> View / Print
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-3">No official receipts generated yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

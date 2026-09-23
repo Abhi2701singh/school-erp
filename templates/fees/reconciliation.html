@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Fee Reconciliation & Financial Audit - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold m-0"><i class="fa-solid fa-chart-pie text-primary me-2"></i> Fee Reconciliation & Audit</h3>
+        <p class="text-muted m-0">Consolidated financial overview, category head ledger reconciliation, and collection integrity</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill px-3 no-print">
+            <i class="fa-solid fa-print me-1"></i> Print Statement
+        </button>
+    </div>
+</div>
+
+<!-- 6 KPI Stat Cards Row -->
+<div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5">₹{{ total_assigned|floatformat:0 }}</div>
+            <div class="stat-label small">Total Invoiced</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-success">₹{{ total_collected|floatformat:0 }}</div>
+            <div class="stat-label small">Total Collected</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-danger">₹{{ total_outstanding|floatformat:0 }}</div>
+            <div class="stat-label small">Pending Dues</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-warning">₹{{ under_verification_tot|floatformat:0 }}</div>
+            <div class="stat-label small">In Verification</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-secondary">₹{{ total_discounts|floatformat:0 }}</div>
+            <div class="stat-label small">Discounts / Waivers</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-4 col-xl-2">
+        <div class="stat-card-modern p-3 bg-light border-success">
+            <div class="stat-number fs-5 text-success fw-bold">₹{{ net_revenue|floatformat:0 }}</div>
+            <div class="stat-label small fw-bold">Net Realized Revenue</div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 1: Fee Head Category Reconciliation -->
+<div class="card card-custom p-3 p-sm-4 mb-4 shadow-sm">
+    <h5 class="fw-bold mb-3"><i class="fa-solid fa-layer-group text-primary me-2"></i> Category Fee Head Ledger Reconciliation</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Fee Particulars</th>
+                    <th class="text-end">Total Assigned</th>
+                    <th class="text-end">Total Collected</th>
+                    <th class="text-end">Outstanding Balance</th>
+                    <th class="text-end">Collection Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for st in head_stats %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ st.head.name }}</td>
+                    <td class="text-end">₹{{ st.assigned|floatformat:2 }}</td>
+                    <td class="text-end fw-bold text-success">₹{{ st.paid|floatformat:2 }}</td>
+                    <td class="text-end fw-bold {% if st.outstanding > 0 %}text-danger{% else %}text-success{% endif %}">
+                        ₹{{ st.outstanding|floatformat:2 }}
+                    </td>
+                    <td class="text-end">
+                        <span class="badge bg-light text-primary border">
+                            {% if st.assigned > 0 %}
+                                {% widthratio st.paid st.assigned 100 %}%
+                            {% else %}
+                                100%
+                            {% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">No fee head categories defined.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 2: Payment Mode Breakdown -->
+<div class="card card-custom p-3 p-sm-4 shadow-sm">
+    <h5 class="fw-bold mb-3"><i class="fa-solid fa-money-bill-transfer text-success me-2"></i> Payment Mode Distribution</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Payment Method</th>
+                    <th>Number of Transactions</th>
+                    <th class="text-end">Total Amount Credited</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in mode_counts %}
+                <tr>
+                    <td class="fw-semibold text-dark">{{ m.payment_mode }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ m.count }} transactions</span></td>
+                    <td class="text-end fw-bold text-success fs-6">₹{{ m.total_amount|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted py-3">No payment records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -53,8 +53,10 @@ def dashboard_router_view(request):
         attendance_pct = round((today_present / today_total) * 100, 1) if today_total > 0 else 0.0
 
         # Fee Analytics
-        fee_collected_total = FeePayment.objects.filter(school=request.school).aggregate(total=Sum('amount_paid'))['total'] or 0.0
-        pending_fees = StudentFee.objects.filter(school=request.school, status__in=['PENDING', 'PARTIAL'])
+        from fees.models import PaymentSubmission
+        fee_collected_total = FeePayment.objects.filter(school=request.school, status='VERIFIED').aggregate(total=Sum('amount_paid'))['total'] or 0.0
+        pending_verifications_count = PaymentSubmission.objects.filter(school=request.school, status='PENDING_VERIFICATION').count()
+        pending_fees = StudentFee.objects.filter(school=request.school, status__in=['PENDING', 'PARTIAL', 'OVERDUE'])
         defaulters_count = pending_fees.values('student').distinct().count()
 
         # Display values (matching screenshot)
@@ -156,6 +158,7 @@ def dashboard_router_view(request):
             'total_teachers_display': total_teachers_display,
             'fee_collected_display': fee_collected_display,
             'defaulters_count_display': defaulters_count_display,
+            'pending_verifications_count': pending_verifications_count,
             'total_classes': db_classes_count,
             'today_formatted': today_formatted,
             'today_present': today_present,

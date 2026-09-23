@@ -75,12 +75,21 @@
                 <li><a href="{% url 'homework_list' %}" class="{% if request.resolver_match.url_name == 'homework_list' %}active{% endif %}"><i class="fa-solid fa-book-bookmark"></i> Homework & Tasks</a></li>
                 <li><a href="{% url 'study_material_list' %}" class="{% if request.resolver_match.url_name == 'study_material_list' %}active{% endif %}"><i class="fa-solid fa-file-pdf"></i> Study Materials</a></li>
                 <li><a href="{% url 'notice_list' %}" class="{% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}"><i class="fa-solid fa-bullhorn"></i> Notices</a></li>
+            {% endif %}
 
-                <div class="nav-section-title">Finance</div>
-                <li><a href="{% url 'fee_structure' %}" class="{% if request.resolver_match.url_name == 'fee_structure' %}active{% endif %}"><i class="fa-solid fa-money-bill-wave"></i> Fee Management</a></li>
-                <li><a href="{% url 'fee_defaulters' %}" class="{% if request.resolver_match.url_name == 'fee_defaulters' %}active{% endif %}"><i class="fa-solid fa-file-invoice"></i> Invoices & Receipts</a></li>
-                <li><a href="{% url 'attendance_report' %}" class="{% if request.resolver_match.url_name == 'attendance_report' %}active{% endif %}"><i class="fa-solid fa-chart-column"></i> Fee Reports</a></li>
-            {% elif user.is_teacher_user %}
+            {% if user.is_school_admin or user.role == 'ACCOUNTANT' %}
+                <div class="nav-section-title">Finance & Accounts</div>
+                <li><a href="{% url 'fee_structure' %}" class="{% if request.resolver_match.url_name == 'fee_structure' %}active{% endif %}"><i class="fa-solid fa-layer-group"></i> Fee Structures</a></li>
+                <li><a href="{% url 'fee_verifications' %}" class="{% if request.resolver_match.url_name == 'fee_verifications' %}active{% endif %}"><i class="fa-solid fa-clipboard-check"></i> Verifications</a></li>
+                <li><a href="{% url 'fee_defaulters' %}" class="{% if request.resolver_match.url_name == 'fee_defaulters' %}active{% endif %}"><i class="fa-solid fa-file-invoice-dollar"></i> Defaulters & Invoices</a></li>
+                <li><a href="{% url 'fee_adjustments' %}" class="{% if request.resolver_match.url_name == 'fee_adjustments' %}active{% endif %}"><i class="fa-solid fa-sliders"></i> Adjustments & Fines</a></li>
+                <li><a href="{% url 'fee_refunds' %}" class="{% if request.resolver_match.url_name == 'fee_refunds' %}active{% endif %}"><i class="fa-solid fa-arrow-rotate-left"></i> Refunds</a></li>
+                <li><a href="{% url 'daily_closing' %}" class="{% if request.resolver_match.url_name == 'daily_closing' %}active{% endif %}"><i class="fa-solid fa-calculator"></i> Daily Closing</a></li>
+                <li><a href="{% url 'fee_reconciliation' %}" class="{% if request.resolver_match.url_name == 'fee_reconciliation' %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i> Reconciliation</a></li>
+                <li><a href="{% url 'fee_audit_logs' %}" class="{% if request.resolver_match.url_name == 'fee_audit_logs' %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> Audit Trail</a></li>
+            {% endif %}
+
+            {% if user.is_teacher_user %}
                 <div class="nav-section-title">Teacher Portal</div>
                 <li><a href="{% url 'mark_attendance' %}" class="{% if request.resolver_match.url_name == 'mark_attendance' %}active{% endif %}"><i class="fa-solid fa-clipboard-user"></i> Mark Attendance</a></li>
                 <li><a href="{% url 'marks_entry' %}" class="{% if request.resolver_match.url_name == 'marks_entry' %}active{% endif %}"><i class="fa-solid fa-award"></i> Enter Exam Marks</a></li>
@@ -90,6 +99,7 @@
                 <li><a href="{% url 'notice_list' %}" class="{% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}"><i class="fa-solid fa-bullhorn"></i> Noticeboard</a></li>
             {% elif user.is_student_user or user.is_parent_user %}
                 <div class="nav-section-title">Student Portal</div>
+                <li><a href="{% url 'my_fees' %}" class="{% if 'fees' in request.resolver_match.app_names or request.resolver_match.url_name == 'my_fees' or request.resolver_match.url_name == 'submit_payment_claim' %}active{% endif %}"><i class="fa-solid fa-wallet"></i> My Fees & Receipts</a></li>
                 <li><a href="{% url 'homework_list' %}" class="{% if request.resolver_match.url_name == 'homework_list' %}active{% endif %}"><i class="fa-solid fa-book-bookmark"></i> Homework & Tasks</a></li>
                 <li><a href="{% url 'study_material_list' %}" class="{% if request.resolver_match.url_name == 'study_material_list' %}active{% endif %}"><i class="fa-solid fa-file-pdf"></i> Study Materials</a></li>
                 <li><a href="{% url 'timetable' %}" class="{% if request.resolver_match.url_name == 'timetable' %}active{% endif %}"><i class="fa-solid fa-clock"></i> Timetable</a></li>

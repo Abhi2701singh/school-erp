@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Fee Adjustments & Concessions - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold m-0"><i class="fa-solid fa-sliders text-primary me-2"></i> Fee Adjustments & Concessions</h3>
+        <p class="text-muted m-0">Audit-tracked fee discounts, scholarships, waivers, late fines, and balance corrections</p>
+    </div>
+    <div>
+        <a href="{% url 'fee_defaulters' %}" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="fa-solid fa-plus me-1"></i> Apply Adjustment via Defaulters
+        </a>
+    </div>
+</div>
+
+<div class="card card-custom p-3 p-sm-4 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Student Name</th>
+                    <th>Class</th>
+                    <th>Fee Category</th>
+                    <th>Adjustment Type</th>
+                    <th>Amount</th>
+                    <th>Reason / Justification</th>
+                    <th>Approved By</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adj in adjustments %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ adj.student_fee.student.first_name }} {{ adj.student_fee.student.last_name }}</div>
+                        <small class="text-muted">Adm: {{ adj.student_fee.student.admission_no }}</small>
+                    </td>
+                    <td>{{ adj.student_fee.student.current_class.name }}</td>
+                    <td class="fw-semibold">{{ adj.student_fee.fee_head.name }}</td>
+                    <td>
+                        <span class="badge {% if adj.adjustment_type == 'DISCOUNT' or adj.adjustment_type == 'WAIVER' %}bg-success{% elif adj.adjustment_type == 'FINE' %}bg-danger{% else %}bg-info{% endif %}">
+                            {{ adj.get_adjustment_type_display }}
+                        </span>
+                    </td>
+                    <td class="fw-bold fs-6">₹{{ adj.amount|floatformat:2 }}</td>
+                    <td><span class="small text-muted">{{ adj.reason }}</span></td>
+                    <td><span class="badge bg-light text-dark border">{{ adj.approved_by.username|default:"Admin" }}</span></td>
+                    <td class="text-nowrap small text-muted">{{ adj.created_at|date:"d M Y, h:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">No historical fee adjustments recorded.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

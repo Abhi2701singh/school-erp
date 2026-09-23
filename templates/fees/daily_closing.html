@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Daily Fee Closing - EduManage ERP{% endblock %}
+
+{% block content %}
+<!-- Header & Date Picker -->
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h3 class="fw-bold m-0"><i class="fa-solid fa-calculator text-primary me-2"></i> Daily Fee Closing</h3>
+        <p class="text-muted m-0">End-of-day register closing and physical cash / digital reconciliation</p>
+    </div>
+    <div>
+        <form method="get" class="d-flex align-items-center gap-2">
+            <input type="date" name="date" value="{{ closing_dt|date:'Y-m-d' }}" class="form-control" onchange="this.form.submit()">
+            <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-calendar-day"></i></button>
+        </form>
+    </div>
+</div>
+
+<!-- Closing Status Banner -->
+{% if existing_closing %}
+    <div class="alert alert-success d-flex align-items-center justify-content-between py-2 px-3 mb-4 rounded-3 shadow-xs">
+        <div>
+            <i class="fa-solid fa-circle-check me-2"></i>
+            Daily Closing for <strong>{{ closing_dt|date:"d M Y" }}</strong> was closed by <strong>{{ existing_closing.closed_by.username|default:"Staff" }}</strong> on {{ existing_closing.created_at|date:"d M Y, h:i A" }}.
+        </div>
+        <span class="badge bg-success">CLOSED</span>
+    </div>
+{% endif %}
+
+<!-- Mode Breakdown Cards -->
+<div class="row g-3 g-md-4 mb-4">
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-success">₹{{ cash_tot|floatformat:2 }}</div>
+            <div class="stat-label small">Cash Counter</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-primary">₹{{ upi_tot|floatformat:2 }}</div>
+            <div class="stat-label small">UPI / QR Code</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-info">₹{{ bank_tot|floatformat:2 }}</div>
+            <div class="stat-label small">Bank Transfer</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-secondary">₹{{ cheque_tot|floatformat:2 }}</div>
+            <div class="stat-label small">Cheque / DD</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card-modern p-3">
+            <div class="stat-number fs-5 text-purple" style="color: #8b5cf6;">₹{{ online_tot|floatformat:2 }}</div>
+            <div class="stat-label small">Online Gateway</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="stat-card-modern p-3 bg-light border-primary">
+            <div class="stat-number fs-5 text-primary fw-bold">₹{{ net_closing|floatformat:2 }}</div>
+            <div class="stat-label small fw-bold">Net Closing Total</div>
+        </div>
+    </div>
+</div>
+
+<!-- Collections Table and Submission Form Row -->
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-8">
+        <div class="card card-custom p-3 p-sm-4 h-100 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold m-0"><i class="fa-solid fa-list text-primary me-2"></i> Collections for {{ closing_dt|date:"d M Y" }}</h5>
+                <span class="badge bg-light text-dark border">{{ payments_today|length }} transactions</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Receipt #</th>
+                            <th>Student</th>
+                            <th>Fee Category</th>
+                            <th>Mode</th>
+                            <th>Txn ID</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments_today %}
+                        <tr>
+                            <td><a href="{% url 'fee_receipt' p.id %}" class="fw-bold text-decoration-none">#{{ p.receipt_no }}</a></td>
+                            <td>{{ p.student_fee.student.first_name }} {{ p.student_fee.student.last_name }}</td>
+                            <td>{{ p.student_fee.fee_head.name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ p.get_payment_mode_display }}</span></td>
+                            <td><code>{{ p.transaction_id|default:"Cash" }}</code></td>
+                            <td class="text-end fw-bold text-success">₹{{ p.amount_paid|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No verified collections recorded on this date.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Closing Submission Form Card -->
+    <div class="col-12 col-lg-4">
+        <div class="card card-custom p-3 p-sm-4 h-100 shadow-sm">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-lock text-success me-2"></i> Submit Day Closing</h5>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Gross Collections</label>
+                    <div class="fs-5 fw-bold text-success">₹{{ total_collected|floatformat:2 }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Refunds Processed</label>
+                    <div class="fs-6 fw-semibold text-danger">-₹{{ refunds_today|floatformat:2 }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Net Balance for Closing</label>
+                    <div class="fs-4 fw-bold text-primary">₹{{ net_closing|floatformat:2 }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Closing Notes / Physical Cash Count</label>
+                    <textarea name="notes" rows="3" class="form-control" placeholder="e.g. Cash physical count ₹{{ cash_tot }} verified and deposited in safe...">{{ existing_closing.notes|default:"" }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 rounded-pill py-2 shadow-sm">
+                    <i class="fa-solid fa-check-double me-1"></i> {% if existing_closing %}Update Closing Notes{% else %}Submit & Lock Daily Closing{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Past Daily Closings History -->
+<div class="card card-custom p-3 p-sm-4 shadow-sm">
+    <h5 class="fw-bold mb-3"><i class="fa-solid fa-history text-secondary me-2"></i> Past Closing Records</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+            <thead class="table-light">
+                <tr>
+                    <th>Closing Date</th>
+                    <th>Cash</th>
+                    <th>UPI</th>
+                    <th>Bank</th>
+                    <th>Cheque</th>
+                    <th>Online</th>
+                    <th>Gross Total</th>
+                    <th>Refunds</th>
+                    <th>Net Balance</th>
+                    <th>Closed By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in past_closings %}
+                <tr>
+                    <td class="fw-bold"><a href="?date={{ c.closing_date|date:'Y-m-d' }}" class="text-decoration-none">{{ c.closing_date|date:"d M Y" }}</a></td>
+                    <td>₹{{ c.cash_total|floatformat:2 }}</td>
+                    <td>₹{{ c.upi_total|floatformat:2 }}</td>
+                    <td>₹{{ c.bank_total|floatformat:2 }}</td>
+                    <td>₹{{ c.cheque_total|floatformat:2 }}</td>
+                    <td>₹{{ c.online_total|floatformat:2 }}</td>
+                    <td class="fw-semibold">₹{{ c.total_collected|floatformat:2 }}</td>
+                    <td class="text-danger">₹{{ c.total_refunded|floatformat:2 }}</td>
+                    <td class="fw-bold text-success">₹{{ c.net_closing|floatformat:2 }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ c.closed_by.username|default:"Staff" }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-3">No past daily closings submitted yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

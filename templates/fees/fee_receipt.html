@@ -3,31 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fee Receipt - {{ payment.receipt_no }}</title>
+    <title>Official Fee Receipt - {{ payment.receipt_no }}</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- QRCode Generator Script (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
     <style>
         body {
-            background: #f1f5f9;
-            padding: 1rem;
-            font-family: sans-serif;
+            background: #f8fafc;
+            padding: 1.5rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b;
         }
         .receipt-card {
-            max-width: 700px;
+            max-width: 780px;
             background: white;
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            border: 2px solid #e2e8f0;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
             margin: 0 auto;
+            position: relative;
         }
-        @media (min-width: 576px) {
-            body {
-                padding: 2rem;
-            }
-            .receipt-card {
-                padding: 2.5rem;
-            }
+        .paid-stamp {
+            position: absolute;
+            right: 40px;
+            top: 45%;
+            transform: rotate(-15deg);
+            border: 4px solid #16a34a;
+            color: #16a34a;
+            font-weight: 800;
+            font-size: 2.2rem;
+            padding: 0.2rem 1.8rem;
+            border-radius: 12px;
+            opacity: 0.75;
+            letter-spacing: 4px;
+            pointer-events: none;
+        }
+        .reversed-stamp {
+            position: absolute;
+            right: 40px;
+            top: 45%;
+            transform: rotate(-15deg);
+            border: 4px solid #dc2626;
+            color: #dc2626;
+            font-weight: 800;
+            font-size: 2.2rem;
+            padding: 0.2rem 1.8rem;
+            border-radius: 12px;
+            opacity: 0.85;
+            letter-spacing: 4px;
+            pointer-events: none;
+        }
+        .qr-wrapper {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #e2e8f0;
+            padding: 4px;
+            border-radius: 8px;
+            background: #fff;
+            display: inline-block;
+        }
+        .qr-wrapper img {
+            width: 100% !important;
+            height: 100% !important;
         }
         @media print {
             .no-print { display: none !important; }
@@ -39,72 +83,154 @@
 <body>
 
 <div class="receipt-card">
-    <div class="row align-items-center mb-3 border-bottom pb-3">
+    <!-- Header: School Info & Receipt Title -->
+    <div class="row align-items-center mb-4 border-bottom pb-3">
         <div class="col-8">
-            <h3 class="fw-bold m-0 text-primary">{{ payment.student_fee.school.name }}</h3>
-            <p class="text-muted m-0 small">{{ payment.student_fee.school.address }} | Ph: {{ payment.student_fee.school.phone }}</p>
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold m-0 text-primary">{{ payment.student_fee.school.name }}</h3>
+                    <p class="text-muted m-0 small">{{ payment.student_fee.school.address }} | Ph: {{ payment.student_fee.school.phone }}</p>
+                </div>
+            </div>
         </div>
         <div class="col-4 text-end">
-            <h5 class="fw-bold text-dark m-0">FEE RECEIPT</h5>
-            <small class="text-muted">#{{ payment.receipt_no }}</small>
+            <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill">OFFICIAL FEE RECEIPT</span>
+            <div class="fw-bold text-dark mt-1" style="font-size: 1.05rem;">#{{ payment.receipt_no }}</div>
+            <small class="text-muted">{{ payment.payment_date|date:"d M Y, h:i A" }}</small>
         </div>
     </div>
 
-    <div class="row mb-4 small">
+    <!-- Student & Payment Particulars -->
+    <div class="row mb-4 p-3 bg-light rounded-3 g-3">
         <div class="col-6">
-            <strong>Student Name:</strong> {{ payment.student_fee.student.first_name }} {{ payment.student_fee.student.last_name }}<br>
-            <strong>Admission No:</strong> {{ payment.student_fee.student.admission_no }}<br>
-            <strong>Class & Section:</strong> {{ payment.student_fee.student.current_class.name }} - {{ payment.student_fee.student.current_section.name }}
+            <div class="text-muted small">STUDENT DETAILS</div>
+            <div class="fw-bold text-dark fs-6">{{ payment.student_fee.student.first_name }} {{ payment.student_fee.student.last_name }}</div>
+            <small class="text-secondary">
+                <strong>Admission No:</strong> {{ payment.student_fee.student.admission_no }}<br>
+                <strong>Class & Section:</strong> {{ payment.student_fee.student.current_class.name }} - {{ payment.student_fee.student.current_section.name }}<br>
+                <strong>Session:</strong> {{ payment.student_fee.academic_session.name }}
+            </small>
         </div>
         <div class="col-6 text-end">
-            <strong>Date:</strong> {{ payment.payment_date|date:"d M Y, h:i A" }}<br>
-            <strong>Payment Mode:</strong> {{ payment.get_payment_mode_display }}<br>
-            <strong>Txn Ref:</strong> {{ payment.transaction_id|default:"Cash" }}
+            <div class="text-muted small">TRANSACTION METADATA</div>
+            <div class="fw-bold text-dark">{{ payment.get_payment_mode_display }}</div>
+            <small class="text-secondary">
+                <strong>Txn / UTR:</strong> {{ payment.transaction_id|default:"Counter Collection" }}<br>
+                <strong>Collected/Verified By:</strong> {{ payment.collected_by.get_full_name|default:payment.collected_by.username|default:"Accounts Desk" }}<br>
+                <strong>Status:</strong> <span class="badge {% if payment.status == 'VERIFIED' %}bg-success{% else %}bg-danger{% endif %}">{{ payment.get_status_display }}</span>
+            </small>
         </div>
     </div>
 
-    <div class="position-relative">
+    <!-- Fee Breakdown Table -->
+    <div class="position-relative mb-4">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
                 <tr>
                     <th>Description / Fee Particulars</th>
-                    <th class="text-end">Amount</th>
+                    <th class="text-end">Amount Due</th>
+                    <th class="text-end">Discount / Concession</th>
+                    <th class="text-end">Amount Paid</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>{{ payment.student_fee.fee_head.name }}</strong></td>
-                    <td class="text-end fw-bold">₹{{ payment.amount_paid }}</td>
+                    <td>
+                        <strong>{{ payment.student_fee.fee_head.name }}</strong>
+                        {% if payment.remarks %}
+                            <br><small class="text-muted">{{ payment.remarks }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">₹{{ payment.student_fee.amount_due|floatformat:2 }}</td>
+                    <td class="text-end">₹{{ payment.student_fee.amount_discount|floatformat:2 }}</td>
+                    <td class="text-end fw-bold text-success fs-6">₹{{ payment.amount_paid|floatformat:2 }}</td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr class="table-light">
-                    <th class="text-end">Total Amount Paid:</th>
-                    <th class="text-end fw-bold text-success fs-5">₹{{ payment.amount_paid }}</th>
+                    <th colspan="3" class="text-end">Total Amount Credited:</th>
+                    <th class="text-end fw-bold text-success fs-5">₹{{ payment.amount_paid|floatformat:2 }}</th>
                 </tr>
                 <tr>
-                    <th class="text-end">Remaining Net Balance:</th>
-                    <th class="text-end fw-bold text-danger">₹{{ payment.student_fee.net_due|floatformat:2 }}</th>
+                    <th colspan="3" class="text-end">Remaining Outstanding Net Balance:</th>
+                    <th class="text-end fw-bold {% if payment.student_fee.net_due > 0 %}text-danger{% else %}text-success{% endif %}">
+                        ₹{{ payment.student_fee.net_due|floatformat:2 }}
+                    </th>
                 </tr>
             </tfoot>
         </table>
 
-        <!-- Green PAID Stamp -->
-        <div class="paid-stamp">
-            PAID
+        <!-- Stamp -->
+        {% if payment.status == 'VERIFIED' %}
+            <div class="paid-stamp">PAID</div>
+        {% elif payment.status == 'REVERSED' %}
+            <div class="reversed-stamp">REVERSED</div>
+        {% elif payment.status == 'REFUNDED' %}
+            <div class="reversed-stamp">REFUNDED</div>
+        {% endif %}
+    </div>
+
+    <!-- Verification QR Code & Signatures Row -->
+    <div class="row align-items-end pt-3 border-top g-3">
+        <!-- QR Code Container -->
+        <div class="col-6 d-flex align-items-center gap-3">
+            <div class="qr-wrapper d-flex align-items-center justify-content-center text-center p-1" id="receiptQrCode" title="Verification Token: {{ payment.verification_token }}">
+                <small class="text-muted" style="font-size: 0.58rem; word-break: break-all; line-height: 1.1;">TOKEN:<br><code>{{ payment.verification_token }}</code></small>
+            </div>
+            <div>
+                <small class="fw-bold d-block text-dark"><i class="fa-solid fa-qrcode text-primary me-1"></i> QR Verified Receipt</small>
+                <small class="text-muted" style="font-size: 0.75rem;">Scan with any QR reader to verify official authenticity on ERP server.</small>
+            </div>
+        </div>
+
+        <!-- Authorized Seal & Signatures -->
+        <div class="col-6 text-end">
+            <div class="d-inline-block text-center" style="min-width: 180px;">
+                <div style="height: 45px;"></div>
+                <div class="border-top pt-1 small fw-bold text-dark">Authorized School Seal & Sign</div>
+                <small class="text-muted" style="font-size: 0.72rem;">Computer generated official receipt</small>
+            </div>
         </div>
     </div>
-
-    <div class="row mt-4 pt-4 text-center small text-muted">
-        <div class="col-6 border-top pt-2">Parent / Depositor Signature</div>
-        <div class="col-6 border-top pt-2">Authorized School Seal & Signature</div>
-    </div>
 </div>
 
-<div class="no-print text-center mt-4 d-flex justify-content-center gap-3">
-    <button onclick="window.print()" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm"><i class="fa-solid fa-print me-2"></i> Print Receipt</button>
+<!-- Bottom Action Bar (Non-Printable) -->
+<div class="no-print text-center mt-4 d-flex flex-wrap justify-content-center gap-3">
+    <button onclick="window.print()" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+        <i class="fa-solid fa-print me-2"></i> Print Official Receipt
+    </button>
     <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">Back to Dashboard</a>
+    
+    {% if user.is_school_admin and payment.status == 'VERIFIED' %}
+        <a href="{% url 'reverse_payment' payment.id %}" class="btn btn-outline-danger btn-lg rounded-pill px-4">
+            <i class="fa-solid fa-ban me-1"></i> Void / Reverse Payment
+        </a>
+        <a href="{% url 'create_refund_request' payment.id %}" class="btn btn-outline-warning text-dark btn-lg rounded-pill px-4">
+            <i class="fa-solid fa-rotate-left me-1"></i> Issue Refund
+        </a>
+    {% endif %}
 </div>
+
+<!-- QR Code Initialization Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const qrContainer = document.getElementById("receiptQrCode");
+        if (qrContainer && typeof QRCode !== "undefined") {
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, {
+                text: "{{ verification_url }}",
+                width: 90,
+                height: 90,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.M
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
