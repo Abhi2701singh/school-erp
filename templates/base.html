@@ -89,7 +89,7 @@
                 <li><a href="{% url 'fee_audit_logs' %}" class="{% if request.resolver_match.url_name == 'fee_audit_logs' %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> Audit Trail</a></li>
             {% endif %}
 
-            {% if user.is_teacher_user %}
+            {% if user.is_teacher_user or user.role == 'TEACHER' %}
                 <div class="nav-section-title">Teacher Portal</div>
                 <li><a href="{% url 'mark_attendance' %}" class="{% if request.resolver_match.url_name == 'mark_attendance' %}active{% endif %}"><i class="fa-solid fa-clipboard-user"></i> Mark Attendance</a></li>
                 <li><a href="{% url 'marks_entry' %}" class="{% if request.resolver_match.url_name == 'marks_entry' %}active{% endif %}"><i class="fa-solid fa-award"></i> Enter Exam Marks</a></li>
@@ -97,9 +97,11 @@
                 <li><a href="{% url 'study_material_list' %}" class="{% if request.resolver_match.url_name == 'study_material_list' or request.resolver_match.url_name == 'study_material_delete' %}active{% endif %}"><i class="fa-solid fa-file-pdf"></i> Upload Notes & PDFs</a></li>
                 <li><a href="{% url 'timetable' %}" class="{% if request.resolver_match.url_name == 'timetable' %}active{% endif %}"><i class="fa-solid fa-clock"></i> My Timetable</a></li>
                 <li><a href="{% url 'notice_list' %}" class="{% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}"><i class="fa-solid fa-bullhorn"></i> Noticeboard</a></li>
-            {% elif user.is_student_user or user.is_parent_user %}
+            {% endif %}
+
+            {% if user.role == 'STUDENT' or user.role == 'PARENT' or user.is_student_user or user.is_parent_user %}
                 <div class="nav-section-title">Student Portal</div>
-                <li><a href="{% url 'my_fees' %}" class="{% if 'fees' in request.resolver_match.app_names or request.resolver_match.url_name == 'my_fees' or request.resolver_match.url_name == 'submit_payment_claim' or request.resolver_match.url_name == 'fee_challan' or request.resolver_match.url_name == 'claim_acknowledgement' or request.resolver_match.url_name == 'fee_receipt' %}active{% endif %}"><i class="fa-solid fa-wallet"></i> My Fees & Receipts</a></li>
+                <li><a href="{% url 'my_fees' %}" class="{% if 'fees' in request.resolver_match.app_names or request.resolver_match.url_name == 'my_fees' or request.resolver_match.url_name == 'submit_payment_claim' or request.resolver_match.url_name == 'fee_challan' or request.resolver_match.url_name == 'claim_acknowledgement' or request.resolver_match.url_name == 'fee_receipt' %}active{% endif %}"><i class="fa-solid fa-wallet text-warning"></i> My Fees & Receipts</a></li>
                 <li><a href="{% url 'homework_list' %}" class="{% if request.resolver_match.url_name == 'homework_list' %}active{% endif %}"><i class="fa-solid fa-book-bookmark"></i> Homework & Tasks</a></li>
                 <li><a href="{% url 'study_material_list' %}" class="{% if request.resolver_match.url_name == 'study_material_list' %}active{% endif %}"><i class="fa-solid fa-file-pdf"></i> Study Materials</a></li>
                 <li><a href="{% url 'timetable' %}" class="{% if request.resolver_match.url_name == 'timetable' %}active{% endif %}"><i class="fa-solid fa-clock"></i> Timetable</a></li>
@@ -139,6 +141,13 @@
 
             <!-- Right Profile & Actions -->
             <div class="d-flex align-items-center gap-2 gap-sm-3">
+                {% if user.role == 'STUDENT' or user.role == 'PARENT' or user.is_student_user or user.is_parent_user %}
+                    <a href="{% url 'my_fees' %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 rounded-pill px-3 py-1 shadow-xs fw-semibold" style="font-size: 0.82rem;">
+                        <i class="fa-solid fa-wallet text-warning"></i>
+                        <span>My Fees</span>
+                    </a>
+                {% endif %}
+
                 <a href="{% url 'notice_list' %}" class="notif-btn" title="Announcements & Notices">
                     <i class="fa-regular fa-bell"></i>
                     <span class="notif-badge"></span>
