@@ -59,99 +59,67 @@ def dashboard_router_view(request):
         pending_fees = StudentFee.objects.filter(school=request.school, status__in=['PENDING', 'PARTIAL', 'OVERDUE'])
         defaulters_count = pending_fees.values('student').distinct().count()
 
-        # Display values (matching screenshot)
-        total_students_display = db_students_count if db_students_count > 0 else 342
-        total_teachers_display = db_teachers_count if db_teachers_count > 0 else 28
-        fee_collected_display = f"{int(fee_collected_total):,}" if fee_collected_total > 0 else "45,200"
-        defaulters_count_display = defaulters_count if defaulters_count > 0 else 5
+        # Real Metric Counters from Database
+        total_students_display = db_students_count
+        total_teachers_display = db_teachers_count
+        fee_collected_display = f"{int(fee_collected_total):,}"
+        defaulters_count_display = defaulters_count
 
-        # Recent Admissions List
+        # Real Recent Admissions from Database
         db_recent_students = list(Student.objects.filter(school=request.school).select_related('current_class', 'current_section').order_by('-created_at')[:5])
         recent_admissions = []
-        if db_recent_students:
-            for s in db_recent_students:
-                recent_admissions.append({
-                    'name': f"{s.first_name} {s.last_name}",
-                    'class_name': f"{s.current_class.name} - {s.current_section.name}",
-                    'date': s.admission_date.strftime("%d %b %Y") if s.admission_date else today_formatted,
-                    'status': s.get_status_display() or 'Active'
-                })
-        else:
-            recent_admissions = [
-                {'name': 'Amit Kumar', 'class_name': 'LKG - A', 'date': '23 Sep 2026', 'status': 'Active'},
-                {'name': 'Priya Sharma', 'class_name': 'UKG - B', 'date': '22 Sep 2026', 'status': 'Active'},
-                {'name': 'Rohan Verma', 'class_name': 'Class 1 - A', 'date': '21 Sep 2026', 'status': 'Active'},
-                {'name': 'Sneha Patel', 'class_name': 'Class 2 - A', 'date': '20 Sep 2026', 'status': 'Active'},
-                {'name': 'Arjun Singh', 'class_name': 'Class 3 - B', 'date': '19 Sep 2026', 'status': 'Active'},
-            ]
+        for s in db_recent_students:
+            recent_admissions.append({
+                'name': f"{s.first_name} {s.last_name}".strip(),
+                'class_name': f"{s.current_class.name if s.current_class else 'N/A'} - {s.current_section.name if s.current_section else 'A'}",
+                'date': s.admission_date.strftime("%d %b %Y") if s.admission_date else today_formatted,
+                'status': s.get_status_display() or 'Active'
+            })
 
-        # Recent Notices List
-        db_notices = list(Notice.objects.filter(school=request.school, is_active=True)[:5])
+        # Real Recent Notices from Database
+        db_notices = list(Notice.objects.filter(school=request.school, is_active=True).order_by('-created_at')[:5])
         notices_list = []
-        if db_notices:
-            for n in db_notices:
-                notices_list.append({
-                    'icon': 'fa-solid fa-bullhorn',
-                    'color': '#f97316',
-                    'title': n.title,
-                    'date': n.created_at.strftime("%d %b %Y"),
-                    'desc': n.content[:60] if n.content else '',
-                    'badge': n.get_target_role_display()
-                })
-        else:
-            notices_list = [
-                {
-                    'icon': 'fa-solid fa-cake-candles',
-                    'color': '#f97316',
-                    'title': 'Happy Diwali – Diwali Celebration',
-                    'date': '23 Sep 2026',
-                    'desc': 'May this festival of lights bring happi...',
-                    'badge': 'All (Entire School)'
-                },
-                {
-                    'icon': 'fa-solid fa-users',
-                    'color': '#ec4899',
-                    'title': 'Parent-Teacher Meeting',
-                    'date': '20 Sep 2026',
-                    'desc': 'For Parents',
-                    'badge': 'Parents'
-                },
-                {
-                    'icon': 'fa-solid fa-trophy',
-                    'color': '#eab308',
-                    'title': 'Annual Sports Day',
-                    'date': '18 Sep 2026',
-                    'desc': 'All Students',
-                    'badge': 'All Students'
-                },
-                {
-                    'icon': 'fa-solid fa-calendar-xmark',
-                    'color': '#ef4444',
-                    'title': 'Holiday Notice',
-                    'date': '15 Sep 2026',
-                    'desc': 'School will remain closed on 17th Sep...',
-                    'badge': 'All (Entire School)'
-                },
-                {
-                    'icon': 'fa-solid fa-book-open',
-                    'color': '#6366f1',
-                    'title': 'New Academic Session',
-                    'date': '10 Sep 2026',
-                    'desc': 'Welcome to the new academic session',
-                    'badge': 'All (Entire School)'
-                }
-            ]
+        for n in db_notices:
+            notices_list.append({
+                'icon': 'fa-solid fa-bullhorn',
+                'color': '#f97316',
+                'title': n.title,
+                'date': n.created_at.strftime("%d %b %Y"),
+                'desc': n.content[:60] if n.content else '',
+                'badge': n.get_target_role_display()
+            })
 
-        # Class Distribution for Donut Chart (Exact colors and counts from mockup)
-        chart_labels = ['Nursery', 'LKG', 'UKG', 'Class 1-5', 'Class 6-10']
-        chart_data = [45, 68, 72, 112, 45]
-        chart_colors = ['#3b82f6', '#06b6d4', '#f59e0b', '#10b981', '#8b5cf6']
+        # Real Student Distribution per Class for Donut Chart
+        classes = Class.objects.filter(school=request.school)
+        color_palette = ['#3b82f6', '#06b6d4', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6']
+        chart_labels = []
+        chart_data = []
+        chart_colors = []
+
+        for idx, cls in enumerate(classes):
+            c_count = Student.objects.filter(school=request.school, current_class=cls, status='ACTIVE').count()
+            if c_count > 0:
+                chart_labels.append(cls.name)
+                chart_data.append(c_count)
+                chart_colors.append(color_palette[idx % len(color_palette)])
+
+        if not chart_labels and db_students_count > 0:
+            chart_labels = ['Active Students']
+            chart_data = [db_students_count]
+            chart_colors = ['#3b82f6']
+
         donut_total = sum(chart_data)
         donut_legend = list(zip(chart_labels, chart_data, chart_colors))
 
-        # Monthly Enrollment Trends for Bar Chart
-        months_labels = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep']
-        enrollment_counts = [75, 105, 130, 142, 160, 185]
+        # Real Monthly Enrollment Trend for Current Academic Session
+        months_labels = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']
+        enrollment_counts = []
+        for m in [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]:
+            cnt = Student.objects.filter(
+                school=request.school,
+                admission_date__month=m
+            ).count()
+            enrollment_counts.append(cnt)
 
         return render(request, 'dashboard/school_admin.html', {
             'total_students_display': total_students_display,

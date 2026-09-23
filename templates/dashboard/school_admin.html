@@ -211,6 +211,10 @@
                                 </span>
                             </td>
                         </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No recent admissions found.</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -243,6 +247,11 @@
                         {{ notice.badge }}
                     </span>
                 </div>
+                {% empty %}
+                <div class="text-center text-muted py-4">
+                    <i class="fa-solid fa-bullhorn text-muted fs-3 d-block mb-2"></i>
+                    No notices published yet.
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -269,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     hoverBackgroundColor: '#2563eb',
                     borderRadius: 6,
                     borderSkipped: false,
-                    barThickness: 30,
+                    barThickness: 24,
                 }]
             },
             options: {
@@ -290,9 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     y: {
                         grid: { color: '#f1f5f9' },
-                        ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 12 }, stepSize: 50 },
-                        min: 0,
-                        max: 200,
+                        ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 12 }, precision: 0 },
+                        suggestedMax: 5,
                         beginAtZero: true
                     }
                 }
