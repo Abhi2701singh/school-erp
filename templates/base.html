@@ -17,8 +17,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Flatpickr Datepicker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- PWA Web App Manifest & Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a5f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="EduManage">
+    <link rel="apple-touch-icon" href="{% static 'flutter_app/icons/Icon-192.png' %}">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -250,6 +256,35 @@
                 if (window.innerWidth >= 992) {
                     closeSidebar();
                 }
+            });
+        });
+    </script>
+
+    <!-- Service Worker & PWA Install Engine -->
+    <script>
+        let deferredPrompt;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then(reg => console.log('PWA Service Worker registered:', reg.scope))
+                    .catch(err => console.log('SW registration note:', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtns = document.querySelectorAll('.pwa-install-btn');
+            installBtns.forEach(btn => {
+                btn.style.display = 'inline-flex';
+                btn.onclick = async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log('User response to install prompt:', outcome);
+                        deferredPrompt = null;
+                    }
+                };
             });
         });
     </script>

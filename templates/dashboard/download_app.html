@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Download Mobile App - EduManage ERP{% endblock %}
+{% block title %}Download & Install Mobile App - EduManage ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0">
@@ -11,21 +12,79 @@
                 <i class="fa-solid fa-mobile-screen-button fs-1 text-warning"></i>
             </div>
             <h2 class="fw-bold mb-2">EduManage School ERP Mobile App</h2>
-            <p class="text-white-50 mx-auto mb-4" style="max-width: 600px; font-size: 1rem;">
-                Get real-time routine timetables, pay fees & upload slips, track daily attendance, homework, and exam marks directly on your Android phone!
+            <p class="text-white-50 mx-auto mb-4" style="max-width: 650px; font-size: 1.05rem;">
+                टाइम टेबल (Routine Grid), ऑनलाइन फीस भुगतान व रसीद, लाइव अटेंडेंस, होमवर्क और परीक्षा परिणाम सीधे अपने मोबाइल पर देखें!
             </p>
 
-            <div class="d-flex flex-wrap justify-content-center gap-3">
-                <a href="{{ apk_url }}" target="_blank" class="btn btn-warning btn-lg px-4 py-3 fw-bold rounded-pill shadow">
-                    <i class="fa-brands fa-android me-2 fs-5"></i> Download Android APK
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
+                <!-- Option 1: 1-Click PWA App Install -->
+                <button type="button" class="btn btn-warning btn-lg px-4 py-3 fw-bold rounded-pill shadow pwa-install-btn" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-cloud-arrow-down fs-5"></i> 📲 Install App (फोन में ऐप लगाएं)
+                </button>
+
+                <!-- Option 2: Direct APK Download -->
+                <a href="{{ apk_url }}" class="btn btn-success btn-lg px-4 py-3 fw-bold rounded-pill shadow" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-brands fa-android fs-5"></i> ⬇️ Download .APK
                 </a>
-                <a href="#how-to-install" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold rounded-pill">
-                    <i class="fa-solid fa-circle-info me-2"></i> How to Install
+
+                <!-- Option 3: Open Flutter Web Portal -->
+                <a href="{% url 'flutter_app' %}" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold rounded-pill" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-globe fs-5"></i> Open Web App (/app/)
                 </a>
             </div>
-            <small class="d-block text-white-50 mt-3" style="font-size: 0.8rem;">
-                Compatible with Android 6.0 and above • 100% Free & Secure
-            </small>
+
+            <div class="d-flex justify-content-center gap-3 text-white-50 small mt-2">
+                <span><i class="fa-solid fa-shield-check text-success me-1"></i> 100% Free & Secure</span>
+                <span>•</span>
+                <span><i class="fa-brands fa-android text-warning me-1"></i> Android & Web Compatible</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2 Methods to Install Section -->
+    <div class="row g-4 mb-4">
+        <!-- Method 1 Card -->
+        <div class="col-12 col-lg-6">
+            <div class="card card-custom p-4 h-100 border-0 shadow-sm border-top border-4 border-warning">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">तरीका 1 (सबसे आसान)</span>
+                    <h5 class="fw-bold mb-0 text-dark">Chrome से डायरेक्ट ऐप इंस्टॉल करें</h5>
+                </div>
+                <p class="text-muted small mb-3">बिना कोई फाइल डाउनलोड किए सीधे 1-क्लिक में फोन की होम स्क्रीन पर असली ऐप लगाएं:</p>
+                <ol class="small text-muted ps-3 mb-3">
+                    <li class="mb-2">मोबाइल में <strong>Chrome ब्राउज़र</strong> खोलें और इस वेबसाइट पर जाएं।</li>
+                    <li class="mb-2">ऊपर दिए गए <strong>"📲 Install App"</strong> बटन पर टैप करें (या Chrome के ऊपर दायें कोने में <strong>3 डॉट्स (⋮)</strong> पर क्लिक करें)।</li>
+                    <li class="mb-2"><strong>"Install App"</strong> या <strong>"Add to Home Screen"</strong> पर टैप करें।</li>
+                    <li>आपके फोन के मेन्यू/होम स्क्रीन पर <strong>EduManage App</strong> का आइकॉन आ जाएगा!</li>
+                </ol>
+                <div class="mt-auto pt-2">
+                    <button type="button" class="btn btn-outline-warning w-100 fw-bold pwa-install-btn">
+                        <i class="fa-solid fa-plus-circle me-1"></i> अभी ऐप जोड़ें (Install Now)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Method 2 Card -->
+        <div class="col-12 col-lg-6">
+            <div class="card card-custom p-4 h-100 border-0 shadow-sm border-top border-4 border-success">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">तरीका 2 (Android .APK)</span>
+                    <h5 class="fw-bold mb-0 text-dark">Android APK पैकेज डाउनलोड</h5>
+                </div>
+                <p class="text-muted small mb-3">अगर आप .apk पैकेज इंस्टॉल करना चाहते हैं:</p>
+                <ol class="small text-muted ps-3 mb-3">
+                    <li class="mb-2"><strong>"⬇️ Download .APK"</strong> बटन पर क्लिक करके फाइल सेव करें।</li>
+                    <li class="mb-2">डाउनलोड होने के बाद फाइल पर क्लिक करें और <strong>"Install"</strong> चुनें।</li>
+                    <li class="mb-2">अगर फोन <em>"Allow from this source"</em> पूछे, तो उसे ऑन करें।</li>
+                    <li>ऐप खोलें और <code>admin</code> या अपने छात्र/शिक्षक आईडी से लॉगिन करें।</li>
+                </ol>
+                <div class="mt-auto pt-2">
+                    <a href="{{ releases_url }}" target="_blank" class="btn btn-outline-success w-100 fw-bold">
+                        <i class="fa-brands fa-github me-1"></i> GitHub Releases देखें
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -79,44 +138,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Installation Steps -->
-    <div id="how-to-install" class="card card-custom p-4 p-md-5 border-0 shadow-sm mb-4">
-        <h4 class="fw-bold text-dark mb-4 text-center">
-            <i class="fa-solid fa-circle-question text-primary me-2"></i> How to Install APK on Your Phone (फोन में कैसे इंस्टॉल करें)
-        </h4>
-
-        <div class="row g-4">
-            <div class="col-12 col-md-4">
-                <div class="p-4 rounded-4 bg-light text-center h-100 border">
-                    <div class="badge bg-primary fs-6 mb-3 px-3 py-2 rounded-pill">Step 1</div>
-                    <h6 class="fw-bold mb-2">Download APK File</h6>
-                    <p class="small text-muted mb-0">
-                        ऊपर दिए गए <strong>"Download Android APK"</strong> बटन पर टैप करें और फाइल को अपने फोन में डाउनलोड होने दें।
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-                <div class="p-4 rounded-4 bg-light text-center h-100 border">
-                    <div class="badge bg-primary fs-6 mb-3 px-3 py-2 rounded-pill">Step 2</div>
-                    <h6 class="fw-bold mb-2">Allow Unknown Sources</h6>
-                    <p class="small text-muted mb-0">
-                        डाउनलोड की गई <code>.apk</code> फाइल पर टैप करें। अगर फोन <em>"Install from unknown sources"</em> पूछे, तो <strong>Allow</strong> करें।
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-4">
-                <div class="p-4 rounded-4 bg-light text-center h-100 border">
-                    <div class="badge bg-primary fs-6 mb-3 px-3 py-2 rounded-pill">Step 3</div>
-                    <h6 class="fw-bold mb-2">Install & Login</h6>
-                    <p class="small text-muted mb-0">
-                        <strong>"Install"</strong> बटन पर क्लिक करें। ऐप खुलते ही अपने छात्र/शिक्षक यूजरनेम और पासवर्ड से लॉगिन करें!
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
+

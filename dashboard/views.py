@@ -236,15 +236,16 @@ def dashboard_router_view(request):
     return redirect('profile')
 
 
-@login_required
 def app_download_view(request):
     """
     Mobile App Download Landing Page.
     Provides direct Android APK download and installation guide.
     """
-    apk_github_url = "https://github.com/Abhi2701singh/school-erp/releases"
+    apk_direct_url = "https://github.com/Abhi2701singh/school-erp/releases/download/v1.0.0/EduManage-School-ERP.apk"
+    releases_url = "https://github.com/Abhi2701singh/school-erp/releases"
     return render(request, 'dashboard/download_app.html', {
-        'apk_url': apk_github_url,
+        'apk_url': apk_direct_url,
+        'releases_url': releases_url,
     })
 
 
@@ -261,5 +262,32 @@ def flutter_app_view(request):
             content = content.replace('<base href="/">', '<base href="/static/flutter_app/">')
             return HttpResponse(content, content_type='text/html')
     return redirect('dashboard')
+
+
+def manifest_view(request):
+    """Serve PWA manifest.json from root"""
+    import os
+    from django.conf import settings
+    from django.http import HttpResponse
+    manifest_path = os.path.join(settings.BASE_DIR, 'static', 'manifest.json')
+    if os.path.exists(manifest_path):
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            return HttpResponse(f.read(), content_type='application/manifest+json')
+    return HttpResponse('{}', content_type='application/manifest+json')
+
+
+def service_worker_view(request):
+    """Serve PWA Service Worker sw.js from root with Service-Worker-Allowed header"""
+    import os
+    from django.conf import settings
+    from django.http import HttpResponse
+    sw_path = os.path.join(settings.BASE_DIR, 'static', 'sw.js')
+    if os.path.exists(sw_path):
+        with open(sw_path, 'r', encoding='utf-8') as f:
+            resp = HttpResponse(f.read(), content_type='application/javascript')
+            resp['Service-Worker-Allowed'] = '/'
+            return resp
+    return HttpResponse('', content_type='application/javascript')
+
 
 
