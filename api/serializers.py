@@ -24,10 +24,12 @@ class AcademicSessionSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
+    profile_photo = serializers.ImageField(read_only=True)
+    profile_picture = serializers.ImageField(source='profile_photo', read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'role', 'phone', 'profile_picture']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'role', 'phone', 'profile_photo', 'profile_picture']
 
     def get_full_name(self, obj):
         return obj.get_full_name() or obj.username
@@ -95,15 +97,15 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
+    staff_id = serializers.CharField(source='employee_id', read_only=True)
     assigned_classes_list = ClassSerializer(source='assigned_classes', many=True, read_only=True)
     assigned_subjects_list = SubjectSerializer(source='assigned_subjects', many=True, read_only=True)
 
     class Meta:
         model = Teacher
         fields = [
-            'id', 'staff_id', 'full_name', 'qualification', 'designation',
-            'phone', 'address', 'joining_date', 'is_class_teacher',
-            'class_teacher_for_class', 'class_teacher_for_section',
+            'id', 'employee_id', 'staff_id', 'full_name', 'qualification',
+            'phone', 'address', 'joining_date',
             'assigned_classes_list', 'assigned_subjects_list'
         ]
 

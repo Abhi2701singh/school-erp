@@ -31,7 +31,7 @@ class UserModel {
       fullName: json['full_name'] ?? json['username'] ?? '',
       role: json['role'] ?? 'STUDENT',
       phone: json['phone'],
-      profilePicture: json['profile_picture'],
+      profilePicture: json['profile_photo'] ?? json['profile_picture'],
     );
   }
 
@@ -44,6 +44,7 @@ class UserModel {
     'full_name': fullName,
     'role': role,
     'phone': phone,
+    'profile_photo': profilePicture,
     'profile_picture': profilePicture,
   };
 }

@@ -8199,9 +8199,9 @@ this.c=b
 this.d=c},
 a7I:function a7I(){},
 a7J:function a7J(){},
-aBl(a){var s,r,q,p,o,n,m="username",l=a.h(0,"id")
-if(l==null)l=0
-s=a.h(0,m)
+aBl(a){var s,r,q,p,o,n,m,l,k="username",j=a.h(0,"id")
+if(j==null)j=0
+s=a.h(0,k)
 if(s==null)s=""
 r=a.h(0,"email")
 if(r==null)r=""
@@ -8210,11 +8210,13 @@ if(q==null)q=""
 p=a.h(0,"last_name")
 if(p==null)p=""
 o=a.h(0,"full_name")
-if(o==null)o=a.h(0,m)
+if(o==null)o=a.h(0,k)
 if(o==null)o=""
 n=a.h(0,"role")
 if(n==null)n="STUDENT"
-return new A.ale(l,s,r,q,p,o,n,a.h(0,"phone"),a.h(0,"profile_picture"))},
+m=a.h(0,"phone")
+l=a.h(0,"profile_photo")
+return new A.ale(j,s,r,q,p,o,n,m,l==null?a.h(0,"profile_picture"):l)},
 aGM(a){var s,r,q,p,o
 a.h(0,"id")
 s=a.h(0,"name")
@@ -44788,8 +44790,8 @@ A.a7J.prototype={
 $1(a){return A.aF9(a)},
 $S:139}
 A.ale.prototype={
-js(){var s=this
-return A.an(["id",s.a,"username",s.b,"email",s.c,"first_name",s.d,"last_name",s.e,"full_name",s.f,"role",s.r,"phone",s.w,"profile_picture",s.x],t.N,t.z)}}
+js(){var s=this,r=s.x
+return A.an(["id",s.a,"username",s.b,"email",s.c,"first_name",s.d,"last_name",s.e,"full_name",s.f,"role",s.r,"phone",s.w,"profile_photo",r,"profile_picture",r],t.N,t.z)}}
 A.agG.prototype={}
 A.p4.prototype={
 rP(){var s=0,r=A.N(t.y),q,p=this,o,n
