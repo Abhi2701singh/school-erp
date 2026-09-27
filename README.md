@@ -1,78 +1,122 @@
-# 🏫 EduManage - Multi-Tenant School Management ERP System
+<div align="center">
+
+# 🏫 EduManage ERP
+### **Next-Generation Multi-Tenant School Management & Academic Operating System**
 
 [![Django Version](https://img.shields.io/badge/Django-5.x-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Python Version](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Cloud-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Database](https://img.shields.io/badge/PostgreSQL-Neon_Serverless-00E599?style=for-the-badge&logo=postgresql&logoColor=black)](https://neon.tech/)
+[![Frontend](https://img.shields.io/badge/Bootstrap-5.3_Custom_UI-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![Deployment](https://img.shields.io/badge/Deploy-Render_Cloud-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/)
+[![License](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
 
-A modern, comprehensive, multi-tenant School Enterprise Resource Planning (ERP) platform designed for schools, educational institutes, and academic trusts. **EduManage ERP** provides end-to-end automation for academic administration, student information, fee collection with digital slip verification, classic routine timetable matrices, attendance registers, examinations, homework, and role-based portals.
+<p align="center">
+  <b>A production-ready, cloud-native ERP platform built for K-12 Schools, Colleges, and Educational Trusts.</b><br>
+  Featuring automatic multi-school data isolation, self-service student fee portal with proof verification, classic routine timetable matrix, daily attendance register, report cards, and role-based access control.
+</p>
+
+[✨ Live Features](#-key-features-overview) • [🚀 Quick Start](#-quick-start-guide) • [👥 Role Portals](#-role-based-access-matrix) • [🏗️ Architecture](#-system-architecture) • [🌐 Cloud Deployment](#-cloud-deployment-guide)
 
 ---
+
+</div>
 
 ## 📑 Table of Contents
 
-- [Key Features](#-key-features)
-- [User Roles & Permissions](#-user-roles--permissions)
-- [System Architecture](#-system-architecture)
-- [Tech Stack](#-tech-stack)
-- [Project Directory Structure](#-project-directory-structure)
-- [Quick Start & Installation](#-quick-start--installation)
-- [Environment Variables](#-environment-variables)
-- [Core Modules Breakdown](#-core-modules-breakdown)
-  - [1. Fee Management & Student Online Payment](#1-fee-management--student-online-payment)
-  - [2. Classic Routine Timetable Grid](#2-classic-routine-timetable-grid)
-  - [3. Multi-School Tenant Isolation](#3-multi-school-tenant-isolation)
-  - [4. Academics & Student Lifecycle](#4-academics--student-lifecycle)
-  - [5. Homework & Study Material Hub](#5-homework--study-material-hub)
-- [Deployment Guide](#-deployment-guide)
-  - [Deploying to Render](#deploying-to-render)
-  - [Neon Serverless PostgreSQL Setup](#neon-serverless-postgresql-setup)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [✨ Key Features Overview](#-key-features-overview)
+- [👥 Role-Based Access Matrix](#-role-based-access-matrix)
+- [🏗️ System Architecture](#-system-architecture)
+- [📦 Core Module Showcase](#-core-module-showcase)
+  - [💳 1. Smart Fee Portal & Payment Slip Verification](#1-smart-fee-portal--payment-slip-verification)
+  - [📅 2. Classic Routine Timetable Matrix](#2-classic-routine-timetable-matrix)
+  - [🏢 3. Zero-Leak Multi-Tenant Engine](#3-zero-leak-multi-tenant-engine)
+  - [🎓 4. Student Information & Admission Register](#4-student-information--admission-register)
+  - [📋 5. Attendance & Examination Suite](#5-attendance--examination-suite)
+- [💻 Tech Stack](#-tech-stack)
+- [📁 Project Structure](#-project-structure)
+- [🚀 Quick Start Guide](#-quick-start-guide)
+- [⚙️ Environment Variables](#️-environment-variables)
+- [🌐 Cloud Deployment Guide](#-cloud-deployment-guide)
+- [🤝 Contributing & License](#-contributing--license)
 
 ---
 
-## 🌟 Key Features
+## ✨ Key Features Overview
 
-- 🏢 **Multi-Tenant Architecture**: Single installation supports multiple independent schools with complete data isolation via thread-local school context.
-- 💳 **Smart Fee Collection & Slip Verification**:
-  - Itemized fee heads (Tuition, Transport, Exam, Admission, etc.) linked to academic sessions.
-  - Student self-service fee portal with automatic past arrears rollup.
-  - Proof / Payment slip upload with transaction validation (prevents overpayment).
-  - Admin verification workflow (`Pending` ➔ `Approved` / `Rejected`) with instant official PDF receipt generation.
-- 📅 **Classic Routine Timetable Matrix**:
-  - Full weekly timetable grid (`Monday` to `Saturday`) with period columns (`1st` to `8th` + `Extra Class`).
-  - Prominent vertical **`BREAK`** column separator.
-  - Subject name displayed with assigned teacher in brackets: `MATH (Abhi Singh)`.
-  - 1-click quick delete, cell hover instant add modal, and print-optimized stylesheet.
-- 🎓 **Complete Student & Staff Information System**:
-  - Admission management with photos, roll numbers, Aadhaar/Govt IDs, and guardian details.
-  - Staff & teacher profiles with subject and class allocations.
-- 📋 **Daily Attendance Register**:
-  - Section-wise daily student attendance marking (`Present`, `Absent`, `Late`, `Half-day`).
-  - Automated monthly statistics and student-wise attendance percentages.
-- 📊 **Examinations & Report Cards**:
-  - Term/Semester examination configuration with custom grading systems.
-  - Marksheet entry and automated grade calculation.
-- 📚 **Homework & Study Materials**:
-  - Class-wise digital homework assignment with submission deadlines.
-  - PDF/document study materials repository.
-  - School announcements and targeted notice board.
-- 🖨️ **Print & PDF Generation**: Built-in PDF challan generation, printable routine sheets, and fee receipts using ReportLab and `@media print` CSS.
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🏢 Multi-Tenant SaaS Core</h3>
+      <ul>
+        <li><b>Zero Cross-Tenant Leakage</b>: Automatic thread-local school context for each request.</li>
+        <li><b>Independent School Profiles</b>: Custom branding, logos, school codes, and academic sessions.</li>
+        <li><b>Super Admin Control Tower</b>: Provision, manage, and inspect all schools globally.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>💳 Smart Fee Collection & Verification</h3>
+      <ul>
+        <li><b>Student Self-Service Portal</b>: Direct view of itemized dues and past unpaid arrears.</li>
+        <li><b>Payment Proof Upload</b>: Upload UPI / Bank receipts with transaction ID tracking.</li>
+        <li><b>Admin Verification Workflow</b>: 1-click Approve / Reject with audit trails and PDF challan generation.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>📅 Classic Routine Timetable Grid</h3>
+      <ul>
+        <li><b>School Routine Matrix</b>: Days (rows) & Periods (1st to 8th + Extra Class).</li>
+        <li><b>Prominent BREAK Column</b>: Vertical separator splitting morning & afternoon classes.</li>
+        <li><b>Teacher Bracketing</b>: Displays subject with assigned teacher: <code>MATH (Abhi Singh)</code>.</li>
+        <li><b>1-Click Print & Add</b>: Direct cell hover quick-add & print-optimized layout.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>🎓 Student & Staff Lifecycle</h3>
+      <ul>
+        <li><b>Complete Student Directory</b>: Roll numbers, admission IDs, DOB, Aadhaar & guardian info.</li>
+        <li><b>Staff & Faculty Management</b>: Subject and class allocations with contact records.</li>
+        <li><b>Student Promotion Engine</b>: Smooth promotion across academic sessions.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>📋 Daily Attendance Register</h3>
+      <ul>
+        <li><b>Class-wise Daily Marking</b>: Present, Absent, Late, Half-Day, Excused.</li>
+        <li><b>Monthly Attendance Logs</b>: Automated percentage calculation and defaulter tracking.</li>
+      </ul>
+    </td>
+    <td width="50%">
+      <h3>📚 Homework & Study Material Hub</h3>
+      <ul>
+        <li><b>Digital Assignments</b>: Assign homework with deadlines and attachments.</li>
+        <li><b>E-Learning Notes</b>: PDF/Document repository accessible directly by enrolled students.</li>
+        <li><b>Notice Board</b>: Role-targeted announcements for Students, Teachers, and Parents.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 👥 User Roles & Permissions
+## 👥 Role-Based Access Matrix
 
-| Role | Permissions & Capabilities |
-| :--- | :--- |
-| **Super Admin** | Global system access, multi-school tenant provisioning, global analytics, and school configuration. |
-| **School Admin / Principal** | School-level administration, fee verification, timetable builder, student/teacher directory, attendance audits, notices. |
-| **Teacher** | Assigned class dashboard, mark daily attendance, assign/delete homework, upload study notes, view teaching schedule. |
-| **Student** | Personal dashboard, view fee dues, submit payment proofs, download receipts, view timetable routine, attendance percentage, homework. |
-| **Parent** | Multi-child dashboard, track children's attendance, fees, homework, and exam performance. |
-| **Accountant** | Fee structure setup, fee invoice generation, offline fee collection, and verification of student online payments. |
+| Module / Feature | Super Admin | School Admin | Principal | Teacher | Student | Parent | Accountant |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Multi-School Management** | 🟢 Full | 🔴 None | 🔴 None | 🔴 None | 🔴 None | 🔴 None | 🔴 None |
+| **School Settings & Sessions** | 🟢 Full | 🟢 Full | 🟢 Full | 🔴 None | 🔴 None | 🔴 None | 🔴 None |
+| **Fee Structure & Invoicing** | 🟢 Full | 🟢 Full | 🟡 View | 🔴 None | 🔴 None | 🔴 None | 🟢 Full |
+| **Fee Verification & Receipts** | 🟢 Full | 🟢 Full | 🟡 View | 🔴 None | 🔵 Pay/Upload | 🔵 Pay/Upload | 🟢 Full |
+| **Timetable Routine Matrix** | 🟢 Full | 🟢 Full | 🟢 Full | 🟡 My Schedule | 🟡 Class Routine | 🟡 Child Routine | 🔴 None |
+| **Student Directory & Admissions** | 🟢 Full | 🟢 Full | 🟢 Full | 🟡 View Assigned | 🔵 My Profile | 🔵 Child Profile | 🟡 View Dues |
+| **Daily Attendance Marking** | 🟢 Full | 🟢 Full | 🟢 Full | 🟢 Assigned Classes | 🟡 View Attendance | 🟡 View Attendance | 🔴 None |
+| **Homework & Study Notes** | 🟢 Full | 🟢 Full | 🟢 Full | 🟢 Create & Manage | 🟡 View & Download | 🟡 View & Download | 🔴 None |
+| **Examination & Marks** | 🟢 Full | 🟢 Full | 🟢 Full | 🟢 Enter Marks | 🟡 View Report Card | 🟡 View Report Card | 🔴 None |
+
+> **Legend**: 🟢 Manage & Edit • 🟡 Read-Only View • 🔵 Personal Self-Service • 🔴 Restricted
 
 ---
 
@@ -80,247 +124,233 @@ A modern, comprehensive, multi-tenant School Enterprise Resource Planning (ERP) 
 
 ```mermaid
 flowchart TD
-    Client([Web Browser / Mobile View])
+    User([🌐 End-User Browser / Mobile])
     
-    subgraph Edge & Security
+    subgraph Edge Layer
         CF[Cloudflare Edge / Tunnel]
-        WN[WhiteNoise Static Server]
+        WN[WhiteNoise Static Asset Server]
     end
 
-    subgraph Django Application Layer
-        TM[Tenant Context Middleware]
-        Auth[Role-Based Authentication]
+    subgraph Application Tier [Django 5.x Application Server]
+        TM[🛡️ TenantContextMiddleware\nExtracts Active School Context]
+        Auth[🔐 Role-Based Access Control]
         
-        subgraph Core Apps
-            SCH[schools: Tenant Config]
-            ACC[accounts: User & Auth]
-            ACAD[academics: Classes & Timetable]
-            STU[students: Admissions & Directory]
-            TEA[teachers: Staff Management]
-            ATT[attendance: Daily Marking]
-            FEE[fees: Dues & Verification]
-            EXAM[examinations: Marks & Grading]
-            HW[homework: Notes & Notices]
+        subgraph Core Modules
+            MOD_SCH[🏢 Schools & Sessions]
+            MOD_ACC[👤 Accounts & Users]
+            MOD_ACAD[📅 Academics & Timetable]
+            MOD_STU[🎓 Students & Admissions]
+            MOD_TEA[👨‍🏫 Teachers & Staff]
+            MOD_FEE[💳 Fees & Slip Verification]
+            MOD_ATT[📋 Attendance Register]
+            MOD_EXAM[📊 Exams & Grade Cards]
+            MOD_HW[📚 Homework & Materials]
         end
     end
 
-    subgraph Data Tier
-        Postgres[(Cloud PostgreSQL / Neon Serverless)]
-        Media[(Local / Cloud Media Storage)]
+    subgraph Persistence Layer
+        Neon[(🐘 Neon Serverless PostgreSQL\nPerpetual Cloud Storage)]
+        Media[(📁 Media Assets / Receipts / Photos)]
     end
 
-    Client --> CF --> WN --> TM --> Auth
-    Auth --> CoreApps
-    SCH & ACC & ACAD & STU & TEA & ATT & FEE & EXAM & HW --> Postgres
-    STU & HW & FEE --> Media
+    User --> CF --> WN --> TM --> Auth
+    Auth --> CoreModules
+    MOD_SCH & MOD_ACC & MOD_ACAD & MOD_STU & MOD_TEA & MOD_FEE & MOD_ATT & MOD_EXAM & MOD_HW --> Neon
+    MOD_STU & MOD_FEE & MOD_HW --> Media
 ```
+
+---
+
+## 📦 Core Module Showcase
+
+### 1. Smart Fee Portal & Payment Slip Verification
+The fee module allows complete financial transparency between the school administration and parents/students:
+- **Ledger Overview**: Real-time breakdown of `Total Invoiced`, `Total Paid`, `Under Review`, and `Net Due`.
+- **Automatic Arrears Carried Forward**: Unpaid balance from previous months automatically rolls over into the next month's payable balance.
+- **Proof / Slip Upload**: Students can submit digital proof (Transaction ID, Payment Mode, Screenshot / Receipt PDF).
+- **Audit Verification**: School admins verify payments with 1-click confirmation or detailed rejection feedback.
+
+```text
+Student Portal: [View Due Amount] ──> [Upload Payment Slip + Txn ID]
+                                                │
+Admin Portal:   [Official PDF Receipt] <── [Verify Slip & Approve]
+```
+
+### 2. Classic Routine Timetable Matrix
+Replaces cluttered list views with the authentic, classic school routine matrix:
+- **Structured Rows & Columns**: Days on rows (`MONDAY` to `SATURDAY`) and periods (`1st` to `8th` + `EXTRA CLASS`).
+- **Prominent `BREAK` Separator**: Distinct vertical column dividing the morning and afternoon sessions.
+- **Teacher Bracketing**: Clean typography displaying `SUBJECT` in bold uppercase and `( Teacher Name )` right below.
+- **Print Optimization**: Dedicated `@media print` CSS formats the routine into a landscape/portrait document for physical distribution.
+
+```text
+┌───────────┬──────────────┬──────────────┬──────────────┬──────────────┬───────┬──────────────┬──────────────┐
+│   DAYS    │     1st      │     2nd      │     3rd      │     4th      │ BREAK │     5th      │     6th      │
+├───────────┼──────────────┼──────────────┼──────────────┼──────────────┼───────┼──────────────┼──────────────┤
+│  MONDAY   │    MATHS     │   ENGLISH    │   SCIENCE    │    HINDI     │   B   │   HISTORY    │   SPORTS     │
+│           │ (Abhi Singh) │(Kaushik S.)  │ (Dr. Sharma) │(Rahul Verma) │   R   │ (Anita Devi) │(Coach Kumar) │
+│  TUESDAY  │   ENGLISH    │    MATHS     │   COMPUTER   │   PHYSICS    │   E   │  GEOGRAPHY   │   LIBRARY    │
+│           │(Kaushik S.)  │ (Abhi Singh) │ (Pooja Rao)  │ (Dr. Sharma) │   A   │ (Anita Devi) │ (P. Tiwari)  │
+│    ...    │     ...      │     ...      │     ...      │     ...      │   K   │     ...      │     ...      │
+└───────────┴──────────────┴──────────────┴──────────────┴──────────────┴───────┴──────────────┴──────────────┘
+```
+
+### 3. Zero-Leak Multi-Tenant Engine
+- Every entity model inherits from `TenantModel` which binds it to a `School` foreign key.
+- `TenantManager` automatically filters all queries with the current request's school.
+- Eliminates any risk of data spilling across different educational institutions sharing the same cluster.
 
 ---
 
 ## 💻 Tech Stack
 
-- **Backend Framework**: [Django 5.x](https://www.djangoproject.com/) (Python 3.11+)
-- **Database**: [PostgreSQL](https://www.postgresql.org/) (Production on [Neon Serverless](https://neon.tech/)) / SQLite3 (Development)
-- **Database Driver & ORM**: `psycopg2-binary`, `dj-database-url`, Django ORM with Custom Tenant Querysets
-- **Frontend UI**: [Bootstrap 5.3](https://getbootstrap.com/), [FontAwesome 6](https://fontawesome.com/), Custom Vanilla JavaScript
-- **Static & Media Serving**: [WhiteNoise](https://whitenoise.readthedocs.io/), Gunicorn WSGI
-- **Document & PDF Engine**: [ReportLab](https://www.reportlab.com/), `openpyxl` (Excel exports)
-- **Deployment Platform**: [Render](https://render.com/), [Cloudflare](https://www.cloudflare.com/)
+<div align="center">
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Backend & Core** | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![Django](https://img.shields.io/badge/Django-092E20?style=flat-square&logo=django&logoColor=white) ![Django REST Framework](https://img.shields.io/badge/DRF-A30000?style=flat-square&logo=django&logoColor=white) |
+| **Database & ORM** | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white) ![Neon](https://img.shields.io/badge/Neon_Serverless-00E599?style=flat-square&logo=postgresql&logoColor=black) ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white) |
+| **Frontend UI** | ![Bootstrap](https://img.shields.io/badge/Bootstrap_5.3-7952B3?style=flat-square&logo=bootstrap&logoColor=white) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) |
+| **Reporting & Docs** | ![ReportLab](https://img.shields.io/badge/ReportLab_PDF-3B82F6?style=flat-square) ![openpyxl](https://img.shields.io/badge/Excel_openpyxl-107C41?style=flat-square&logo=microsoftexcel&logoColor=white) |
+| **Web Server & CDN** | ![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?style=flat-square&logo=gunicorn&logoColor=white) ![WhiteNoise](https://img.shields.io/badge/WhiteNoise-000000?style=flat-square) ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white) |
+| **Hosting & Cloud** | ![Render](https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white) |
+
+</div>
 
 ---
 
-## 📁 Project Directory Structure
+## 📁 Project Structure
 
 ```text
 school-erp/
-├── academics/              # Classes, sections, subjects & routine timetable matrix
-│   ├── models.py           # Class, Section, Subject, Timetable models
-│   ├── views.py            # Timetable matrix generation & CRUD views
-│   └── forms.py            # Academic forms with dynamic tenant filtering
-├── accounts/               # Custom User model, RBAC, tenant middleware
-│   ├── models.py           # Multi-tenant base model, custom User roles
-│   └── middleware.py       # Thread-local tenant context isolation
-├── attendance/             # Student daily attendance recording & register
-├── dashboard/              # Role-tailored dashboards (Admin, Teacher, Student, Parent)
-├── examinations/           # Exam sessions, grading scales, marks entry
-├── fees/                   # Invoicing, dues, receipt generation, payment submissions
-│   ├── models.py           # FeeHead, FeeStructure, StudentFee, PaymentSubmission
-│   └── views.py            # Payment submission & admin verification workflows
-├── homework/               # Homework assignments, study materials & notice board
-├── schools/                # Multi-school tenant entity & academic sessions
-├── students/               # Student directory, admissions, profile cards
-├── teachers/               # Staff directory, subject & class allocations
-├── templates/              # HTML5 Django templates
-│   ├── academics/          # Timetable grid & academic views
-│   ├── dashboard/          # SuperAdmin, Admin, Teacher, Student, Parent dashboards
-│   ├── fees/               # Fee portal, receipt, challan, payment proof forms
-│   └── base.html           # Responsive sidebar layout & topbar
-├── static/                 # Custom CSS stylesheets, icons, logos
-├── school_erp/             # Main Django project settings & URL configuration
-│   ├── settings.py         # Multi-database, session, auth & security settings
-│   └── urls.py             # Root URL routing
-├── build.sh                # Automated build & migration script for Render
-├── render.yaml             # Render infrastructure as code blueprint
-├── requirements.txt        # Python package dependencies
-└── manage.py               # Django management CLI
+├── 📁 academics/          # Classes, sections, subjects & routine timetable grid
+├── 📁 accounts/           # User model, RBAC roles, tenant middleware & auth
+├── 📁 attendance/         # Class-wise daily student attendance marking
+├── 📁 dashboard/          # Dynamic dashboards for SuperAdmin, Admin, Teacher, Student, Parent
+├── 📁 examinations/       # Exams setup, marks entry, grades & report cards
+├── 📁 fees/               # Invoicing, fee heads, online payment proofs & PDF receipts
+├── 📁 homework/           # Homework assignments, study material vault, notice board
+├── 📁 schools/            # Multi-school tenant entities & academic sessions
+├── 📁 students/           # Student admission directory, profiles & guardian records
+├── 📁 teachers/           # Staff directory, subject & class allocations
+├── 📁 templates/          # Responsive Bootstrap 5 HTML templates
+├── 📁 static/             # Custom stylesheets, brand logos & icons
+├── 📁 school_erp/         # Django configuration, settings & root URL router
+├── 📄 build.sh            # Production deployment script (collectstatic, migrate)
+├── 📄 render.yaml         # Render Infrastructure as Code (IaC) blueprint
+├── 📄 requirements.txt    # Python dependencies
+└── 📄 manage.py           # Django command-line utility
 ```
 
 ---
 
-## 🚀 Quick Start & Installation
+## 🚀 Quick Start Guide
 
-### Prerequisites
-- Python `3.10` or higher
-- Git
-- Virtual environment tool (`venv`)
+Follow these steps to run the application on your local machine:
 
-### 1. Clone the Repository
+### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/Abhi2701singh/school-erp.git
 cd school-erp
 ```
 
-### 2. Create and Activate Virtual Environment
+### 2️⃣ Set Up Virtual Environment
 ```bash
 # macOS / Linux
 python3 -m venv venv
 source venv/bin/activate
 
-# Windows
+# Windows (Command Prompt / PowerShell)
 python -m venv venv
 venv\Scripts\activate
 ```
 
-### 3. Install Dependencies
+### 3️⃣ Install Dependencies
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
-Create a `.env` file in the root directory:
+### 4️⃣ Configure Environment
+Create a `.env` file in the project root:
 ```bash
 cp .env.example .env
 ```
-Edit `.env` with your settings:
+Add your local settings:
 ```env
-DJANGO_SECRET_KEY=your-secure-secret-key-here
+DJANGO_SECRET_KEY=your-local-secret-key-32chars
 DJANGO_DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
-# Optional: Set DATABASE_URL to your PostgreSQL instance, or leave empty to use SQLite3 locally
+# Leave DATABASE_URL blank to automatically use local SQLite, or add PostgreSQL URL:
 # DATABASE_URL=postgresql://user:password@localhost:5432/school_erp
 ```
 
-### 5. Apply Database Migrations
+### 5️⃣ Run Migrations & Create Administrator
 ```bash
-python manage.py makemigrations
 python manage.py migrate
-```
-
-### 6. Create a Superuser
-```bash
 python manage.py createsuperuser
 ```
 
-### 7. Run the Development Server
+### 6️⃣ Start Development Server
 ```bash
 python manage.py runserver
 ```
-Visit `http://127.0.0.1:8000/` in your browser.
+Open **`http://127.0.0.1:8000/`** in your browser to access the portal!
 
 ---
 
 ## ⚙️ Environment Variables
 
-| Variable | Required | Default | Description |
+| Variable | Required | Default | Purpose |
 | :--- | :---: | :---: | :--- |
-| `DJANGO_SECRET_KEY` | **Yes** | Insecure fallback | Secret key for cryptographic signing. |
-| `DJANGO_DEBUG` | No | `False` | Enable/disable debug mode (`True`/`False`). |
-| `ALLOWED_HOSTS` | No | `*` | Comma-separated list of allowed hostnames. |
-| `DATABASE_URL` | No | SQLite | PostgreSQL connection URL (e.g., Neon Postgres / Supabase). |
-| `PYTHON_VERSION` | No | `3.11.8` | Python runtime version for cloud deployments. |
+| `DJANGO_SECRET_KEY` | **Yes** | Fallback Key | Cryptographic signing key for sessions & tokens. |
+| `DJANGO_DEBUG` | No | `False` | Enables Django debug mode (`True` for local dev). |
+| `ALLOWED_HOSTS` | No | `*` | Comma-separated domain list allowed to connect. |
+| `DATABASE_URL` | No | `SQLite3` | PostgreSQL connection URL (e.g., Neon Cloud Postgres). |
+| `PYTHON_VERSION` | No | `3.11.8` | Python runtime version for cloud builders. |
 
 ---
 
-## 🔍 Core Modules Breakdown
+## 🌐 Cloud Deployment Guide
 
-### 1. Fee Management & Student Online Payment
-- **Self-Service Student Payment Portal**: Students can check all fee heads (Tuition, Transport, etc.), current dues, and past arrears.
-- **Payment Slip Submission**: Students submit offline or UPI payments by uploading the transaction receipt / slip.
-- **Validation**: Strict validation ensures student cannot submit amounts exceeding net dues.
-- **Verification Portal**: Admins review payment slips, verify transaction IDs, and approve or reject submissions.
-- **Arrears Handling**: Unpaid fee balances automatically carry forward to next month's invoice.
+### Deploy to Render (Recommended)
 
-### 2. Classic Routine Timetable Grid
-- **Structured Table Matrix**:
-  - Rows: Days of the week (`MONDAY` - `SATURDAY`).
-  - Columns: Morning periods (`1st`, `2nd`, `3rd`, `4th`), Vertical `BREAK`, Afternoon periods (`5th`, `6th`, `7th`, `8th`, `EXTRA CLASS`).
-  - Format: Displays Subject in bold uppercase and `( Teacher Name )` right below.
-- **Instant Actions**: Hover over any empty slot to add a class with pre-filled day and period; 1-click delete with confirm dialog.
-- **Print Optimization**: Click "Print Routine" to print or export a clean, high-resolution timetable sheet.
+This project is pre-configured with **Infrastructure as Code** via [`render.yaml`](file:///Users/abhinavsingh/Documents/school/render.yaml):
 
-### 3. Multi-School Tenant Isolation
-- Every database model inherits from `TenantModel`.
-- `TenantMiddleware` extracts the active school from the user's session or profile and sets a thread-local context.
-- All querysets are automatically scoped to `school=request.school`, preventing cross-tenant data leakage.
+1. **Push your repository** to GitHub.
+2. Sign in to [Render.com](https://render.com/) and click **New +** ➔ **Blueprint**.
+3. Select your `school-erp` repository.
+4. Render will automatically configure:
+   - Python 3.11 build runtime.
+   - Build command: `bash build.sh` (installs packages, compiles static assets with WhiteNoise, runs database migrations).
+   - Production web server: `gunicorn school_erp.wsgi:application`.
 
-### 4. Academics & Student Lifecycle
-- Comprehensive student directory with search and filter by Class, Section, and Status.
-- Complete guardian and emergency contact details.
-- Promotion workflows across academic sessions.
+### Perpetual Cloud Storage with Neon Postgres
 
-### 5. Homework & Study Material Hub
-- Subject-specific homework creation with deadline alerts.
-- Downloadable study notes and learning resources.
-- Centralized broadcast notice board with role targeting (`ALL`, `TEACHER`, `STUDENT`, `PARENT`).
-
----
-
-## 🌐 Deployment Guide
-
-### Deploying to Render
-
-This repository includes a preconfigured `render.yaml` and `build.sh` for 1-click deployment to [Render](https://render.com/):
-
-1. Push your code to your GitHub repository.
-2. Log in to Render and click **New +** ➔ **Blueprint**.
-3. Connect your GitHub repository.
-4. Render will read `render.yaml` and configure:
-   - Python environment
-   - Automated build command (`bash build.sh`)
-   - Start command (`gunicorn school_erp.wsgi:application`)
-   - Static file collection (`collectstatic` with WhiteNoise)
-   - Database migrations (`python manage.py migrate`)
-
-### Neon Serverless PostgreSQL Setup
-To ensure persistent cloud storage with zero data loss across deployments:
-1. Create a free PostgreSQL database on [Neon](https://neon.tech/).
-2. Copy the connection string:
+To prevent data loss across cloud restarts, connect a **Neon Serverless PostgreSQL** database:
+1. Create a free PostgreSQL database on [Neon.tech](https://neon.tech/).
+2. Copy your connection string:
    ```text
-   postgresql://<user>:<password>@<endpoint>.neon.tech/<dbname>?sslmode=require
+   postgresql://<user>:<password>@<ep-id>.us-east-1.aws.neon.tech/<dbname>?sslmode=require
    ```
-3. Add `DATABASE_URL` in your Render Environment Variables.
+3. Set `DATABASE_URL` in your Render Environment Variables.
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contributing & License
 
-Contributions, issues, and feature requests are welcome!
+We welcome community contributions, suggestions, and improvements!
 
-1. Fork the Project.
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the Branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+1. **Fork** the Project.
+2. **Create your Feature Branch** (`git checkout -b feature/NewFeature`).
+3. **Commit your Changes** (`git commit -m 'Add NewFeature'`).
+4. **Push to the Branch** (`git push origin feature/NewFeature`).
+5. **Open a Pull Request**.
 
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
 <div align="center">
-  <sub>Developed with ❤️ for Schools & Educational Institutions.</sub>
+  <sub>Built with ❤️ by <a href="https://github.com/Abhi2701singh">Abhinav Singh</a> for Modern Educational Excellence.</sub>
 </div>
