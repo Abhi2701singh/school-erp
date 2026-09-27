@@ -234,3 +234,16 @@ def dashboard_router_view(request):
         })
 
     return redirect('profile')
+
+
+@login_required
+def app_download_view(request):
+    """
+    Mobile App Download Landing Page.
+    Provides direct Android APK download and installation guide.
+    """
+    apk_github_url = "https://github.com/Abhi2701singh/school-erp/releases"
+    return render(request, 'dashboard/download_app.html', {
+        'apk_url': apk_github_url,
+    })
+

@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Download Mobile App - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Hero Download Card -->
+    <div class="card card-custom p-4 p-md-5 mb-4 text-center border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); color: white; border-radius: 24px;">
+        <div class="py-2">
+            <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(255, 255, 255, 0.15);">
+                <i class="fa-solid fa-mobile-screen-button fs-1 text-warning"></i>
+            </div>
+            <h2 class="fw-bold mb-2">EduManage School ERP Mobile App</h2>
+            <p class="text-white-50 mx-auto mb-4" style="max-width: 600px; font-size: 1rem;">
+                Get real-time routine timetables, pay fees & upload slips, track daily attendance, homework, and exam marks directly on your Android phone!
+            </p>
+
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="{{ apk_url }}" target="_blank" class="btn btn-warning btn-lg px-4 py-3 fw-bold rounded-pill shadow">
+                    <i class="fa-brands fa-android me-2 fs-5"></i> Download Android APK
+                </a>
+                <a href="#how-to-install" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold rounded-pill">
+                    <i class="fa-solid fa-circle-info me-2"></i> How to Install
+                </a>
+            </div>
+            <small class="d-block text-white-50 mt-3" style="font-size: 0.8rem;">
+                Compatible with Android 6.0 and above • 100% Free & Secure
+            </small>
+        </div>
+    </div>
+
+    <!-- App Features Grid -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card card-custom p-4 h-100 border-0 shadow-sm">
+                <div class="p-3 rounded-3 d-inline-block mb-3 bg-primary bg-opacity-10 text-primary">
+                    <i class="fa-solid fa-calendar-days fs-4"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Classic Routine Grid</h5>
+                <p class="text-muted small mb-0">
+                    Live weekly routine with periods (1st to 8th), vertical break separator, and teacher names in brackets.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card card-custom p-4 h-100 border-0 shadow-sm">
+                <div class="p-3 rounded-3 d-inline-block mb-3 bg-success bg-opacity-10 text-success">
+                    <i class="fa-solid fa-wallet fs-4"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Fee Portal & Slips</h5>
+                <p class="text-muted small mb-0">
+                    Check itemized dues and past arrears. Snap a photo of your UPI / bank receipt to submit for 1-click verification.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card card-custom p-4 h-100 border-0 shadow-sm">
+                <div class="p-3 rounded-3 d-inline-block mb-3 bg-warning bg-opacity-10 text-warning">
+                    <i class="fa-solid fa-calendar-check fs-4"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Daily Attendance</h5>
+                <p class="text-muted small mb-0">
+                    Real-time monthly attendance percentage gauge and date-wise presence/absence history register.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card card-custom p-4 h-100 border-0 shadow-sm">
+                <div class="p-3 rounded-3 d-inline-block mb-3 bg-danger bg-opacity-10 text-danger">
+                    <i class="fa-solid fa-book-bookmark fs-4"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Homework & Notes</h5>
+                <p class="text-muted small mb-0">
+                    Never miss a submission deadline. Download study notes and PDF study materials directly on your phone.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Installation Steps -->
+    <div id="how-to-install" class="card card-custom p-4 p-md-5 border-0 shadow-sm mb-4">
+        <h4 class="fw-bold text-dark mb-4 text-center">
+            <i class="fa-solid fa-circle-question text-primary me-2"></i> How to Install APK on Your Phone (फोन में कैसे इंस्टॉल करें)
+        </h4>
+
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <div class="p-4 rounded-4 bg-light text-center h-100 border">
+                    <div class="badge bg-primary fs-6 mb-3 px-3 py-2 rounded-pill">Step 1</div>
+                    <h6 class="fw-bold mb-2">Download APK File</h6>
+                    <p class="small text-muted mb-0">
+                        ऊपर दिए गए <strong>"Download Android APK"</strong> बटन पर टैप करें और फाइल को अपने फोन में डाउनलोड होने दें।
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="p-4 rounded-4 bg-light text-center h-100 border">
+                    <div class="badge bg-primary fs-6 mb-3 px-3 py-2 rounded-pill">Step 2</div>
+                    <h6 class="fw-bold mb-2">Allow Unknown Sources</h6>
+                    <p class="small text-muted mb-0">
+                        डाउनलोड की गई <code>.apk</code> फाइल पर टैप करें। अगर फोन <em>"Install from unknown sources"</em> पूछे, तो <strong>Allow</strong> करें।
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="p-4 rounded-4 bg-light text-center h-100 border">
+                    <div class="badge bg-primary fs-6 mb-3 px-3 py-2 rounded-pill">Step 3</div>
+                    <h6 class="fw-bold mb-2">Install & Login</h6>
+                    <p class="small text-muted mb-0">
+                        <strong>"Install"</strong> बटन पर क्लिक करें। ऐप खुलते ही अपने छात्र/शिक्षक यूजरनेम और पासवर्ड से लॉगिन करें!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

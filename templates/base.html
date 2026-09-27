@@ -115,11 +115,18 @@
                 <li><a href="{% url 'notice_list' %}" class="{% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}"><i class="fa-solid fa-bullhorn"></i> Notices</a></li>
             {% endif %}
 
-            <div class="nav-section-title">Settings</div>
+            <div class="nav-section-title">Mobile App & Settings</div>
+            <li>
+                <a href="{% url 'download_app' %}" class="{% if request.resolver_match.url_name == 'download_app' %}active{% endif %}" style="font-weight: 600;">
+                    <i class="fa-solid fa-mobile-screen-button text-success"></i> Download Mobile App
+                    <span class="badge bg-success ms-auto" style="font-size: 0.65rem;">APK</span>
+                </a>
+            </li>
             <li><a href="{% url 'profile' %}"><i class="fa-solid fa-gear"></i> Profile Settings</a></li>
             <li><a href="{% url 'logout' %}"><i class="fa-solid fa-arrow-right-from-bracket text-danger"></i> Logout</a></li>
         </ul>
     </nav>
+
 
     <!-- Main Wrapper -->
     <div id="main-wrapper">
