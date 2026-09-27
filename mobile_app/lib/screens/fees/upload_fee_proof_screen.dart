@@ -7,7 +7,8 @@ import '../../core/constants/app_colors.dart';
 import '../../models/fee_model.dart';
 import '../../providers/fee_provider.dart';
 import '../../widgets/custom_button.dart';
-import '../../widgets/custom_text_field.dart';
+import '../../widgets/common_widgets.dart';
+
 
 class UploadFeeProofScreen extends StatefulWidget {
   final FeeItemModel fee;

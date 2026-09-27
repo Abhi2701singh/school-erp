@@ -247,3 +247,19 @@ def app_download_view(request):
         'apk_url': apk_github_url,
     })
 
+
+def flutter_app_view(request):
+    """Serve live compiled Flutter Mobile Application at /app/"""
+    import os
+    from django.conf import settings
+    from django.http import HttpResponse
+
+    index_path = os.path.join(settings.BASE_DIR, 'static', 'flutter_app', 'index.html')
+    if os.path.exists(index_path):
+        with open(index_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            content = content.replace('<base href="/">', '<base href="/static/flutter_app/">')
+            return HttpResponse(content, content_type='text/html')
+    return redirect('dashboard')
+
+
