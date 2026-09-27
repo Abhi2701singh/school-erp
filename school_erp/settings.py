@@ -23,6 +23,8 @@ INSTALLED_APPS = [
 
     # Third party apps
     'rest_framework',
+    'rest_framework.authtoken',
+    'corsheaders',
 
     # Local Multi-School ERP apps
     'schools.apps.SchoolsConfig',
@@ -34,11 +36,13 @@ INSTALLED_APPS = [
     'examinations',
     'fees',
     'homework',
+    'api',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # Static files production server
+    'corsheaders.middleware.CorsMiddleware', # CORS headers for Flutter mobile & web clients
     'accounts.cloudflare_middleware.CloudflareMiddleware', # Cloudflare Real IP & Edge Trace
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -48,6 +52,22 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# REST Framework Configuration for Mobile & Web APIs
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+# Cross-Origin Resource Sharing (CORS) for Mobile and Frontend apps
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
 
 ROOT_URLCONF = 'school_erp.urls'
 

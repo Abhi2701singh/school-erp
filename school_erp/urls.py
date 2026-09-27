@@ -16,7 +16,9 @@ urlpatterns = [
     path('examinations/', include('examinations.urls')),
     path('fees/', include('fees.urls')),
     path('homework/', include('homework.urls')),
+    path('api/v1/', include('api.urls')),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+
 ]
 
 if settings.DEBUG:
