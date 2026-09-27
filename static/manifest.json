@@ -2,7 +2,7 @@
   "name": "EduManage School ERP",
   "short_name": "EduManage",
   "description": "Smart School ERP & Student Portal",
-  "start_url": "/dashboard/",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#1e3a5f",
