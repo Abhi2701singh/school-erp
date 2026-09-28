@@ -290,4 +290,10 @@ def service_worker_view(request):
     return HttpResponse('', content_type='application/javascript')
 
 
+def privacy_policy_view(request):
+    """Serve Privacy Policy Page required by Google Play Store"""
+    return render(request, 'privacy_policy.html')
+
+
+
 

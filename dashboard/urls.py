@@ -8,6 +8,7 @@ urlpatterns = [
     path('download-app/', views.app_download_view, name='download_app'),
     path('manifest.json', views.manifest_view, name='pwa_manifest'),
     path('sw.js', views.service_worker_view, name='pwa_sw'),
+    path('privacy-policy/', views.privacy_policy_view, name='privacy_policy'),
 ]
 
 

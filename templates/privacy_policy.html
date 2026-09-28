@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy - EduManage School ERP{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+    <div class="card card-custom p-4 p-md-5 border-0 shadow-sm">
+        <div class="text-center mb-4 pb-3 border-bottom">
+            <div class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
+                <i class="fa-solid fa-shield-halved fs-2"></i>
+            </div>
+            <h2 class="fw-bold text-dark">Privacy Policy</h2>
+            <p class="text-muted small mb-0">Last Updated: September 2026 • EduManage School ERP</p>
+        </div>
+
+        <div class="text-secondary lh-lg">
+            <h5 class="fw-bold text-dark mb-2">1. Overview</h5>
+            <p>
+                <strong>EduManage School ERP</strong> ("we", "our", or "us") provides a cloud-based school management and student portal platform. This Privacy Policy explains how we collect, use, disclose, and protect personal information for administrators, teachers, students, and parents who use our website, application, and services.
+            </p>
+
+            <h5 class="fw-bold text-dark mb-2 mt-4">2. Information We Collect</h5>
+            <p>We only collect information necessary to facilitate academic and administrative school operations:</p>
+            <ul>
+                <li><strong>Account Credentials:</strong> Username, secure password hashes, email address, role, and contact phone number.</li>
+                <li><strong>Student & Academic Data:</strong> Admission number, roll number, class/section enrollment, attendance records, exam marks, timetables, and homework assignments.</li>
+                <li><strong>Fee & Payment Records:</strong> Invoiced fee heads, payment amounts, transaction reference numbers, and uploaded bank/UPI payment proof receipts.</li>
+                <li><strong>Profile Information:</strong> Optional profile photographs and parent/guardian contact details.</li>
+            </ul>
+
+            <h5 class="fw-bold text-dark mb-2 mt-4">3. How We Use Your Data</h5>
+            <ul>
+                <li>To provide school administrative dashboards, attendance tracking, and grading services.</li>
+                <li>To enable students and parents to view routines, download fee receipts, and track academic progress.</li>
+                <li>To maintain audit trails and authentic verification for issued fee receipts via QR code tokens.</li>
+                <li>We do <strong>NOT</strong> sell, rent, or trade your personal data to third parties or advertising networks.</li>
+            </ul>
+
+            <h5 class="fw-bold text-dark mb-2 mt-4">4. Data Security & Storage</h5>
+            <p>
+                All sensitive communications occur over encrypted TLS/SSL (HTTPS). User passwords are cryptographically hashed using industry-standard PBKDF2/SHA-256 algorithms. Data is securely stored in dedicated cloud database clusters with strict multi-tenant access controls.
+            </p>
+
+            <h5 class="fw-bold text-dark mb-2 mt-4">5. Contact Information</h5>
+            <p>
+                If you have questions about this Privacy Policy or wish to request data correction or deletion, please contact our support desk:
+            </p>
+            <div class="p-3 bg-light rounded-3 border">
+                <strong>EduManage Support Team</strong><br>
+                <span>Email: support@edumanage-school-erp.com</span><br>
+                <span>Website: <a href="https://edumanage-school-erp.onrender.com" target="_blank">https://edumanage-school-erp.onrender.com</a></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
