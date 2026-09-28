@@ -356,8 +356,10 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
         children: [
           Text(
             item.subjectName.toUpperCase(),
-            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
             textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(

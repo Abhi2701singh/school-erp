@@ -4,96 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EduManage Multi-School ERP</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+        }
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
             min-height: 100vh;
             min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 1.25rem 0.75rem;
+            color: #1e293b;
+            position: relative;
+            overflow-x: hidden;
         }
+        
+        /* Decorative Background Circles */
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        .bg-circle-1 {
+            width: 320px;
+            height: 320px;
+            background: #6366f1;
+            top: -50px;
+            left: -50px;
+        }
+        .bg-circle-2 {
+            width: 350px;
+            height: 350px;
+            background: #a855f7;
+            bottom: -50px;
+            right: -50px;
+        }
+
         .login-card {
             background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             overflow: hidden;
+            position: relative;
+            z-index: 10;
         }
+
         .login-header {
-            background: linear-gradient(135deg, #4f46e5, #9333ea);
-            padding: 2rem 1.5rem 1.5rem;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+            padding: 2.25rem 1.75rem 1.75rem;
             color: white;
             text-align: center;
+            position: relative;
         }
+
         .brand-logo-icon {
-            width: 54px;
-            height: 54px;
+            width: 64px;
+            height: 64px;
             background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 18px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.75rem;
-            margin-bottom: 0.75rem;
+            font-size: 2rem;
+            color: #ffffff;
+            margin-bottom: 0.85rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
+
         .login-body {
-            padding: 1.5rem;
+            padding: 1.75rem;
         }
         @media (min-width: 576px) {
-            .login-header {
-                padding: 2.5rem 2rem 2rem;
-            }
-            .brand-logo-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 2rem;
-                margin-bottom: 1rem;
-            }
             .login-body {
-                padding: 2rem;
+                padding: 2.25rem;
             }
         }
+
         .form-control {
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            border: 1px solid #cbd5e1;
+            padding: 0.8rem 1.1rem;
+            border-radius: 12px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        .form-control:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             border: none;
-            padding: 0.75rem;
-            border-radius: 10px;
-            font-weight: 600;
+            color: white;
+            padding: 0.85rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #4338ca, #6b21a8);
+        .btn-login:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+            color: white;
+            box-shadow: 0 6px 22px rgba(79, 70, 229, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .demo-chip {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-weight: 600;
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .demo-chip:hover {
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            color: #4338ca;
+            transform: scale(1.02);
         }
     </style>
 </head>
 <body>
+
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
 
 <div class="login-card">
     <div class="login-header">
         <div class="brand-logo-icon">
             <i class="fa-solid fa-graduation-cap"></i>
         </div>
-        <h4 class="fw-bold mb-1">EduManage ERP</h4>
-        <p class="mb-0 text-white-50 fs-7">Multi-School Management System</p>
+        <h3 class="fw-bold mb-1" style="font-size: clamp(1.3rem, 4vw, 1.6rem);">EduManage ERP</h3>
+        <p class="mb-0 text-white-50 small">Smart Multi-School Campus Management</p>
     </div>
 
     <div class="login-body">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 fs-7" role="alert">
-                    {{ message }}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 small rounded-3 mb-3" role="alert">
+                    <i class="fa-solid fa-circle-info me-1"></i> {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
@@ -102,22 +176,68 @@
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <div class="mb-3">
-                <label class="form-label fw-semibold text-secondary">Username or Email</label>
-                {{ form.username }}
+                <label class="form-label fw-bold text-secondary small">Username or Email</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" name="username" class="form-control border-start-0 ps-0" placeholder="e.g. admin or pn" id="id_username" required autofocus>
+                </div>
             </div>
+            
             <div class="mb-4">
-                <label class="form-label fw-semibold text-secondary">Password</label>
-                {{ form.password }}
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label fw-bold text-secondary small mb-0">Password</label>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-3 text-muted"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" name="password" class="form-control border-start-0 ps-0" placeholder="••••••••" id="id_password" required>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100 mb-3 fs-6">
+
+            <button type="submit" class="btn btn-login w-100 mb-3">
                 <i class="fa-solid fa-right-to-bracket me-2"></i> Log In to Portal
             </button>
         </form>
-        <div class="text-center mt-3">
-            <small class="text-muted">Supports Nursery to Class 12 Schools</small>
+
+        <!-- 1-Click Quick Login Chips -->
+        <div class="p-3 bg-light rounded-3 mb-3 border">
+            <div class="small fw-bold text-muted mb-2 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                <i class="fa-solid fa-bolt text-warning me-1"></i> 1-Click Demo Logins (Click to Autofill)
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="demo-chip" onclick="fillLogin('admin', 'admin123')">
+                    <i class="fa-solid fa-crown text-purple" style="color: #8b5cf6;"></i> Super Admin
+                </button>
+                <button type="button" class="demo-chip" onclick="fillLogin('pn', 'admin123')">
+                    <i class="fa-solid fa-school text-primary"></i> School Admin (PN)
+                </button>
+                <button type="button" class="demo-chip" onclick="fillLogin('kaushik', 'admin123')">
+                    <i class="fa-solid fa-chalkboard-user text-success"></i> Teacher
+                </button>
+                <button type="button" class="demo-chip" onclick="fillLogin('amol', 'admin123')">
+                    <i class="fa-solid fa-user-graduate text-warning"></i> Student (Amol)
+                </button>
+            </div>
+        </div>
+
+        <!-- Links to Download App & Web Portal -->
+        <div class="d-flex justify-content-center gap-3 pt-2 text-center border-top">
+            <a href="{% url 'download_app' %}" class="small text-decoration-none fw-bold text-primary">
+                <i class="fa-brands fa-android me-1"></i> Mobile App (.APK)
+            </a>
+            <span class="text-muted">•</span>
+            <a href="{% url 'flutter_app' %}" class="small text-decoration-none fw-bold text-indigo" style="color: #6366f1;">
+                <i class="fa-solid fa-mobile-screen me-1"></i> Web App (/app/)
+            </a>
         </div>
     </div>
 </div>
+
+<script>
+    function fillLogin(user, pass) {
+        document.getElementById('id_username').value = user;
+        document.getElementById('id_password').value = pass;
+    }
+</script>
 
 </body>
 </html>

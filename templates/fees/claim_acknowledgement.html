@@ -55,10 +55,31 @@
             border-radius: 12px;
             padding: 1rem;
         }
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
         @media print {
-            .no-print { display: none !important; }
-            body { padding: 0 !important; background: white !important; }
-            .slip-card { border: none !important; box-shadow: none !important; padding: 0 !important; max-width: 100% !important; }
+            *, *::before, *::after {
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+            .no-print, .btn { display: none !important; }
+            body { padding: 0 !important; margin: 0 !important; background: white !important; }
+            .slip-card {
+                border: 2px solid #0f172a !important;
+                box-shadow: none !important;
+                padding: 8mm 10mm !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                border-radius: 8px !important;
+                page-break-inside: avoid !important;
+            }
+            .table th, .table td {
+                border-color: #334155 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
