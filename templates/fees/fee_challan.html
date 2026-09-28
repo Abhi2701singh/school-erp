@@ -14,26 +14,39 @@
     <style>
         body {
             background: #f8fafc;
-            padding: 1.5rem;
+            padding: 1rem 0.75rem;
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: #1e293b;
+        }
+        @media (min-width: 768px) {
+            body {
+                padding: 2rem 1rem;
+            }
         }
         .challan-container {
             max-width: 820px;
             background: white;
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+            padding: 1.25rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border: 1px solid #e2e8f0;
             margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .challan-container {
+                padding: 2.25rem;
+                border-radius: 20px;
+            }
         }
         .challan-badge {
             background: #eff6ff;
             color: #2563eb;
             font-weight: 700;
-            padding: 0.35rem 1rem;
+            padding: 0.35rem 0.85rem;
             border-radius: 9999px;
             border: 1px solid #bfdbfe;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
         .payment-box {
             background: #f8fafc;
@@ -52,23 +65,23 @@
 
 <div class="challan-container">
     <!-- Header -->
-    <div class="row align-items-center mb-4 border-bottom pb-3">
-        <div class="col-8">
+    <div class="row g-3 align-items-center mb-3 border-bottom pb-3">
+        <div class="col-12 col-md-7">
             <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-xs" style="width: 52px; height: 52px; font-size: 1.6rem;">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-xs flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.4rem;">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold m-0 text-primary">{{ student_fee.school.name }}</h3>
+                    <h4 class="fw-bold m-0 text-primary" style="font-size: clamp(1.1rem, 3.5vw, 1.4rem);">{{ student_fee.school.name }}</h4>
                     <p class="text-muted m-0 small">{{ student_fee.school.address }}</p>
-                    <small class="text-muted">Ph: {{ student_fee.school.phone|default:"School Office" }} | Email: {{ student_fee.school.email|default:"accounts@school.com" }}</small>
+                    <small class="text-muted d-block">Ph: {{ student_fee.school.phone|default:"School Office" }}</small>
                 </div>
             </div>
         </div>
-        <div class="col-4 text-end">
+        <div class="col-12 col-md-5 text-md-end pt-2 pt-md-0">
             <span class="challan-badge d-inline-block mb-1">FEE PAYMENT CHALLAN</span>
-            <div class="fw-bold text-dark fs-6">#{{ challan_no }}</div>
-            <small class="text-muted">Issue Date: {{ issue_date|date:"d M Y" }}</small>
+            <div class="fw-bold text-dark fs-6" style="word-break: break-all;">#{{ challan_no }}</div>
+            <small class="text-muted d-block">Issue Date: {{ issue_date|date:"d M Y" }}</small>
         </div>
     </div>
 

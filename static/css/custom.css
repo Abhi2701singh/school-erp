@@ -791,3 +791,104 @@ body {
 .border-bottom-subtle {
     border-bottom: 1px solid #f1f5f9;
 }
+
+/* ==========================================================================
+   9. Mobile-First Comprehensive Responsive Rules
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+    #sidebar {
+        transform: translateX(-100%);
+    }
+    #sidebar.show {
+        transform: translateX(0);
+    }
+    #main-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    .content-container {
+        padding: 1rem 0.75rem !important;
+    }
+    #top-navbar {
+        padding: 0.6rem 0.85rem !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .card-custom {
+        padding: 1rem !important;
+        border-radius: 12px !important;
+    }
+    
+    /* Table responsiveness improvements */
+    .table-responsive {
+        border-radius: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-responsive table {
+        margin-bottom: 0;
+    }
+    
+    /* Metric Card adjustments */
+    .metric-card-value {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Receipt & Slip card adjustments */
+    .receipt-card, .slip-card, .challan-container {
+        padding: 1rem !important;
+        margin: 0 !important;
+        width: 100% !important;
+        border-radius: 14px !important;
+    }
+    
+    /* Modal full-width on mobile */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    /* Form fields comfortable touch targets */
+    .form-control, .form-select, .btn {
+        font-size: 0.95rem;
+    }
+    
+    /* Nav tabs scrollable on mobile */
+    .nav-tabs {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        white-space: nowrap !important;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-tabs .nav-item {
+        flex: 0 0 auto;
+    }
+    .nav-tabs .nav-link {
+        padding: 0.5rem 0.85rem !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 0.88rem;
+    }
+    h1, .h1 { font-size: 1.4rem !important; }
+    h2, .h2 { font-size: 1.25rem !important; }
+    h3, .h3 { font-size: 1.15rem !important; }
+    h4, .h4 { font-size: 1.05rem !important; }
+    h5, .h5 { font-size: 0.95rem !important; }
+    
+    .btn-lg {
+        padding: 0.6rem 1.2rem !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .table th, .table td {
+        padding: 8px 6px !important;
+        font-size: 0.82rem !important;
+    }
+}
+

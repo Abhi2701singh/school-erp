@@ -44,16 +44,16 @@
 
 <div class="report-card-container">
     <div class="row align-items-center mb-4 border-bottom pb-3 g-2">
-        <div class="col-8">
-            <h3 class="school-title m-0">{{ student.school.name }}</h3>
+        <div class="col-12 col-md-8">
+            <h3 class="school-title m-0" style="font-size: clamp(1.15rem, 3.5vw, 1.6rem);">{{ student.school.name }}</h3>
             <p class="text-muted m-0 mb-1 small">{{ student.school.address }} | Contact: {{ student.school.phone }}</p>
-            <span class="badge bg-primary fs-6">{{ exam.name }} - ACADEMIC REPORT CARD</span>
+            <span class="badge bg-primary fs-6 px-2 py-1" style="font-size: clamp(0.75rem, 2.5vw, 0.95rem) !important;">{{ exam.name }} - ACADEMIC REPORT CARD</span>
         </div>
-        <div class="col-4 text-end">
+        <div class="col-12 col-md-4 text-md-end text-center pt-2 pt-md-0">
             {% if student.school.logo %}
-                <img src="{{ student.school.logo.url }}" style="max-height:70px; max-width: 100%;">
+                <img src="{{ student.school.logo.url }}" style="max-height:60px; max-width: 100%;">
             {% else %}
-                <i class="fa-solid fa-graduation-cap display-3 text-primary"></i>
+                <i class="fa-solid fa-graduation-cap text-primary" style="font-size: 2.5rem;"></i>
             {% endif %}
         </div>
     </div>
