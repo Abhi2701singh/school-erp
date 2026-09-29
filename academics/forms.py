@@ -61,7 +61,7 @@ class TimetableForm(forms.ModelForm):
             'subject': forms.Select(attrs={'class': 'form-select'}),
             'teacher_user': forms.Select(attrs={'class': 'form-select'}),
             'day': forms.Select(attrs={'class': 'form-select'}),
-            'period_number': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 9}),
+            'period_number': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 12}),
             'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         }

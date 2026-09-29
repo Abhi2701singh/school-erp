@@ -78,13 +78,20 @@ def student_admission_view(request):
         messages.error(request, "Permission denied.")
         return redirect('student_list')
 
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
+    if not school:
+        school, _ = School.objects.get_or_create(
+            code="PN_NPS",
+            defaults={"name": "PN National Public School", "is_active": True}
+        )
+
     # Ensure school has an active academic session
-    active_session = AcademicSession.objects.filter(school=request.school, is_current=True).first()
+    active_session = AcademicSession.objects.filter(school=school, is_current=True).first()
     if not active_session:
-        active_session = AcademicSession.objects.filter(school=request.school).first()
+        active_session = AcademicSession.objects.filter(school=school).first()
     if not active_session:
         active_session = AcademicSession.objects.create(
-            school=request.school,
+            school=school,
             name="2025-2026",
             start_date=date(2025, 4, 1),
             end_date=date(2026, 3, 31),

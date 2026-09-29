@@ -37,12 +37,18 @@ class AcademicSession(models.Model):
         ordering = ['-start_date']
 
     def __str__(self):
-        return f"{self.school.name} - {self.name}"
+        school_name = self.school.name if getattr(self, 'school_id', None) and self.school else "Global"
+        return f"{school_name} - {self.name}"
 
     def save(self, *args, **kwargs):
-        if self.is_current:
+        if not getattr(self, 'school_id', None):
+            from accounts.models import get_current_school
+            current_school = get_current_school() or School.objects.first()
+            if current_school:
+                self.school = current_school
+        if self.is_current and getattr(self, 'school_id', None):
             # Set all other sessions for this school to False
-            AcademicSession.objects.filter(school=self.school, is_current=True).exclude(pk=self.pk).update(is_current=False)
+            AcademicSession.objects.filter(school_id=self.school_id, is_current=True).exclude(pk=self.pk).update(is_current=False)
         super().save(*args, **kwargs)
 
 

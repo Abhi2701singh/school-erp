@@ -1,5 +1,5 @@
 from django.contrib import admin
-from academics.models import Class, Section, Subject, Timetable
+from academics.models import Class, Section, Subject, Timetable, TimetableSetting
 
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
@@ -21,3 +21,8 @@ class SubjectAdmin(admin.ModelAdmin):
 class TimetableAdmin(admin.ModelAdmin):
     list_display = ('class_level', 'section', 'subject', 'day', 'period_number', 'start_time', 'end_time', 'school')
     list_filter = ('school', 'day', 'class_level')
+
+@admin.register(TimetableSetting)
+class TimetableSettingAdmin(admin.ModelAdmin):
+    list_display = ('school', 'class_level', 'total_periods', 'has_break', 'break_after_period', 'break_start_time', 'break_end_time')
+    list_filter = ('school', 'has_break')
