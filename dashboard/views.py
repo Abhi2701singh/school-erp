@@ -22,43 +22,23 @@ def dashboard_router_view(request):
         total_schools = School.objects.count()
         active_schools = School.objects.filter(is_active=True).count()
         inactive_schools = total_schools - active_schools
-        total_students_all = Student.all_objects.count()
-        total_teachers_all = Teacher.all_objects.count()
-        total_classes_all = Class.all_objects.count()
-
-        total_revenue_all = FeePayment.all_objects.filter(status='VERIFIED').aggregate(total=Sum('amount_paid'))['total'] or 0.0
-        pending_verifications_all = PaymentSubmission.all_objects.filter(status='PENDING_VERIFICATION').count()
+        total_admins_count = User.objects.filter(role__in=[User.Roles.SCHOOL_ADMIN, User.Roles.PRINCIPAL]).count()
+        total_superadmins_count = User.objects.filter(role=User.Roles.SUPER_ADMIN).count()
+        total_sessions_all = AcademicSession.objects.count()
 
         schools = list(School.objects.all().order_by('-created_at'))
-        school_chart_labels = []
-        school_students_chart = []
-        school_teachers_chart = []
-
         for s in schools:
             s.admin_user = User.objects.filter(school=s, role__in=[User.Roles.SCHOOL_ADMIN, User.Roles.PRINCIPAL]).first()
-            s.student_count = Student.all_objects.filter(school=s, status='ACTIVE').count()
-            s.teacher_count = Teacher.all_objects.filter(school=s).count()
-            s.class_count = Class.all_objects.filter(school=s).count()
             s.active_session = AcademicSession.objects.filter(school=s, is_current=True).first()
-            s.fee_collected = FeePayment.all_objects.filter(school=s, status='VERIFIED').aggregate(total=Sum('amount_paid'))['total'] or 0.0
-
-            school_chart_labels.append(s.name)
-            school_students_chart.append(s.student_count)
-            school_teachers_chart.append(s.teacher_count)
 
         return render(request, 'dashboard/super_admin.html', {
             'total_schools': total_schools,
             'active_schools': active_schools,
             'inactive_schools': inactive_schools,
-            'total_students_all': total_students_all,
-            'total_teachers_all': total_teachers_all,
-            'total_classes_all': total_classes_all,
-            'total_revenue_all': f"{int(total_revenue_all):,}",
-            'pending_verifications_all': pending_verifications_all,
+            'total_admins_count': total_admins_count,
+            'total_superadmins_count': total_superadmins_count,
+            'total_sessions_all': total_sessions_all,
             'schools': schools,
-            'school_chart_labels_json': json.dumps(school_chart_labels),
-            'school_students_chart_json': json.dumps(school_students_chart),
-            'school_teachers_chart_json': json.dumps(school_teachers_chart),
         })
 
     # School Admin / Principal Dashboard

@@ -112,8 +112,7 @@
                         <th>Code</th>
                         <th>Admin Account</th>
                         <th>Principal</th>
-                        <th>Branch Metrics</th>
-                        <th>Contact</th>
+                        <th>Contact Details</th>
                         <th>Status</th>
                         <th class="text-end pe-3">Actions</th>
                     </tr>
@@ -163,21 +162,6 @@
                         <td>
                             <div class="fw-semibold text-dark small">
                                 <i class="fa-solid fa-user-tie text-muted me-1"></i>{{ school.principal_name|default:"Not Assigned" }}
-                            </div>
-                        </td>
-
-                        <!-- Branch Metrics Chips -->
-                        <td>
-                            <div class="d-flex flex-wrap gap-1">
-                                <span class="sa-badge-stat bg-warning-subtle text-warning-emphasis">
-                                    <i class="fa-solid fa-user-graduate"></i> {{ school.student_count|default:"0" }}
-                                </span>
-                                <span class="sa-badge-stat bg-info-subtle text-info-emphasis">
-                                    <i class="fa-solid fa-chalkboard-user"></i> {{ school.teacher_count|default:"0" }}
-                                </span>
-                                <span class="sa-badge-stat bg-purple-subtle text-purple" style="background:#f3e8ff; color:#7c3aed;">
-                                    <i class="fa-solid fa-layer-group"></i> {{ school.class_count|default:"0" }} Cls
-                                </span>
                             </div>
                         </td>
 
