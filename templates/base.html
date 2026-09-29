@@ -143,13 +143,28 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
-                {% if request.school %}
+                {% if user.is_super_admin %}
+                    {% if request.session.active_school_id and request.school %}
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="tenant-badge border border-warning" style="background: #fefce8; color: #854d0e;" title="Currently viewing as {{ request.school.name }}">
+                                <i class="fa-solid fa-eye text-warning"></i>
+                                <span class="text-truncate fw-bold">{{ request.school.name }}</span>
+                            </div>
+                            <a href="{% url 'switch_school' 0 %}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1 shadow-xs" style="font-size: 0.75rem;" title="Exit school view and return to Super Admin console">
+                                <i class="fa-solid fa-xmark me-1"></i> Exit View
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="tenant-badge" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; border: 1px solid rgba(255,255,255,0.15);" title="Global Multi-Tenant SaaS Platform">
+                            <i class="fa-solid fa-globe text-warning"></i> 
+                            <span class="text-truncate fw-bold">Multi-School Platform (Global)</span>
+                        </div>
+                    {% endif %}
+                {% elif request.school %}
                     <div class="tenant-badge" title="{{ request.school.name }} ({{ request.school.code }})">
                         <i class="fa-solid fa-school text-primary"></i> 
                         <span class="text-truncate fw-bold">{{ request.school.name }}</span>
                     </div>
-                {% elif user.is_super_admin %}
-                    <span class="badge bg-purple text-white p-2" style="background:#8b5cf6;"><i class="fa-solid fa-globe me-1"></i> Super Admin</span>
                 {% endif %}
             </div>
 
