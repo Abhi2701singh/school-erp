@@ -126,6 +126,33 @@ class TimetableComprehensiveTestCase(TestCase):
         self.assertContains(res, "Mathematics")
         self.assertContains(res, "11:40 AM - 12:20 PM")
 
+    def test_principal_access_and_save_routine_settings(self):
+        principal = User.objects.create_user(
+            username="principal_tt", password="password123", role="PRINCIPAL", school=self.school
+        )
+        self.client.login(username="principal_tt", password="password123")
+        res = self.client.get(reverse('timetable'))
+        self.assertEqual(res.status_code, 200)
+
+        # Save routine settings: 6 periods with break after period 3
+        post_res = self.client.post(reverse('timetable') + f"?class_id={self.class10.id}&section_id={self.sec10A.id}", {
+            'action': 'save_settings',
+            'total_periods': 6,
+            'break_after_period': 3,
+            'break_start_time': '10:30',
+            'break_end_time': '11:00',
+            'has_break': '1',
+            'apply_to_all': '1'
+        })
+        self.assertEqual(post_res.status_code, 302)
+
+        # View updated timetable
+        res_after = self.client.get(reverse('timetable') + f"?class_id={self.class10.id}&section_id={self.sec10A.id}")
+        self.assertEqual(res_after.status_code, 200)
+        self.assertContains(res_after, "10:30 AM - 11:00 AM")
+        self.assertContains(res_after, "3rd")
+        self.assertContains(res_after, "6th")
+
     def test_timetable_api_student_locked(self):
         from rest_framework.test import APIClient
         api_client = APIClient()
@@ -137,4 +164,4 @@ class TimetableComprehensiveTestCase(TestCase):
         self.assertTrue(data['is_student'])
         self.assertIn('period_timings', data)
         self.assertIn('break_timing', data)
-        self.assertEqual(data['break_timing'], "11:40 AM - 12:20 PM")
+

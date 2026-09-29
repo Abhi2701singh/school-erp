@@ -355,6 +355,20 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     );
   }
 
+  String _getOrdinal(int n) {
+    if (n >= 11 && n <= 13) return '${n}th';
+    switch (n % 10) {
+      case 1:
+        return '${n}st';
+      case 2:
+        return '${n}nd';
+      case 3:
+        return '${n}rd';
+      default:
+        return '${n}th';
+    }
+  }
+
   Widget _buildMatrixGridView(TimetableProvider provider) {
     if (provider.gridRows.isEmpty) {
       return const EmptyStateWidget(
@@ -363,16 +377,37 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
       );
     }
 
-    final p1Time = provider.periodTimings['1'] ?? '09:00 - 09:40';
-    final p2Time = provider.periodTimings['2'] ?? '09:40 - 10:20';
-    final p3Time = provider.periodTimings['3'] ?? '10:20 - 11:00';
-    final p4Time = provider.periodTimings['4'] ?? '11:00 - 11:40';
-    final breakTime = provider.breakTiming;
-    final p5Time = provider.periodTimings['5'] ?? '12:20 - 01:00';
-    final p6Time = provider.periodTimings['6'] ?? '01:00 - 01:40';
-    final p7Time = provider.periodTimings['7'] ?? '01:40 - 02:20';
-    final p8Time = provider.periodTimings['8'] ?? '02:20 - 03:00';
-    final p9Time = provider.periodTimings['9'] ?? '03:00 - 03:40';
+    final firstRow = provider.gridRows.first;
+    final morningCells = firstRow.morning;
+    final afternoonCells = firstRow.afternoon;
+    final hasBreak = provider.breakTiming.isNotEmpty && afternoonCells.isNotEmpty;
+
+    final columnWidths = <int, TableColumnWidth>{
+      0: const FixedColumnWidth(95), // Days
+    };
+    int colIdx = 1;
+    for (int i = 0; i < morningCells.length; i++) {
+      columnWidths[colIdx++] = const FixedColumnWidth(115);
+    }
+    if (hasBreak) {
+      columnWidths[colIdx++] = const FixedColumnWidth(65); // Break
+    }
+    for (int i = 0; i < afternoonCells.length; i++) {
+      columnWidths[colIdx++] = const FixedColumnWidth(115);
+    }
+
+    final headerWidgets = <Widget>[
+      _buildMatrixHeaderCell('DAYS', 'WEEKLY'),
+      ...morningCells.map((c) => _buildMatrixHeaderCell(
+            _getOrdinal(c.periodNumber),
+            c.timing.isNotEmpty ? c.timing : (provider.periodTimings[c.periodNumber.toString()] ?? ''),
+          )),
+      if (hasBreak) _buildMatrixHeaderCell('BREAK', provider.breakTiming),
+      ...afternoonCells.map((c) => _buildMatrixHeaderCell(
+            _getOrdinal(c.periodNumber),
+            c.timing.isNotEmpty ? c.timing : (provider.periodTimings[c.periodNumber.toString()] ?? ''),
+          )),
+    ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -385,31 +420,15 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
           ),
           child: Table(
             defaultColumnWidth: const FixedColumnWidth(115),
-            columnWidths: const {
-              0: FixedColumnWidth(95), // Days
-              5: FixedColumnWidth(65), // Break
-              10: FixedColumnWidth(115), // Extra class
-            },
+            columnWidths: columnWidths,
             border: TableBorder.all(color: AppColors.ttBorder, width: 1.2),
             children: [
-              // Header Row
+              // Dynamic Header Row
               TableRow(
                 decoration: const BoxDecoration(color: AppColors.ttGreenCell),
-                children: [
-                  _buildMatrixHeaderCell('DAYS', 'WEEKLY'),
-                  _buildMatrixHeaderCell('1st', p1Time),
-                  _buildMatrixHeaderCell('2nd', p2Time),
-                  _buildMatrixHeaderCell('3rd', p3Time),
-                  _buildMatrixHeaderCell('4th', p4Time),
-                  _buildMatrixHeaderCell('BREAK', breakTime),
-                  _buildMatrixHeaderCell('5th', p5Time),
-                  _buildMatrixHeaderCell('6th', p6Time),
-                  _buildMatrixHeaderCell('7th', p7Time),
-                  _buildMatrixHeaderCell('8th', p8Time),
-                  _buildMatrixHeaderCell('EXTRA', p9Time),
-                ],
+                children: headerWidgets,
               ),
-              // Data Rows
+              // Dynamic Data Rows
               ...provider.gridRows.map((row) {
                 return TableRow(
                   children: [
@@ -429,58 +448,59 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
                         ),
                       ),
                     ),
-                    // Morning cells (1 to 4)
-                    ...row.morning.take(4).map((cell) => _buildMatrixDataCell(cell.item)),
+                    // Morning cells
+                    ...row.morning.map((cell) => _buildMatrixDataCell(cell.item)),
                     // Break column
-                    Container(
-                      color: AppColors.ttGreenCell,
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFE600),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: const Color(0xFFB71C1C)),
-                            ),
-                            child: Text(
-                              'LUNCH',
-                              style: GoogleFonts.inter(
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                                color: const Color(0xFFB71C1C),
+                    if (hasBreak)
+                      Container(
+                        color: AppColors.ttGreenCell,
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFE600),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: const Color(0xFFB71C1C)),
+                              ),
+                              child: Text(
+                                'LUNCH',
+                                style: GoogleFonts.inter(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFFB71C1C),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'B\nR\nE\nA\nK',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black87,
-                              height: 1.2,
+                            const SizedBox(height: 4),
+                            Text(
+                              'B\nR\nE\nA\nK',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black87,
+                                height: 1.2,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            breakTime.replaceAll(' - ', '\n'),
-                            style: GoogleFonts.inter(
-                              fontSize: 8,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1E3A5F),
-                              height: 1.1,
+                            const SizedBox(height: 4),
+                            Text(
+                              provider.breakTiming.replaceAll(' - ', '\n'),
+                              style: GoogleFonts.inter(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1E3A5F),
+                                height: 1.1,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    // Afternoon cells (5 to 8 + Extra)
-                    ...row.afternoon.take(5).map((cell) => _buildMatrixDataCell(cell.item)),
+                    // Afternoon cells
+                    ...row.afternoon.map((cell) => _buildMatrixDataCell(cell.item)),
                   ],
                 );
               }),

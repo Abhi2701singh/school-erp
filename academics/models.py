@@ -95,3 +95,26 @@ class Timetable(TenantModel):
 
     def __str__(self):
         return f"{self.class_level.name}-{self.section.name} | {self.day} P{self.period_number} : {self.subject.name}"
+
+
+class TimetableSetting(TenantModel):
+    """
+    Custom routine matrix structure configuration per school or per class.
+    Allows schools to define their exact period count, timings, and lunch break position.
+    """
+    class_level = models.ForeignKey(Class, on_delete=models.CASCADE, null=True, blank=True, related_name="timetable_settings")
+    total_periods = models.PositiveIntegerField(default=8, help_text="Total number of periods (e.g. 5, 6, 7, 8)")
+    break_after_period = models.PositiveIntegerField(default=4, help_text="Recess / Lunch break falls after this period")
+    break_start_time = models.TimeField(default="11:40:00")
+    break_end_time = models.TimeField(default="12:20:00")
+    has_break = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['class_level']
+        verbose_name = "Timetable Setting"
+        verbose_name_plural = "Timetable Settings"
+
+    def __str__(self):
+        cls_str = self.class_level.name if self.class_level else "All Classes (Default)"
+        return f"Routine Config - {cls_str} ({self.total_periods} Periods | Break P{self.break_after_period})"
+

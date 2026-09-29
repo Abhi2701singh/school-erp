@@ -1,26 +1,35 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from academics.models import Class, Section, Subject, Timetable
+from schools.models import School
+from academics.models import Class, Section, Subject, Timetable, TimetableSetting
 from academics.forms import ClassForm, SectionForm, SubjectForm, TimetableForm
+
+def get_period_ordinal(n):
+    if 11 <= (n % 100) <= 13:
+        suffix = 'th'
+    else:
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+    return f"{n}{suffix}"
 
 @login_required
 def class_list_view(request):
-    classes = Class.objects.filter(school=request.school)
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
+    classes = Class.objects.filter(school=school) if school else Class.objects.none()
     if request.method == 'POST' and request.user.is_school_admin():
         form = ClassForm(request.POST)
         if form.is_valid():
             class_name = form.cleaned_data.get('name')
             # Check duplicate class
-            if Class.objects.filter(school=request.school, name=class_name).exists():
+            if Class.objects.filter(school=school, name=class_name).exists():
                 messages.warning(request, f"Class '{class_name}' already exists in your school!")
                 return redirect('class_list')
 
             cls = form.save(commit=False)
-            cls.school = request.school
+            cls.school = school
             cls.save()
             # Automatically create section 'A' for the newly created class
-            Section.objects.create(school=request.school, class_level=cls, name='A', stream='General')
+            Section.objects.create(school=school, class_level=cls, name='A', stream='General')
             messages.success(request, f"Class '{cls.name}' added with default Section A!")
             return redirect('class_list')
     else:
@@ -31,11 +40,12 @@ def class_list_view(request):
 
 @login_required
 def class_delete_view(request, pk):
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
         return redirect('class_list')
 
-    cls = get_object_or_404(Class, pk=pk, school=request.school)
+    cls = get_object_or_404(Class, pk=pk, school=school)
     if request.method == 'POST':
         class_name = cls.name
         cls.delete()
@@ -47,28 +57,30 @@ def class_delete_view(request, pk):
 
 @login_required
 def section_list_view(request):
-    sections = Section.objects.filter(school=request.school).select_related('class_level')
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
+    sections = Section.objects.filter(school=school).select_related('class_level') if school else Section.objects.none()
     if request.method == 'POST' and request.user.is_school_admin():
-        form = SectionForm(request.POST, school=request.school)
+        form = SectionForm(request.POST, school=school)
         if form.is_valid():
             sec = form.save(commit=False)
-            sec.school = request.school
+            sec.school = school
             sec.save()
             messages.success(request, f"Section '{sec.name}' added to {sec.class_level.name}!")
             return redirect('section_list')
     else:
-        form = SectionForm(school=request.school)
+        form = SectionForm(school=school)
 
     return render(request, 'academics/section_list.html', {'sections': sections, 'form': form})
 
 
 @login_required
 def section_delete_view(request, pk):
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
         return redirect('section_list')
 
-    section = get_object_or_404(Section, pk=pk, school=request.school)
+    section = get_object_or_404(Section, pk=pk, school=school)
     if request.method == 'POST':
         sec_name = f"{section.class_level.name} - Section {section.name}"
         section.delete()
@@ -80,12 +92,13 @@ def section_delete_view(request, pk):
 
 @login_required
 def subject_list_view(request):
-    subjects = Subject.objects.filter(school=request.school)
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
+    subjects = Subject.objects.filter(school=school) if school else Subject.objects.none()
     if request.method == 'POST' and request.user.is_school_admin():
         form = SubjectForm(request.POST)
         if form.is_valid():
             sbj = form.save(commit=False)
-            sbj.school = request.school
+            sbj.school = school
             sbj.save()
             messages.success(request, f"Subject '{sbj.name}' created.")
             return redirect('subject_list')
@@ -97,11 +110,12 @@ def subject_list_view(request):
 
 @login_required
 def subject_delete_view(request, pk):
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
         return redirect('subject_list')
 
-    subject = get_object_or_404(Subject, pk=pk, school=request.school)
+    subject = get_object_or_404(Subject, pk=pk, school=school)
     if request.method == 'POST':
         subj_name = subject.name
         subject.delete()
@@ -167,8 +181,80 @@ def timetable_view(request):
     if selected_section_id:
         selected_section_obj = sections.filter(id=selected_section_id).first()
 
-    # Calculate standard/dynamic period timings and break timing
-    default_period_timings = {
+    # Handle Routine Structure Settings Form (Admin / Principal can configure exact period count and lunch break)
+    if request.method == 'POST' and request.user.is_school_admin():
+        action = request.POST.get('action')
+        if action == 'save_settings':
+            try:
+                total_p = int(request.POST.get('total_periods', 8))
+                break_after_p = int(request.POST.get('break_after_period', 4))
+                break_st = request.POST.get('break_start_time', '11:40')
+                break_et = request.POST.get('break_end_time', '12:20')
+                has_b = request.POST.get('has_break') == '1'
+                apply_to_all = request.POST.get('apply_to_all') == '1'
+
+                target_class = None if apply_to_all else selected_class_obj
+
+                setting, _ = TimetableSetting.objects.update_or_create(
+                    school=school,
+                    class_level=target_class,
+                    defaults={
+                        'total_periods': max(1, min(total_p, 12)),
+                        'break_after_period': max(0, min(break_after_p, total_p)),
+                        'break_start_time': break_st,
+                        'break_end_time': break_et,
+                        'has_break': has_b,
+                    }
+                )
+                messages.success(request, f"Routine structure updated: {setting.total_periods} periods configured successfully!")
+                return redirect(f"/academics/timetable/?class_id={selected_class_id or ''}&section_id={selected_section_id or ''}")
+            except Exception as e:
+                messages.error(request, f"Error saving settings: {e}")
+
+        else:
+            # Add Timetable Period form submit
+            form = TimetableForm(request.POST, school=school)
+            if form.is_valid():
+                tt = form.save(commit=False)
+                tt.school = school
+                tt.save()
+                messages.success(request, f"Timetable period for '{tt.subject.name}' added successfully.")
+                return redirect(f"/academics/timetable/?class_id={tt.class_level_id}&section_id={tt.section_id}")
+    else:
+        initial_data = {}
+        if selected_class_id:
+            initial_data['class_level'] = selected_class_id
+        if selected_section_id:
+            initial_data['section'] = selected_section_id
+        form = TimetableForm(school=school, initial=initial_data)
+
+    # Resolve active Timetable Setting (per class or school global)
+    tt_setting = None
+    if selected_class_id and school:
+        tt_setting = TimetableSetting.objects.filter(school=school, class_level_id=selected_class_id).first()
+    if not tt_setting and school:
+        tt_setting = TimetableSetting.objects.filter(school=school, class_level__isnull=True).first()
+
+    if tt_setting:
+        total_periods = tt_setting.total_periods
+        break_after_period = min(tt_setting.break_after_period, total_periods)
+        has_break = tt_setting.has_break and 0 < break_after_period < total_periods
+        break_timing = f"{tt_setting.break_start_time.strftime('%I:%M %p')} - {tt_setting.break_end_time.strftime('%I:%M %p')}"
+        break_start_val = tt_setting.break_start_time.strftime('%H:%M')
+        break_end_val = tt_setting.break_end_time.strftime('%H:%M')
+    else:
+        # Auto-compute from highest period existing in DB or default to 6 periods
+        max_p_in_db = max([tt.period_number for tt in timetables_qs] or [6])
+        total_periods = max(max_p_in_db, 6)
+        break_after_period = 4 if total_periods >= 5 else 0
+        has_break = 0 < break_after_period < total_periods
+        break_timing = "11:40 AM - 12:20 PM"
+        break_start_val = "11:40"
+        break_end_val = "12:20"
+
+    # Compute period timings from active timetables or standard defaults
+    period_timings = {}
+    default_timings_map = {
         1: "09:00 AM - 09:40 AM",
         2: "09:40 AM - 10:20 AM",
         3: "10:20 AM - 11:00 AM",
@@ -178,11 +264,14 @@ def timetable_view(request):
         7: "01:40 PM - 02:20 PM",
         8: "02:20 PM - 03:00 PM",
         9: "03:00 PM - 03:40 PM",
+        10: "03:40 PM - 04:20 PM",
+        11: "04:20 PM - 05:00 PM",
+        12: "05:00 PM - 05:40 PM",
     }
-    period_timings = {}
-    for k, v in default_period_timings.items():
-        period_timings[k] = v
-        period_timings[str(k)] = v
+    for p in range(1, total_periods + 1):
+        def_t = default_timings_map.get(p, f"P{p} Time")
+        period_timings[p] = def_t
+        period_timings[str(p)] = def_t
 
     for tt in timetables_qs:
         if tt.period_number and tt.start_time and tt.end_time:
@@ -192,35 +281,26 @@ def timetable_view(request):
             period_timings[tt.period_number] = time_slot
             period_timings[str(tt.period_number)] = time_slot
 
-    break_timing = "11:40 AM - 12:20 PM"
-    if 4 in period_timings and 5 in period_timings:
-        p4_val = period_timings[4]
-        p5_val = period_timings[5]
-        if " - " in str(p4_val) and " - " in str(p5_val):
-            p4_end = p4_val.split(" - ")[-1]
-            p5_start = p5_val.split(" - ")[0]
-            break_timing = f"{p4_end} - {p5_start}"
-
-    # Form handling (Add Timetable Period)
-    if request.method == 'POST' and request.user.is_school_admin():
-        form = TimetableForm(request.POST, school=school)
-        if form.is_valid():
-            tt = form.save(commit=False)
-            tt.school = school
-            tt.save()
-            messages.success(request, f"Timetable period for '{tt.subject.name}' added successfully.")
-            return redirect(f"/academics/timetable/?class_id={tt.class_level_id}&section_id={tt.section_id}")
+    if has_break:
+        morning_periods = list(range(1, break_after_period + 1))
+        afternoon_periods = list(range(break_after_period + 1, total_periods + 1))
     else:
-        initial_data = {}
-        if selected_class_id:
-            initial_data['class_level'] = selected_class_id
-        if selected_section_id:
-            initial_data['section'] = selected_section_id
-        form = TimetableForm(school=school, initial=initial_data)
+        morning_periods = list(range(1, total_periods + 1))
+        afternoon_periods = []
+
+    morning_headers = [{
+        'number': p,
+        'label': get_period_ordinal(p),
+        'time': period_timings.get(p, '')
+    } for p in morning_periods]
+
+    afternoon_headers = [{
+        'number': p,
+        'label': get_period_ordinal(p),
+        'time': period_timings.get(p, '')
+    } for p in afternoon_periods]
 
     DAYS_LIST = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    MORNING_PERIODS = [1, 2, 3, 4]
-    AFTERNOON_PERIODS = [5, 6, 7, 8, 9]
 
     # Map existing timetables by (day, period_number)
     tt_map = {}
@@ -230,17 +310,19 @@ def timetable_view(request):
     grid_rows = []
     for day in DAYS_LIST:
         morning_cells = []
-        for p in MORNING_PERIODS:
+        for p in morning_periods:
             morning_cells.append({
                 'period': p,
+                'period_label': get_period_ordinal(p),
                 'timing': period_timings.get(p, ''),
                 'item': tt_map.get((day, p)),
             })
 
         afternoon_cells = []
-        for p in AFTERNOON_PERIODS:
+        for p in afternoon_periods:
             afternoon_cells.append({
                 'period': p,
+                'period_label': get_period_ordinal(p),
                 'timing': period_timings.get(p, ''),
                 'item': tt_map.get((day, p)),
             })
@@ -262,12 +344,18 @@ def timetable_view(request):
         'selected_section': selected_section_id,
         'selected_class_obj': selected_class_obj,
         'selected_section_obj': selected_section_obj,
-        'morning_periods': MORNING_PERIODS,
-        'afternoon_periods': AFTERNOON_PERIODS,
-        'period_timings': period_timings,
+        'total_periods': total_periods,
+        'break_after_period': break_after_period,
+        'has_break': has_break,
         'break_timing': break_timing,
+        'break_start_val': break_start_val,
+        'break_end_val': break_end_val,
+        'morning_headers': morning_headers,
+        'afternoon_headers': afternoon_headers,
+        'period_timings': period_timings,
         'is_student': is_student,
     })
+
 
 
 

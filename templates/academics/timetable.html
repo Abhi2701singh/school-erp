@@ -91,8 +91,8 @@
         font-size: 1.15rem;
         letter-spacing: 2px;
         text-transform: uppercase;
-        width: 70px;
-        min-width: 70px;
+        width: 75px;
+        min-width: 75px;
         padding: 6px 2px !important;
         line-height: 1.8;
     }
@@ -234,7 +234,7 @@
                 <h5 class="fw-bold m-0 text-dark">
                     <i class="fa-solid fa-calendar-days text-primary me-2"></i> Class Timetable Routine
                 </h5>
-                <small class="text-muted">Structured weekly routine matrix with period timings and assigned teachers</small>
+                <small class="text-muted">Dynamic weekly routine matrix with custom periods, timings & lunch break</small>
             </div>
 
             <!-- Class & Section Filter / Student Locked View -->
@@ -283,6 +283,9 @@
                     </button>
 
                     {% if user.is_school_admin %}
+                    <button type="button" class="btn btn-sm btn-outline-dark shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#routineSettingsModal">
+                        <i class="fa-solid fa-sliders me-1"></i> Routine Settings
+                    </button>
                     <button type="button" class="btn btn-sm btn-primary shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#addPeriodModal">
                         <i class="fa-solid fa-plus-circle me-1"></i> Add Period
                     </button>
@@ -314,46 +317,30 @@
                             <th class="tt-header-cell" style="width: 100px;">
                                 <div class="tt-h-title">DAYS</div>
                             </th>
+                            
+                            <!-- Dynamic Morning Period Columns (e.g. 1st, 2nd, 3rd, 4th) -->
+                            {% for h in morning_headers %}
                             <th class="tt-header-cell">
-                                <div class="tt-h-title">1st</div>
-                                <div class="tt-h-time">{{ period_timings.1|default:"09:00 AM - 09:40 AM" }}</div>
+                                <div class="tt-h-title">{{ h.label }}</div>
+                                <div class="tt-h-time">{{ h.time|default:"--:--" }}</div>
                             </th>
-                            <th class="tt-header-cell">
-                                <div class="tt-h-title">2nd</div>
-                                <div class="tt-h-time">{{ period_timings.2|default:"09:40 AM - 10:20 AM" }}</div>
-                            </th>
-                            <th class="tt-header-cell">
-                                <div class="tt-h-title">3rd</div>
-                                <div class="tt-h-time">{{ period_timings.3|default:"10:20 AM - 11:00 AM" }}</div>
-                            </th>
-                            <th class="tt-header-cell">
-                                <div class="tt-h-title">4th</div>
-                                <div class="tt-h-time">{{ period_timings.4|default:"11:00 AM - 11:40 AM" }}</div>
-                            </th>
-                            <th class="tt-header-cell" style="width: 70px;">
+                            {% endfor %}
+
+                            <!-- Dynamic BREAK / LUNCH Column (Only shown if enabled) -->
+                            {% if has_break %}
+                            <th class="tt-header-cell" style="width: 75px;">
                                 <div class="tt-h-title">BREAK</div>
                                 <div class="tt-h-time">{{ break_timing|default:"11:40 AM - 12:20 PM" }}</div>
                             </th>
+                            {% endif %}
+
+                            <!-- Dynamic Afternoon Period Columns (e.g. 5th, 6th, etc.) -->
+                            {% for h in afternoon_headers %}
                             <th class="tt-header-cell">
-                                <div class="tt-h-title">5th</div>
-                                <div class="tt-h-time">{{ period_timings.5|default:"12:20 PM - 01:00 PM" }}</div>
+                                <div class="tt-h-title">{{ h.label }}</div>
+                                <div class="tt-h-time">{{ h.time|default:"--:--" }}</div>
                             </th>
-                            <th class="tt-header-cell">
-                                <div class="tt-h-title">6th</div>
-                                <div class="tt-h-time">{{ period_timings.6|default:"01:00 PM - 01:40 PM" }}</div>
-                            </th>
-                            <th class="tt-header-cell">
-                                <div class="tt-h-title">7th</div>
-                                <div class="tt-h-time">{{ period_timings.7|default:"01:40 PM - 02:20 PM" }}</div>
-                            </th>
-                            <th class="tt-header-cell">
-                                <div class="tt-h-title">8th</div>
-                                <div class="tt-h-time">{{ period_timings.8|default:"02:20 PM - 03:00 PM" }}</div>
-                            </th>
-                            <th class="tt-header-cell">
-                                <div class="tt-h-title">EXTRA CLASS</div>
-                                <div class="tt-h-time">{{ period_timings.9|default:"03:00 PM - 03:40 PM" }}</div>
-                            </th>
+                            {% endfor %}
                         </tr>
                     </thead>
                     <tbody>
@@ -364,7 +351,7 @@
                                 {{ row.day_display }}
                             </td>
 
-                            <!-- Morning Periods (1st to 4th) -->
+                            <!-- Morning Periods -->
                             {% for cell in row.morning %}
                             <td class="tt-period-cell">
                                 {% if cell.item %}
@@ -391,7 +378,7 @@
                                     <div class="d-print-none">
                                         <button type="button" class="btn btn-link text-primary p-0 text-decoration-none tt-quick-add-btn" 
                                                 onclick="openAddModal('{{ row.day }}', '{{ cell.period }}')" 
-                                                title="Add Period {{ cell.period }} for {{ row.day }}">
+                                                title="Add Period {{ cell.period_label }} for {{ row.day }}">
                                             <i class="fa-solid fa-plus-circle"></i> Add
                                         </button>
                                     </div>
@@ -400,8 +387,8 @@
                             </td>
                             {% endfor %}
 
-                            <!-- Vertical BREAK Column (Rendered once spanning all 6 rows on the first row) -->
-                            {% if forloop.first %}
+                            <!-- Vertical BREAK Column (Rendered once spanning all rows on the first row) -->
+                            {% if has_break and forloop.first %}
                             <td rowspan="{{ grid_rows|length }}" class="tt-break-cell">
                                 <div class="tt-break-text">
                                     <span class="tt-break-badge">LUNCH</span>
@@ -415,7 +402,7 @@
                             </td>
                             {% endif %}
 
-                            <!-- Afternoon Periods (5th to 8th + Extra Class) -->
+                            <!-- Afternoon Periods -->
                             {% for cell in row.afternoon %}
                             <td class="tt-period-cell">
                                 {% if cell.item %}
@@ -442,7 +429,7 @@
                                     <div class="d-print-none">
                                         <button type="button" class="btn btn-link text-primary p-0 text-decoration-none tt-quick-add-btn" 
                                                 onclick="openAddModal('{{ row.day }}', '{{ cell.period }}')" 
-                                                title="Add Period {{ cell.period }} for {{ row.day }}">
+                                                title="Add Period {{ cell.period_label }} for {{ row.day }}">
                                             <i class="fa-solid fa-plus-circle"></i> Add
                                         </button>
                                     </div>
@@ -460,6 +447,75 @@
 </div>
 
 {% if user.is_school_admin %}
+<!-- Routine Structure Settings Modal (Configure number of periods and lunch break) -->
+<div class="modal fade" id="routineSettingsModal" tabindex="-1" aria-labelledby="routineSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-dark text-white" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="routineSettingsModalLabel">
+                    <i class="fa-solid fa-sliders me-2 text-warning"></i> Routine Structure Settings
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_settings">
+                <div class="modal-body p-4">
+                    <div class="alert alert-info py-2 px-3 small border-0 mb-3">
+                        <i class="fa-solid fa-info-circle me-1"></i> Configure exactly how many periods your school operates and customize the lunch break position and timing.
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-secondary">Total Daily Periods</label>
+                            <input type="number" name="total_periods" class="form-control" min="1" max="12" value="{{ total_periods }}" required>
+                            <small class="text-muted">e.g. 5, 6, 7, 8 (No unwanted extra columns will be shown)</small>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox" name="has_break" value="1" id="id_has_break" {% if has_break %}checked{% endif %}>
+                                <label class="form-check-label fw-bold small" for="id_has_break">Enable Lunch / Recess Break Column</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12" id="break_options_div">
+                            <label class="form-label fw-bold small text-secondary">Lunch Break Falls After Period Number</label>
+                            <input type="number" name="break_after_period" class="form-control" min="1" max="11" value="{{ break_after_period }}">
+                            <small class="text-muted">e.g. 4 (Lunch will fall between Period 4 and Period 5)</small>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-secondary">Lunch Start Time</label>
+                            <input type="time" name="break_start_time" class="form-control" value="{{ break_start_val }}">
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-secondary">Lunch End Time</label>
+                            <input type="time" name="break_end_time" class="form-control" value="{{ break_end_val }}">
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="apply_to_all" value="1" id="id_apply_to_all" checked>
+                                <label class="form-check-label small text-secondary" for="id_apply_to_all">
+                                    Apply this structure to <strong>All Classes in School</strong>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">
+                        <i class="fa-solid fa-save me-1"></i> Save Routine Structure
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Add Timetable Period Modal -->
 <div class="modal fade" id="addPeriodModal" tabindex="-1" aria-labelledby="addPeriodModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -495,7 +551,7 @@
                             {{ form.day }}
                         </div>
                         <div class="col-6">
-                            <label class="form-label fw-bold small text-secondary">Period Number (1 - 9)</label>
+                            <label class="form-label fw-bold small text-secondary">Period Number (1 - {{ total_periods }})</label>
                             {{ form.period_number }}
                         </div>
                         <div class="col-6">
@@ -541,3 +597,4 @@
 </script>
 {% endif %}
 {% endblock %}
+
