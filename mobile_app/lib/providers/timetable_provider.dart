@@ -10,6 +10,8 @@ class TimetableProvider with ChangeNotifier {
 
   String _selectedClass = '';
   String _selectedSection = '';
+  Map<String, String> _periodTimings = {};
+  String _breakTiming = '11:40 AM - 12:20 PM';
   List<GridRowModel> _gridRows = [];
   List<TimetableEntryModel> _allEntries = [];
   int _selectedDayIndex = 0; // 0=Mon, 1=Tue, 2=Wed, etc.
@@ -18,6 +20,8 @@ class TimetableProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String get selectedClass => _selectedClass;
   String get selectedSection => _selectedSection;
+  Map<String, String> get periodTimings => _periodTimings;
+  String get breakTiming => _breakTiming;
   List<GridRowModel> get gridRows => _gridRows;
   List<TimetableEntryModel> get allEntries => _allEntries;
   int get selectedDayIndex => _selectedDayIndex;
@@ -50,6 +54,25 @@ class TimetableProvider with ChangeNotifier {
 
         final sec = data['selected_section'];
         _selectedSection = sec != null ? sec['name'] ?? '' : '';
+
+        _breakTiming = data['break_timing'] ?? '11:40 AM - 12:20 PM';
+
+        final rawTimings = data['period_timings'];
+        if (rawTimings is Map) {
+          _periodTimings = rawTimings.map((k, v) => MapEntry(k.toString(), v.toString()));
+        } else {
+          _periodTimings = {
+            '1': '09:00 AM - 09:40 AM',
+            '2': '09:40 AM - 10:20 AM',
+            '3': '10:20 AM - 11:00 AM',
+            '4': '11:00 AM - 11:40 AM',
+            '5': '12:20 PM - 01:00 PM',
+            '6': '01:00 PM - 01:40 PM',
+            '7': '01:40 PM - 02:20 PM',
+            '8': '02:20 PM - 03:00 PM',
+            '9': '03:00 PM - 03:40 PM',
+          };
+        }
 
         _gridRows = (data['grid_rows'] as List? ?? []).map((e) => GridRowModel.fromJson(e)).toList();
         _allEntries = (data['all_entries'] as List? ?? []).map((e) => TimetableEntryModel.fromJson(e)).toList();

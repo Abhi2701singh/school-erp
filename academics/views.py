@@ -116,25 +116,29 @@ def timetable_view(request):
     classes = Class.objects.filter(school=request.school)
     sections = Section.objects.filter(school=request.school)
 
-    selected_class_id = request.GET.get('class_id')
-    selected_section_id = request.GET.get('section_id')
+    is_student = request.user.is_student_user()
+    student = getattr(request.user, 'student_profile', None)
 
-    # Auto-resolve class & section if not provided
-    if request.user.is_student_user() and hasattr(request.user, 'student_profile'):
-        student = request.user.student_profile
-        if not selected_class_id and student.current_class_id:
+    # For students, strictly lock to their own class & section only
+    if is_student:
+        if student and student.current_class_id:
             selected_class_id = str(student.current_class_id)
-        if not selected_section_id and student.current_section_id:
-            selected_section_id = str(student.current_section_id)
+            selected_section_id = str(student.current_section_id) if student.current_section_id else None
+        else:
+            selected_class_id = None
+            selected_section_id = None
     elif request.user.is_parent_user():
         first_child = request.user.children.first()
-        if first_child:
-            if not selected_class_id and first_child.current_class_id:
-                selected_class_id = str(first_child.current_class_id)
-            if not selected_section_id and first_child.current_section_id:
-                selected_section_id = str(first_child.current_section_id)
+        selected_class_id = request.GET.get('class_id')
+        selected_section_id = request.GET.get('section_id')
+        if not selected_class_id and first_child and first_child.current_class_id:
+            selected_class_id = str(first_child.current_class_id)
+            selected_section_id = str(first_child.current_section_id) if first_child.current_section_id else None
+    else:
+        selected_class_id = request.GET.get('class_id')
+        selected_section_id = request.GET.get('section_id')
 
-    if not selected_class_id and classes.exists():
+    if not is_student and not selected_class_id and classes.exists():
         first_tt = Timetable.objects.filter(school=request.school).first()
         if first_tt:
             selected_class_id = str(first_tt.class_level_id)
@@ -143,7 +147,7 @@ def timetable_view(request):
         else:
             selected_class_id = str(classes.first().id)
 
-    if selected_class_id and not selected_section_id:
+    if not is_student and selected_class_id and not selected_section_id:
         first_sec = sections.filter(class_level_id=selected_class_id).first()
         if first_sec:
             selected_section_id = str(first_sec.id)
@@ -161,6 +165,40 @@ def timetable_view(request):
         selected_class_obj = classes.filter(id=selected_class_id).first()
     if selected_section_id:
         selected_section_obj = sections.filter(id=selected_section_id).first()
+
+    # Calculate standard/dynamic period timings and break timing
+    default_period_timings = {
+        1: "09:00 AM - 09:40 AM",
+        2: "09:40 AM - 10:20 AM",
+        3: "10:20 AM - 11:00 AM",
+        4: "11:00 AM - 11:40 AM",
+        5: "12:20 PM - 01:00 PM",
+        6: "01:00 PM - 01:40 PM",
+        7: "01:40 PM - 02:20 PM",
+        8: "02:20 PM - 03:00 PM",
+        9: "03:00 PM - 03:40 PM",
+    }
+    period_timings = {}
+    for k, v in default_period_timings.items():
+        period_timings[k] = v
+        period_timings[str(k)] = v
+
+    for tt in timetables_qs:
+        if tt.period_number and tt.start_time and tt.end_time:
+            st_str = tt.start_time.strftime("%I:%M %p")
+            et_str = tt.end_time.strftime("%I:%M %p")
+            time_slot = f"{st_str} - {et_str}"
+            period_timings[tt.period_number] = time_slot
+            period_timings[str(tt.period_number)] = time_slot
+
+    break_timing = "11:40 AM - 12:20 PM"
+    if 4 in period_timings and 5 in period_timings:
+        p4_val = period_timings[4]
+        p5_val = period_timings[5]
+        if " - " in str(p4_val) and " - " in str(p5_val):
+            p4_end = p4_val.split(" - ")[-1]
+            p5_start = p5_val.split(" - ")[0]
+            break_timing = f"{p4_end} - {p5_start}"
 
     # Form handling (Add Timetable Period)
     if request.method == 'POST' and request.user.is_school_admin():
@@ -194,6 +232,7 @@ def timetable_view(request):
         for p in MORNING_PERIODS:
             morning_cells.append({
                 'period': p,
+                'timing': period_timings.get(p, ''),
                 'item': tt_map.get((day, p)),
             })
 
@@ -201,6 +240,7 @@ def timetable_view(request):
         for p in AFTERNOON_PERIODS:
             afternoon_cells.append({
                 'period': p,
+                'timing': period_timings.get(p, ''),
                 'item': tt_map.get((day, p)),
             })
 
@@ -223,7 +263,11 @@ def timetable_view(request):
         'selected_section_obj': selected_section_obj,
         'morning_periods': MORNING_PERIODS,
         'afternoon_periods': AFTERNOON_PERIODS,
+        'period_timings': period_timings,
+        'break_timing': break_timing,
+        'is_student': is_student,
     })
+
 
 
 @login_required

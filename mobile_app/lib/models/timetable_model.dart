@@ -50,13 +50,15 @@ class TimetableEntryModel {
 
 class GridCellModel {
   final int periodNumber;
+  final String timing;
   final TimetableEntryModel? item;
 
-  GridCellModel({required this.periodNumber, this.item});
+  GridCellModel({required this.periodNumber, this.timing = '', this.item});
 
   factory GridCellModel.fromJson(Map<String, dynamic> json) {
     return GridCellModel(
       periodNumber: json['period_number'] ?? 1,
+      timing: json['timing'] ?? '',
       item: json['item'] != null ? TimetableEntryModel.fromJson(json['item']) : null,
     );
   }

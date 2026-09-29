@@ -197,33 +197,38 @@ class StudentDashboardAPIView(APIView):
 
 class TimetableAPIView(APIView):
     """
-    Returns Structured Weekly Routine Grid Matrix:
+    Returns Structured Weekly Routine Grid Matrix with period timings, lunch break timing, and role isolation:
     - Days: Monday to Saturday
-    - Morning Periods (1st to 4th)
-    - Vertical Break separator info
-    - Afternoon Periods (5th to 8th + Extra Class)
-    - Subject Name + Teacher Name in bracket: MATHS (Abhi Singh)
+    - Morning Periods (1st to 4th) with period timings
+    - Vertical Break / Lunch separator info
+    - Afternoon Periods (5th to 8th + Extra Class) with period timings
+    - Subject Name + Teacher Name: MATHS (Abhi Singh)
     """
     def get(self, request):
         user = request.user
-        class_id = request.GET.get('class_id')
-        section_id = request.GET.get('section_id')
+        is_student = user.is_student_user()
+        student = getattr(user, 'student_profile', None)
 
-        # Auto-resolve class & section if not provided
-        if hasattr(user, 'student_profile') and user.student_profile:
-            if not class_id:
-                class_id = user.student_profile.current_class_id
-            if not section_id:
-                section_id = user.student_profile.current_section_id
+        if is_student:
+            if student and student.current_class_id:
+                class_id = student.current_class_id
+                section_id = student.current_section_id
+            else:
+                class_id = None
+                section_id = None
         elif user.is_parent_user():
             child = user.children.first()
             if child:
-                if not class_id:
-                    class_id = child.current_class_id
-                if not section_id:
-                    section_id = child.current_section_id
+                class_id = request.GET.get('class_id') or child.current_class_id
+                section_id = request.GET.get('section_id') or child.current_section_id
+            else:
+                class_id = request.GET.get('class_id')
+                section_id = request.GET.get('section_id')
+        else:
+            class_id = request.GET.get('class_id')
+            section_id = request.GET.get('section_id')
 
-        if not class_id:
+        if not is_student and not class_id:
             first_cls = Class.objects.filter(school=request.school).first()
             if first_cls:
                 class_id = first_cls.id
@@ -243,6 +248,33 @@ class TimetableAPIView(APIView):
         selected_class_obj = Class.objects.filter(id=class_id).first() if class_id else None
         selected_section_obj = Section.objects.filter(id=section_id).first() if section_id else None
 
+        default_period_timings = {
+            1: "09:00 AM - 09:40 AM",
+            2: "09:40 AM - 10:20 AM",
+            3: "10:20 AM - 11:00 AM",
+            4: "11:00 AM - 11:40 AM",
+            5: "12:20 PM - 01:00 PM",
+            6: "01:00 PM - 01:40 PM",
+            7: "01:40 PM - 02:20 PM",
+            8: "02:20 PM - 03:00 PM",
+            9: "03:00 PM - 03:40 PM",
+        }
+        period_timings = {str(k): v for k, v in default_period_timings.items()}
+        for tt in timetables_qs:
+            if tt.period_number and tt.start_time and tt.end_time:
+                st_str = tt.start_time.strftime("%I:%M %p")
+                et_str = tt.end_time.strftime("%I:%M %p")
+                period_timings[str(tt.period_number)] = f"{st_str} - {et_str}"
+
+        break_timing = "11:40 AM - 12:20 PM"
+        if "4" in period_timings and "5" in period_timings:
+            p4_val = period_timings["4"]
+            p5_val = period_timings["5"]
+            if " - " in p4_val and " - " in p5_val:
+                p4_end = p4_val.split(" - ")[-1]
+                p5_start = p5_val.split(" - ")[0]
+                break_timing = f"{p4_end} - {p5_start}"
+
         DAYS_LIST = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
         MORNING_PERIODS = [1, 2, 3, 4]
         AFTERNOON_PERIODS = [5, 6, 7, 8, 9]
@@ -257,6 +289,7 @@ class TimetableAPIView(APIView):
             for p in MORNING_PERIODS:
                 morning_cells.append({
                     'period_number': p,
+                    'timing': period_timings.get(str(p), ''),
                     'item': tt_map.get((day, p)),
                 })
 
@@ -264,6 +297,7 @@ class TimetableAPIView(APIView):
             for p in AFTERNOON_PERIODS:
                 afternoon_cells.append({
                     'period_number': p,
+                    'timing': period_timings.get(str(p), ''),
                     'item': tt_map.get((day, p)),
                 })
 
@@ -277,6 +311,9 @@ class TimetableAPIView(APIView):
         return Response({
             'selected_class': ClassSerializer(selected_class_obj).data if selected_class_obj else None,
             'selected_section': SectionSerializer(selected_section_obj).data if selected_section_obj else None,
+            'period_timings': period_timings,
+            'break_timing': break_timing,
+            'is_student': is_student,
             'grid_rows': grid_rows,
             'all_entries': TimetableSerializer(timetables_qs, many=True).data,
         })

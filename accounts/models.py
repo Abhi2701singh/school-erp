@@ -84,7 +84,16 @@ class User(AbstractUser):
     def can_manage_fees(self):
         return self.role in [self.Roles.SCHOOL_ADMIN, self.Roles.PRINCIPAL, self.Roles.ACCOUNTANT] or self.is_super_admin()
 
+    @property
+    def children(self):
+        """Safe accessor for parent's linked students."""
+        if hasattr(self, 'parent_profile') and self.parent_profile:
+            return self.parent_profile.students.all()
+        from students.models import Student
+        return Student.objects.none()
+
     def __str__(self):
         role_label = self.get_role_display()
         school_label = self.school.name if self.school else "Global"
         return f"{self.get_full_name() or self.username} ({role_label} - {school_label})"
+
