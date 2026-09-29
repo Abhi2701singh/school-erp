@@ -87,8 +87,8 @@ class Timetable(TenantModel):
     teacher_user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'role': 'TEACHER'})
     day = models.CharField(max_length=15, choices=DAYS)
     period_number = models.PositiveIntegerField(default=1)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['day', 'period_number']
@@ -100,7 +100,7 @@ class Timetable(TenantModel):
 class TimetableSetting(TenantModel):
     """
     Custom routine matrix structure configuration per school or per class.
-    Allows schools to define their exact period count, timings, and lunch break position.
+    Allows schools to define their exact period count, period timings, and lunch break position.
     """
     class_level = models.ForeignKey(Class, on_delete=models.CASCADE, null=True, blank=True, related_name="timetable_settings")
     total_periods = models.PositiveIntegerField(default=8, help_text="Total number of periods (e.g. 5, 6, 7, 8)")
@@ -108,6 +108,7 @@ class TimetableSetting(TenantModel):
     break_start_time = models.TimeField(default="11:40:00")
     break_end_time = models.TimeField(default="12:20:00")
     has_break = models.BooleanField(default=True)
+    period_timings = models.JSONField(default=dict, blank=True, help_text="Custom period start/end timings dictionary")
 
     class Meta:
         ordering = ['class_level']

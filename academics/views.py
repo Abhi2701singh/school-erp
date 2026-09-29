@@ -181,17 +181,26 @@ def timetable_view(request):
     if selected_section_id:
         selected_section_obj = sections.filter(id=selected_section_id).first()
 
-    # Handle Routine Structure Settings Form (Admin / Principal can configure exact period count and lunch break)
+    # Handle Routine Structure Settings Form (Admin / Principal can configure exact period count, period timings and lunch break)
     if request.method == 'POST' and request.user.is_school_admin():
         action = request.POST.get('action')
         if action == 'save_settings':
             try:
                 total_p = int(request.POST.get('total_periods', 8))
+                total_p = max(1, min(total_p, 12))
                 break_after_p = int(request.POST.get('break_after_period', 4))
                 break_st = request.POST.get('break_start_time', '11:40')
                 break_et = request.POST.get('break_end_time', '12:20')
                 has_b = request.POST.get('has_break') == '1'
                 apply_to_all = request.POST.get('apply_to_all') == '1'
+
+                # Extract custom timings for each period (1 to total_p)
+                period_timings_data = {}
+                for p in range(1, total_p + 1):
+                    p_st = request.POST.get(f'period_start_{p}')
+                    p_et = request.POST.get(f'period_end_{p}')
+                    if p_st and p_et:
+                        period_timings_data[str(p)] = {'start': p_st, 'end': p_et}
 
                 target_class = None if apply_to_all else selected_class_obj
 
@@ -199,24 +208,70 @@ def timetable_view(request):
                     school=school,
                     class_level=target_class,
                     defaults={
-                        'total_periods': max(1, min(total_p, 12)),
+                        'total_periods': total_p,
                         'break_after_period': max(0, min(break_after_p, total_p)),
                         'break_start_time': break_st,
                         'break_end_time': break_et,
                         'has_break': has_b,
+                        'period_timings': period_timings_data,
                     }
                 )
-                messages.success(request, f"Routine structure updated: {setting.total_periods} periods configured successfully!")
+
+                # Sync existing timetable entries to match new period timings
+                for p_str, p_time in period_timings_data.items():
+                    p_num = int(p_str)
+                    filter_kwargs = {'school': school, 'period_number': p_num}
+                    if target_class:
+                        filter_kwargs['class_level'] = target_class
+                    Timetable.objects.filter(**filter_kwargs).update(
+                        start_time=p_time['start'],
+                        end_time=p_time['end']
+                    )
+
+                messages.success(request, f"Routine structure & period timings saved successfully!")
                 return redirect(f"/academics/timetable/?class_id={selected_class_id or ''}&section_id={selected_section_id or ''}")
             except Exception as e:
                 messages.error(request, f"Error saving settings: {e}")
 
         else:
-            # Add Timetable Period form submit
+            # Add Timetable Period form submit (time is automatically assigned from routine settings)
             form = TimetableForm(request.POST, school=school)
             if form.is_valid():
                 tt = form.save(commit=False)
                 tt.school = school
+
+                # Resolve active Timetable Setting to auto-populate start_time and end_time
+                active_setting = None
+                if tt.class_level_id:
+                    active_setting = TimetableSetting.objects.filter(school=school, class_level_id=tt.class_level_id).first()
+                if not active_setting:
+                    active_setting = TimetableSetting.objects.filter(school=school, class_level__isnull=True).first()
+
+                default_slots = {
+                    1: ('09:00:00', '09:40:00'),
+                    2: ('09:40:00', '10:20:00'),
+                    3: ('10:20:00', '11:00:00'),
+                    4: ('11:00:00', '11:40:00'),
+                    5: ('12:20:00', '13:00:00'),
+                    6: ('13:00:00', '13:40:00'),
+                    7: ('13:40:00', '14:20:00'),
+                    8: ('14:20:00', '15:00:00'),
+                    9: ('15:00:00', '15:40:00'),
+                    10: ('15:40:00', '16:20:00'),
+                    11: ('16:20:00', '17:00:00'),
+                    12: ('17:00:00', '17:40:00'),
+                }
+
+                p_str = str(tt.period_number)
+                timing_cfg = active_setting.period_timings.get(p_str) if (active_setting and active_setting.period_timings) else None
+                if timing_cfg and 'start' in timing_cfg and 'end' in timing_cfg:
+                    tt.start_time = timing_cfg['start']
+                    tt.end_time = timing_cfg['end']
+                else:
+                    def_st, def_et = default_slots.get(tt.period_number, ('09:00:00', '09:40:00'))
+                    tt.start_time = def_st
+                    tt.end_time = def_et
+
                 tt.save()
                 messages.success(request, f"Timetable period for '{tt.subject.name}' added successfully.")
                 return redirect(f"/academics/timetable/?class_id={tt.class_level_id}&section_id={tt.section_id}")
@@ -252,34 +307,51 @@ def timetable_view(request):
         break_start_val = "11:40"
         break_end_val = "12:20"
 
-    # Compute period timings from active timetables or standard defaults
-    period_timings = {}
-    default_timings_map = {
-        1: "09:00 AM - 09:40 AM",
-        2: "09:40 AM - 10:20 AM",
-        3: "10:20 AM - 11:00 AM",
-        4: "11:00 AM - 11:40 AM",
-        5: "12:20 PM - 01:00 PM",
-        6: "01:00 PM - 01:40 PM",
-        7: "01:40 PM - 02:20 PM",
-        8: "02:20 PM - 03:00 PM",
-        9: "03:00 PM - 03:40 PM",
-        10: "03:40 PM - 04:20 PM",
-        11: "04:20 PM - 05:00 PM",
-        12: "05:00 PM - 05:40 PM",
+    # Default period slots map
+    default_period_slots = {
+        1: {"start": "09:00", "end": "09:40"},
+        2: {"start": "09:40", "end": "10:20"},
+        3: {"start": "10:20", "end": "11:00"},
+        4: {"start": "11:00", "end": "11:40"},
+        5: {"start": "12:20", "end": "13:00"},
+        6: {"start": "13:00", "end": "13:40"},
+        7: {"start": "13:40", "end": "14:20"},
+        8: {"start": "14:20", "end": "15:00"},
+        9: {"start": "15:00", "end": "15:40"},
+        10: {"start": "15:40", "end": "16:20"},
+        11: {"start": "16:20", "end": "17:00"},
+        12: {"start": "17:00", "end": "17:40"},
     }
-    for p in range(1, total_periods + 1):
-        def_t = default_timings_map.get(p, f"P{p} Time")
-        period_timings[p] = def_t
-        period_timings[str(p)] = def_t
 
-    for tt in timetables_qs:
-        if tt.period_number and tt.start_time and tt.end_time:
-            st_str = tt.start_time.strftime("%I:%M %p")
-            et_str = tt.end_time.strftime("%I:%M %p")
-            time_slot = f"{st_str} - {et_str}"
-            period_timings[tt.period_number] = time_slot
-            period_timings[str(tt.period_number)] = time_slot
+    configured_timings = (tt_setting.period_timings if (tt_setting and tt_setting.period_timings) else {})
+
+    # Compute period timings for display in routine table and Routine Settings modal
+    import datetime
+    period_timings = {}
+    period_config_list = []
+
+    for p in range(1, 13):
+        p_str = str(p)
+        cur = configured_timings.get(p_str) or default_period_slots.get(p, {"start": "09:00", "end": "09:40"})
+        st_val = cur.get("start", "09:00")
+        et_val = cur.get("end", "09:40")
+
+        try:
+            st_obj = datetime.datetime.strptime(st_val[:5], "%H:%M")
+            et_obj = datetime.datetime.strptime(et_val[:5], "%H:%M")
+            formatted_display = f"{st_obj.strftime('%I:%M %p')} - {et_obj.strftime('%I:%M %p')}"
+        except Exception:
+            formatted_display = f"{st_val} - {et_val}"
+
+        period_timings[p] = formatted_display
+        period_timings[p_str] = formatted_display
+        period_config_list.append({
+            'number': p,
+            'label': get_period_ordinal(p),
+            'start': st_val[:5],
+            'end': et_val[:5],
+            'display': formatted_display
+        })
 
     if has_break:
         morning_periods = list(range(1, break_after_period + 1))
@@ -353,6 +425,7 @@ def timetable_view(request):
         'morning_headers': morning_headers,
         'afternoon_headers': afternoon_headers,
         'period_timings': period_timings,
+        'period_config_list': period_config_list,
         'is_student': is_student,
     })
 

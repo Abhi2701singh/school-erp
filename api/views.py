@@ -283,6 +283,20 @@ class TimetableAPIView(APIView):
             12: "05:00 PM - 05:40 PM",
         }
         period_timings = {str(k): default_period_timings.get(k, f"P{k} Time") for k in range(1, total_periods + 1)}
+
+        if tt_setting and tt_setting.period_timings:
+            import datetime
+            for p in range(1, total_periods + 1):
+                p_str = str(p)
+                cfg = tt_setting.period_timings.get(p_str)
+                if cfg and 'start' in cfg and 'end' in cfg:
+                    try:
+                        st_obj = datetime.datetime.strptime(cfg['start'][:5], "%H:%M")
+                        et_obj = datetime.datetime.strptime(cfg['end'][:5], "%H:%M")
+                        period_timings[p_str] = f"{st_obj.strftime('%I:%M %p')} - {et_obj.strftime('%I:%M %p')}"
+                    except Exception:
+                        period_timings[p_str] = f"{cfg['start']} - {cfg['end']}"
+
         for tt in timetables_qs:
             if tt.period_number and tt.start_time and tt.end_time:
                 st_str = tt.start_time.strftime("%I:%M %p")

@@ -54,7 +54,7 @@ class TimetableForm(forms.ModelForm):
 
     class Meta:
         model = Timetable
-        fields = ['class_level', 'section', 'subject', 'teacher_user', 'day', 'period_number', 'start_time', 'end_time']
+        fields = ['class_level', 'section', 'subject', 'teacher_user', 'day', 'period_number']
         widgets = {
             'class_level': forms.Select(attrs={'class': 'form-select'}),
             'section': forms.Select(attrs={'class': 'form-select'}),
@@ -62,7 +62,5 @@ class TimetableForm(forms.ModelForm):
             'teacher_user': forms.Select(attrs={'class': 'form-select'}),
             'day': forms.Select(attrs={'class': 'form-select'}),
             'period_number': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 12}),
-            'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
-            'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
         }
 
