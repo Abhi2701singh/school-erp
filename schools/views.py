@@ -13,12 +13,24 @@ def school_list_view(request):
         messages.error(request, "Access restricted to Super Admins.")
         return redirect('dashboard')
 
-    schools = School.objects.all()
-    # Attach admin user to each school for display
+    from students.models import Student
+    from teachers.models import Teacher
+    from academics.models import Class
+
+    schools = list(School.objects.all().order_by('-created_at'))
     for s in schools:
         s.admin_user = User.objects.filter(school=s, role__in=[User.Roles.SCHOOL_ADMIN, User.Roles.PRINCIPAL]).first()
+        s.student_count = Student.all_objects.filter(school=s, status='ACTIVE').count()
+        s.teacher_count = Teacher.all_objects.filter(school=s).count()
+        s.class_count = Class.all_objects.filter(school=s).count()
+        s.active_session = AcademicSession.objects.filter(school=s, is_current=True).first()
 
-    return render(request, 'schools/school_list.html', {'schools': schools})
+    return render(request, 'schools/school_list.html', {
+        'schools': schools,
+        'total_schools': len(schools),
+        'active_schools': sum(1 for s in schools if s.is_active),
+        'inactive_schools': sum(1 for s in schools if not s.is_active),
+    })
 
 
 import datetime

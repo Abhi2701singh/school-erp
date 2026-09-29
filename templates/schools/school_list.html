@@ -1,89 +1,304 @@
 {% extends 'base.html' %}
 
-{% block title %}Schools Directory - Super Admin{% endblock %}
+{% block title %}Schools Directory - Super Admin Console{% endblock %}
 
-{% block content %}
-<div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4">
-    <div>
-        <h3 class="fw-bold m-0">Schools Directory</h3>
-        <p class="text-muted m-0">Manage all registered schools on the ERP SaaS platform</p>
-    </div>
-    <div>
-        <a href="{% url 'school_create' %}" class="btn btn-primary text-nowrap">
-            <i class="fa-solid fa-plus me-2"></i> Register New School
-        </a>
-    </div>
-</div>
-
-<div class="card card-custom p-3 p-sm-4">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>School Name</th>
-                    <th>Code</th>
-                    <th>Admin Username</th>
-                    <th>Principal</th>
-                    <th>Contact</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for school in schools %}
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            {% if school.logo %}
-                                <img src="{{ school.logo.url }}" alt="{{ school.name }}" class="rounded shadow-sm" style="width: 38px; height: 38px; object-fit: cover; border: 1px solid #e2e8f0;">
-                            {% else %}
-                                <div class="rounded d-flex align-items-center justify-content-center bg-light text-primary fw-bold" style="width: 38px; height: 38px; border: 1px solid #e2e8f0; font-size: 1rem;">
-                                    <i class="fa-solid fa-school"></i>
-                                </div>
-                            {% endif %}
-                            <div>
-                                <div class="fw-bold">{{ school.name }}</div>
-                                <small class="text-muted">{{ school.address|default:school.code|truncatechars:35 }}</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td><span class="badge bg-secondary">{{ school.code }}</span></td>
-                    <td>
-                        {% if school.admin_user %}
-                            <code>{{ school.admin_user.username }}</code>
-                        {% else %}
-                            <span class="text-muted small">No Admin</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ school.principal_name|default:"N/A" }}</td>
-                    <td>
-                        <div><small class="text-muted"><i class="fa-solid fa-envelope me-1"></i>{{ school.email }}</small></div>
-                        <div><small class="text-muted"><i class="fa-solid fa-phone me-1"></i>{{ school.phone }}</small></div>
-                    </td>
-                    <td>
-                        {% if school.is_active %}
-                            <span class="badge bg-success">Active</span>
-                        {% else %}
-                            <span class="badge bg-danger">Inactive</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end text-nowrap">
-                        <a href="{% url 'school_edit' school.id %}" class="btn btn-sm btn-outline-primary me-1" title="Edit School & Admin Credentials">
-                            <i class="fa-solid fa-pen me-1"></i> Edit
-                        </a>
-                        <a href="{% url 'school_delete' school.id %}" class="btn btn-sm btn-outline-danger" title="Delete School">
-                            <i class="fa-solid fa-trash-can me-1"></i> Delete
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">No schools registered yet. Click "Register New School" above to get started.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+    .sa-table-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+    .sa-school-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #ffffff;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    }
+    .sa-badge-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+    .sa-btn-enter {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: #ffffff;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3);
+        transition: all 0.2s ease;
+    }
+    .sa-btn-enter:hover {
+        background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(79, 70, 229, 0.4);
+    }
+    .pulse-dot {
+        width: 7px;
+        height: 7px;
+        background-color: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+    }
+</style>
 {% endblock %}
 
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">
+                <i class="fa-solid fa-building-columns text-primary me-2"></i> Schools Directory
+            </h3>
+            <p class="text-muted m-0">Central management directory for all registered school branches on EduManage SaaS</p>
+        </div>
+        <div>
+            <a href="{% url 'school_create' %}" class="btn btn-primary text-nowrap rounded-pill px-3 py-2 shadow-sm fw-semibold">
+                <i class="fa-solid fa-plus-circle me-1"></i> Register New School
+            </a>
+        </div>
+    </div>
+
+    <!-- Registered Schools Table Card -->
+    <div class="sa-table-card p-3 p-md-4 mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fw-bold">
+                    Total: {{ total_schools }} Branches
+                </span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-bold">
+                    Active: {{ active_schools }}
+                </span>
+            </div>
+
+            <!-- Search & Filters -->
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 260px;">
+                    <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                    <input type="text" id="schoolSearchInput" class="form-control border-start-0" placeholder="Search school, code, city..." onkeyup="filterSchoolsTable()">
+                </div>
+
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-primary active" onclick="filterByStatus('all', this)">All</button>
+                    <button type="button" class="btn btn-outline-success" onclick="filterByStatus('active', this)">Active</button>
+                    {% if inactive_schools > 0 %}
+                    <button type="button" class="btn btn-outline-danger" onclick="filterByStatus('inactive', this)">Inactive</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="schoolsDirectoryTable">
+                <thead class="table-light">
+                    <tr class="text-uppercase text-secondary" style="font-size: 0.78rem; letter-spacing: 0.5px;">
+                        <th class="ps-3 py-3" style="min-width: 240px;">School Branch</th>
+                        <th>Code</th>
+                        <th>Admin Account</th>
+                        <th>Principal</th>
+                        <th>Branch Metrics</th>
+                        <th>Contact</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for school in schools %}
+                    <tr class="school-row" data-name="{{ school.name|lower }}" data-code="{{ school.code|lower }}" data-city="{{ school.address|lower }}" data-principal="{{ school.principal_name|default:''|lower }}" data-status="{% if school.is_active %}active{% else %}inactive{% endif %}">
+                        <!-- School Info & Avatar -->
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if school.logo %}
+                                    <img src="{{ school.logo.url }}" alt="{{ school.name }}" class="sa-school-avatar rounded-3 shadow-xs" style="object-fit: cover; border: 1px solid #e2e8f0;">
+                                {% else %}
+                                    <div class="sa-school-avatar">
+                                        {{ school.name|slice:":2" }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-bold text-dark fs-6">{{ school.name }}</div>
+                                    <div class="text-muted small d-flex align-items-center gap-1">
+                                        <i class="fa-solid fa-location-dot text-danger" style="font-size: 0.75rem;"></i>
+                                        <span>{{ school.address|default:"Location not specified"|truncatechars:38 }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- School Code Badge -->
+                        <td>
+                            <span class="badge bg-light text-dark border font-monospace px-2 py-1 fs-7">
+                                {{ school.code }}
+                            </span>
+                        </td>
+
+                        <!-- Admin Username Badge -->
+                        <td>
+                            {% if school.admin_user %}
+                                <div class="d-inline-flex align-items-center gap-1 badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 font-monospace">
+                                    <i class="fa-solid fa-user-shield"></i> {{ school.admin_user.username }}
+                                </div>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary">No Admin</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Principal Name -->
+                        <td>
+                            <div class="fw-semibold text-dark small">
+                                <i class="fa-solid fa-user-tie text-muted me-1"></i>{{ school.principal_name|default:"Not Assigned" }}
+                            </div>
+                        </td>
+
+                        <!-- Branch Metrics Chips -->
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="sa-badge-stat bg-warning-subtle text-warning-emphasis">
+                                    <i class="fa-solid fa-user-graduate"></i> {{ school.student_count|default:"0" }}
+                                </span>
+                                <span class="sa-badge-stat bg-info-subtle text-info-emphasis">
+                                    <i class="fa-solid fa-chalkboard-user"></i> {{ school.teacher_count|default:"0" }}
+                                </span>
+                                <span class="sa-badge-stat bg-purple-subtle text-purple" style="background:#f3e8ff; color:#7c3aed;">
+                                    <i class="fa-solid fa-layer-group"></i> {{ school.class_count|default:"0" }} Cls
+                                </span>
+                            </div>
+                        </td>
+
+                        <!-- Contact Details -->
+                        <td>
+                            <div class="d-flex flex-column gap-1" style="font-size: 0.78rem;">
+                                {% if school.email %}
+                                <div><a href="mailto:{{ school.email }}" class="text-decoration-none text-muted"><i class="fa-solid fa-envelope text-primary me-1"></i>{{ school.email }}</a></div>
+                                {% endif %}
+                                {% if school.phone %}
+                                <div><a href="tel:{{ school.phone }}" class="text-decoration-none text-muted"><i class="fa-solid fa-phone text-success me-1"></i>{{ school.phone }}</a></div>
+                                {% endif %}
+                                {% if not school.email and not school.phone %}
+                                <span class="text-muted">--</span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Active / Inactive Status -->
+                        <td>
+                            {% if school.is_active %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 d-inline-flex align-items-center gap-1">
+                                    <span class="pulse-dot"></span> Active
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                                    <i class="fa-solid fa-circle-xmark me-1"></i> Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Action Buttons -->
+                        <td class="text-end pe-3 text-nowrap">
+                            <a href="{% url 'switch_school' school.id %}" class="btn btn-sm sa-btn-enter rounded-pill px-3 py-1 me-1 shadow-xs" title="Enter School ERP Portal as Super Admin">
+                                <i class="fa-solid fa-right-to-bracket me-1"></i> Enter Portal
+                            </a>
+
+                            <a href="{% url 'school_edit' school.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 me-1" title="Edit School and Admin Credentials">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+
+                            <a href="{% url 'school_delete' school.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1" title="Delete School Branch">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="emptySchoolRow">
+                        <td colspan="8" class="text-center py-5">
+                            <div class="py-4">
+                                <div class="bg-light rounded-circle d-inline-flex p-4 mb-3 text-muted">
+                                    <i class="fa-solid fa-school fa-3x"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark">No Schools Registered Yet</h5>
+                                <p class="text-muted mb-3">Onboard your first school branch on the multi-tenant SaaS ERP platform.</p>
+                                <a href="{% url 'school_create' %}" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold">
+                                    <i class="fa-solid fa-plus-circle me-1"></i> Register New School
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr id="noResultsRow" style="display: none;">
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> No school branches matched your search query.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterSchoolsTable() {
+    const input = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.school-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const name = row.getAttribute('data-name') || '';
+        const code = row.getAttribute('data-code') || '';
+        const city = row.getAttribute('data-city') || '';
+        const principal = row.getAttribute('data-principal') || '';
+
+        if (name.includes(input) || code.includes(input) || city.includes(input) || principal.includes(input)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const noResults = document.getElementById('noResultsRow');
+    if (noResults) {
+        noResults.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+    }
+}
+
+function filterByStatus(status, btn) {
+    const btnGroup = btn.parentElement.querySelectorAll('.btn');
+    btnGroup.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const rows = document.querySelectorAll('.school-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const noResults = document.getElementById('noResultsRow');
+    if (noResults) {
+        noResults.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+    }
+}
+</script>
+{% endblock %}
