@@ -20,10 +20,12 @@ class TenantMiddleware:
                         active_school = School.objects.get(pk=session_school_id)
                     except School.DoesNotExist:
                         active_school = None
-                else:
-                    active_school = None
+                if not active_school:
+                    active_school = request.user.school or School.objects.first()
             else:
-                active_school = request.user.school
+                active_school = request.user.school or School.objects.first()
+        else:
+            active_school = School.objects.first()
 
         set_current_school(active_school)
         request.school = active_school
@@ -34,3 +36,4 @@ class TenantMiddleware:
         set_current_school(None)
 
         return response
+

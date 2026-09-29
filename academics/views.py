@@ -113,8 +113,9 @@ def subject_delete_view(request, pk):
 
 @login_required
 def timetable_view(request):
-    classes = Class.objects.filter(school=request.school)
-    sections = Section.objects.filter(school=request.school)
+    school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
+    classes = Class.objects.filter(school=school) if school else Class.objects.none()
+    sections = Section.objects.filter(school=school) if school else Section.objects.none()
 
     is_student = request.user.is_student_user()
     student = getattr(request.user, 'student_profile', None)
@@ -139,7 +140,7 @@ def timetable_view(request):
         selected_section_id = request.GET.get('section_id')
 
     if not is_student and not selected_class_id and classes.exists():
-        first_tt = Timetable.objects.filter(school=request.school).first()
+        first_tt = Timetable.objects.filter(school=school).first() if school else None
         if first_tt:
             selected_class_id = str(first_tt.class_level_id)
             if not selected_section_id:
@@ -153,7 +154,7 @@ def timetable_view(request):
             selected_section_id = str(first_sec.id)
 
     # Filter timetables for the selected class and section
-    timetables_qs = Timetable.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'teacher_user')
+    timetables_qs = Timetable.objects.filter(school=school).select_related('class_level', 'section', 'subject', 'teacher_user') if school else Timetable.objects.none()
     if selected_class_id:
         timetables_qs = timetables_qs.filter(class_level_id=selected_class_id)
     if selected_section_id:
@@ -202,10 +203,10 @@ def timetable_view(request):
 
     # Form handling (Add Timetable Period)
     if request.method == 'POST' and request.user.is_school_admin():
-        form = TimetableForm(request.POST, school=request.school)
+        form = TimetableForm(request.POST, school=school)
         if form.is_valid():
             tt = form.save(commit=False)
-            tt.school = request.school
+            tt.school = school
             tt.save()
             messages.success(request, f"Timetable period for '{tt.subject.name}' added successfully.")
             return redirect(f"/academics/timetable/?class_id={tt.class_level_id}&section_id={tt.section_id}")
@@ -215,7 +216,7 @@ def timetable_view(request):
             initial_data['class_level'] = selected_class_id
         if selected_section_id:
             initial_data['section'] = selected_section_id
-        form = TimetableForm(school=request.school, initial=initial_data)
+        form = TimetableForm(school=school, initial=initial_data)
 
     DAYS_LIST = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     MORNING_PERIODS = [1, 2, 3, 4]
