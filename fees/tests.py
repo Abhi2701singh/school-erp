@@ -152,7 +152,7 @@ class ProductionFeeSystemComprehensiveTest(TestCase):
             student=self.student_1,
             fee_head=self.fee_head_tuition,
             amount_due=Decimal("2500.00"),
-            due_date=date(2026, 9, 30),
+            due_date=date.today() + timedelta(days=30),
             status="PENDING"
         )
         self.fee_due_exam = StudentFee.objects.create(
@@ -161,7 +161,7 @@ class ProductionFeeSystemComprehensiveTest(TestCase):
             student=self.student_1,
             fee_head=self.fee_head_exam,
             amount_due=Decimal("500.00"),
-            due_date=date(2026, 9, 15),
+            due_date=date.today() + timedelta(days=15),
             status="PENDING"
         )
         self.fee_due_student2 = StudentFee.objects.create(
@@ -170,7 +170,7 @@ class ProductionFeeSystemComprehensiveTest(TestCase):
             student=self.student_2,
             fee_head=self.fee_head_tuition,
             amount_due=Decimal("2500.00"),
-            due_date=date(2026, 9, 30),
+            due_date=date.today() + timedelta(days=30),
             status="PENDING"
         )
 

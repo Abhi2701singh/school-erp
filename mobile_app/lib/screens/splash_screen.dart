@@ -63,13 +63,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -77,15 +77,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
                 child: const Icon(
                   Icons.school_rounded,
-                  size: 64,
+                  size: 58,
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
               Text(
                 'EduManage ERP',
                 style: GoogleFonts.poppins(
-                  fontSize: 28,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 0.5,
@@ -93,18 +93,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
               const SizedBox(height: 6),
               Text(
-                'Academic Excellence at Your Fingertips',
+                'Multi-Campus Smart Academic Portal',
                 style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: Colors.white.withOpacity(0.85),
+                  fontSize: 12.5,
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 44),
               const SizedBox(
-                height: 24,
-                width: 24,
+                height: 22,
+                width: 22,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
+                  strokeWidth: 2.4,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),

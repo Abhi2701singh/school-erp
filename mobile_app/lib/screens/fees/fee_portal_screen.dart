@@ -45,9 +45,11 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.primary,
+          indicatorWeight: 3,
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
+          unselectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 13),
           tabs: const [
             Tab(text: 'Fee Dues & Invoices'),
             Tab(text: 'Payment Submissions'),
@@ -55,7 +57,7 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
         ),
       ),
       body: feeProvider.isLoading
-          ? const LoadingIndicator(message: 'Loading fee records...')
+          ? const LoadingIndicator(message: 'Loading financial records...')
           : TabBarView(
               controller: _tabController,
               children: [
@@ -74,9 +76,10 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
         await provider.fetchFees();
         await provider.fetchSubmissions();
       },
+      color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -85,12 +88,12 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 gradient: AppColors.feeGradient,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
                     blurRadius: 16,
-                    offset: const Offset(0, 6),
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
@@ -102,34 +105,34 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
                     children: [
                       Text(
                         'Total Outstanding Due',
-                        style: GoogleFonts.inter(color: Colors.white.withOpacity(0.9), fontSize: 13),
+                        style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.9), fontSize: 12.5, fontWeight: FontWeight.w500),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           summary?.totalDue == 0 ? 'CLEARED' : 'PENDING',
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     '₹${summary?.totalDue.toStringAsFixed(2) ?? "0.00"}',
-                    style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: GoogleFonts.poppins(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   if ((summary?.pastArrears ?? 0) > 0) ...[
                     const SizedBox(height: 4),
                     Text(
                       'Includes ₹${summary?.pastArrears.toStringAsFixed(2)} past unpaid arrears',
-                      style: GoogleFonts.inter(color: Colors.yellowAccent, fontSize: 11, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.inter(color: Colors.amberAccent, fontSize: 11, fontWeight: FontWeight.w600),
                     ),
                   ],
-                  const Divider(color: Colors.white24, height: 24),
+                  const Divider(color: Colors.white24, height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -141,26 +144,24 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Invoices List
-            Text(
-              'Fee Breakdown',
-              style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 12),
+            const SectionHeader(title: 'Fee Breakdown & Invoices'),
+            const SizedBox(height: 10),
 
             if (provider.fees.isEmpty)
               const EmptyStateWidget(
                 title: 'No Fee Invoices',
-                message: 'No fee structures or dues assigned for your class.',
+                message: 'No fee structures or dues assigned for your class session.',
+                icon: Icons.receipt_long_rounded,
               )
             else
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: provider.fees.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final fee = provider.fees[index];
                   return _buildFeeCard(fee);
@@ -176,9 +177,9 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 11, color: Colors.white70)),
+        Text(label, style: GoogleFonts.inter(fontSize: 10.5, color: Colors.white70)),
         const SizedBox(height: 2),
-        Text(value, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(value, style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
       ],
     );
   }
@@ -188,15 +189,15 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
     final isUnderReview = fee.hasPendingSubmission;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -210,9 +211,12 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
               Expanded(
                 child: Text(
                   fee.feeHeadName,
-                  style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
               _buildStatusPill(fee),
             ],
           ),
@@ -223,18 +227,18 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Due Date', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted)),
-                  Text(fee.dueDate, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                  Text('Due Date', style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.textMuted)),
+                  Text(fee.dueDate, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('Net Payable', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted)),
+                  Text('Net Payable', style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.textMuted)),
                   Text(
                     '₹${fee.netDue.toStringAsFixed(2)}',
                     style: GoogleFonts.poppins(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: isPaid ? AppColors.emerald : AppColors.rose,
                     ),
@@ -250,7 +254,7 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
               style: GoogleFonts.inter(fontSize: 11, color: AppColors.rose, fontWeight: FontWeight.w500),
             ),
           ],
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           if (!isPaid)
             SizedBox(
               width: double.infinity,
@@ -266,13 +270,13 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isUnderReview ? AppColors.accent : AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                icon: Icon(isUnderReview ? Icons.hourglass_top_rounded : Icons.upload_file_rounded, size: 18),
+                icon: Icon(isUnderReview ? Icons.hourglass_top_rounded : Icons.upload_file_rounded, size: 16),
                 label: Text(
                   isUnderReview ? 'Slip Under Review' : 'Pay / Submit Payment Slip',
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -283,35 +287,20 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
 
   Widget _buildStatusPill(FeeItemModel fee) {
     if (fee.status == 'PAID' || fee.netDue <= 0) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(color: AppColors.emerald.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-        child: Text('PAID', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.emerald)),
-      );
+      return const StatusBadge(text: 'PAID', color: AppColors.emerald, backgroundColor: AppColors.emeraldSubtle, icon: Icons.check_circle_rounded);
     } else if (fee.hasPendingSubmission) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
-        child: Text('UNDER REVIEW', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: const Color(0xFFB45309))),
-      );
+      return const StatusBadge(text: 'UNDER REVIEW', color: Color(0xFFB45309), backgroundColor: AppColors.accentSubtle, icon: Icons.schedule_rounded);
     } else if (fee.isOverdue) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(color: AppColors.rose.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-        child: Text('OVERDUE', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.rose)),
-      );
+      return const StatusBadge(text: 'OVERDUE', color: AppColors.rose, backgroundColor: AppColors.roseSubtle, icon: Icons.warning_rounded);
     } else {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(color: AppColors.surfaceMuted, borderRadius: BorderRadius.circular(8)),
-        child: Text('PENDING', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
-      );
+      return const StatusBadge(text: 'PENDING', color: AppColors.textSecondary, backgroundColor: AppColors.surfaceMuted);
     }
   }
 
   Widget _buildSubmissionsTab(FeeProvider provider) {
     return RefreshIndicator(
       onRefresh: () => provider.fetchSubmissions(),
+      color: AppColors.primary,
       child: provider.submissions.isEmpty
           ? EmptyStateWidget(
               title: 'No Payment Submissions',
@@ -320,17 +309,17 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
               onRefresh: () => provider.fetchSubmissions(),
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               itemCount: provider.submissions.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
                 final item = provider.submissions[index];
                 return Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,31 +329,31 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
                         children: [
                           Text(
                             item.submissionNo,
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.primary),
                           ),
                           _buildSubmissionStatusBadge(item.status, item.statusDisplay),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         item.feeHeadName,
-                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Amount: ₹${item.amount.toStringAsFixed(2)}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold)),
-                          Text(item.paymentModeDisplay, style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
+                          Text('Amount: ₹${item.amount.toStringAsFixed(2)}', style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                          Text(item.paymentModeDisplay, style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondary)),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text('Txn ID: ${item.transactionId}', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted)),
+                      const SizedBox(height: 2),
+                      Text('Txn ID: ${item.transactionId}', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted)),
                       if (item.rejectionReason != null && item.rejectionReason!.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: AppColors.rose.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: AppColors.roseSubtle, borderRadius: BorderRadius.circular(8)),
                           child: Text(
                             'Reason: ${item.rejectionReason}',
                             style: GoogleFonts.inter(fontSize: 11, color: AppColors.rose, fontWeight: FontWeight.w500),
@@ -381,13 +370,16 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
 
   Widget _buildSubmissionStatusBadge(String status, String display) {
     Color color = AppColors.accent;
-    if (status == 'VERIFIED') color = AppColors.emerald;
-    if (status == 'REJECTED') color = AppColors.rose;
+    Color bgColor = AppColors.accentSubtle;
+    if (status == 'VERIFIED') {
+      color = AppColors.emerald;
+      bgColor = AppColors.emeraldSubtle;
+    }
+    if (status == 'REJECTED') {
+      color = AppColors.rose;
+      bgColor = AppColors.roseSubtle;
+    }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(6)),
-      child: Text(display, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
-    );
+    return StatusBadge(text: display, color: color, backgroundColor: bgColor);
   }
 }

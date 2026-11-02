@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/app_drawer.dart';
 import '../timetable/timetable_screen.dart';
 import '../fees/fee_portal_screen.dart';
 import '../attendance/attendance_screen.dart';
@@ -13,6 +14,7 @@ import '../homework/homework_list_screen.dart';
 import '../notices/notice_list_screen.dart';
 import '../exams/report_card_screen.dart';
 import '../study_material/study_material_screen.dart';
+import '../profile/profile_screen.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -39,31 +41,44 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const AppDrawer(activeIndex: 0),
       appBar: AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary, size: 24),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            tooltip: 'Navigation Menu',
+          ),
+        ),
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 22),
+              child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 20),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     school?.name ?? 'EduManage ERP',
-                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    'Multi-School Campus Portal',
-                    style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary),
+                    'Campus Portal',
+                    style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -71,35 +86,76 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeListScreen()));
-            },
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded, size: 23),
+                tooltip: 'Announcements',
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeListScreen()));
+                },
+              ),
+              if (dashboardProvider.notices.isNotEmpty)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: AppColors.rose,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 8, minHeight: 8),
+                  ),
+                ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                child: Text(
+                  (student?.fullName.isNotEmpty ?? false)
+                      ? student!.fullName.substring(0, 1).toUpperCase()
+                      : 'S',
+                  style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: dashboardProvider.isLoading
-          ? const LoadingIndicator(message: 'Loading dashboard...')
+          ? const LoadingIndicator(message: 'Loading campus dashboard...')
           : RefreshIndicator(
               onRefresh: () => dashboardProvider.fetchDashboardData(),
               color: AppColors.primary,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Student Profile Header Card
+                    // Student Profile Hero Banner
                     _buildStudentProfileCard(student),
+                    const SizedBox(height: 18),
+
+                    // Quick Shortcuts Grid
+                    const SectionHeader(title: 'Quick Actions'),
+                    const SizedBox(height: 10),
+                    _buildQuickShortcutsGrid(context),
                     const SizedBox(height: 20),
 
-                    // Quick Stats Grid
-                    Text(
-                      'Overview',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                    ),
-                    const SizedBox(height: 12),
+                    // Overview Stat Cards
+                    const SectionHeader(title: 'Key Academic Stats'),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
@@ -114,12 +170,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: StatCard(
                             title: 'Fee Dues',
                             value: '₹${dashboardProvider.feeSummary?.totalDue.toStringAsFixed(0) ?? "0"}',
-                            subtitle: dashboardProvider.pendingFeeCount > 0 ? '${dashboardProvider.pendingFeeCount} Due Invoices' : 'All Cleared',
+                            subtitle: dashboardProvider.pendingFeeCount > 0
+                                ? '${dashboardProvider.pendingFeeCount} Due Invoices'
+                                : 'All Cleared',
                             icon: Icons.account_balance_wallet_rounded,
                             gradient: AppColors.feeGradient,
                             onTap: () {
@@ -129,7 +187,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
@@ -144,18 +202,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                             },
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: StatCard(
                             title: 'Notices',
                             value: '${dashboardProvider.notices.length}',
                             subtitle: 'Recent Updates',
                             icon: Icons.campaign_rounded,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            gradient: AppColors.noticeGradient,
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeListScreen()));
                             },
@@ -163,73 +217,52 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-
-                    // Quick Actions Row
-                    Text(
-                      'Quick Shortcuts',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildShortcutItem(
-                          icon: Icons.calendar_month_rounded,
-                              label: 'Routine',
-                          color: const Color(0xFF2563EB),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen())),
-                        ),
-                        _buildShortcutItem(
-                          icon: Icons.payment_rounded,
-                          label: 'Pay Fees',
-                          color: const Color(0xFF8B5CF6),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeePortalScreen())),
-                        ),
-                        _buildShortcutItem(
-                          icon: Icons.menu_book_rounded,
-                          label: 'Notes',
-                          color: const Color(0xFF10B981),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudyMaterialScreen())),
-                        ),
-                        _buildShortcutItem(
-                          icon: Icons.assessment_rounded,
-                          label: 'Report Card',
-                          color: const Color(0xFFF59E0B),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportCardScreen())),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
                     // Today's Routine Schedule Preview
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Today's Schedule (${dashboardProvider.todayDay})",
-                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen())),
-                          child: const Text('Full Routine'),
-                        ),
-                      ],
+                    SectionHeader(
+                      title: "Today's Schedule (${dashboardProvider.todayDay})",
+                      actionText: 'Full Routine',
+                      onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen())),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     if (dashboardProvider.todaySchedule.isEmpty)
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: AppColors.border),
                         ),
-                        child: Center(
-                          child: Text(
-                            'No scheduled periods for today (${dashboardProvider.todayDay}).',
-                            style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
-                          ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceMuted,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.event_available_rounded, color: AppColors.textMuted, size: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'No Scheduled Classes Today',
+                                    style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Relax or check the full weekly timetable routine.',
+                                    style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     else
@@ -241,23 +274,38 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         itemBuilder: (context, index) {
                           final item = dashboardProvider.todaySchedule[index];
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(color: AppColors.border),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.02),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  width: 44,
+                                  height: 44,
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: AppColors.primarySubtle,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                                   ),
-                                  child: Text(
-                                    'P${item.periodNumber}',
-                                    style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                  child: Center(
+                                    child: Text(
+                                      'P${item.periodNumber}',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -267,18 +315,52 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                                     children: [
                                       Text(
                                         item.subjectName.toUpperCase(),
-                                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Text(
-                                        '(${item.teacherName})',
-                                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.person_outline_rounded, size: 13, color: AppColors.textMuted),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              item.teacherName,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.w500,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
-                                Text(
-                                  '${item.startTime} - ${item.endTime}',
-                                  style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceMuted,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '${item.startTime}\n${item.endTime}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                      height: 1.2,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                               ],
                             ),
@@ -286,35 +368,28 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         },
                       ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
                     // Recent School Notices
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Recent Announcements',
-                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeListScreen())),
-                          child: const Text('View All'),
-                        ),
-                      ],
+                    SectionHeader(
+                      title: 'School Announcements',
+                      actionText: 'View All',
+                      onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeListScreen())),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     if (dashboardProvider.notices.isEmpty)
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: AppColors.border),
                         ),
                         child: Center(
                           child: Text(
                             'No announcements published yet.',
-                            style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+                            style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondary),
                           ),
                         ),
                       )
@@ -326,51 +401,62 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
                           final notice = dashboardProvider.notices[index];
-                          return Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        notice.title,
-                                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeListScreen()));
+                            },
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          notice.title,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
+                                      const SizedBox(width: 8),
+                                      StatusBadge(
+                                        text: notice.targetRoleDisplay,
+                                        color: AppColors.primary,
+                                        backgroundColor: AppColors.primarySubtle,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    notice.content,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11.5,
+                                      color: AppColors.textSecondary,
+                                      height: 1.35,
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.surfaceMuted,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        notice.targetRoleDisplay,
-                                        style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  notice.content,
-                                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },
                       ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -380,59 +466,99 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildStudentProfileCard(student) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1E3A5F), Color(0xFF0F172A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E3A5F).withOpacity(0.25),
+            color: const Color(0xFF1E3A5F).withValues(alpha: 0.25),
             blurRadius: 16,
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.white.withOpacity(0.2),
-            child: const Icon(Icons.person_rounded, size: 36, color: Colors.white),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  student?.fullName ?? 'Student Portal',
-                  style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Class: ${student?.className ?? "--"} (${student?.sectionName ?? "--"})',
-                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87),
+          Row(
+            children: [
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    child: Text(
+                      (student?.fullName.isNotEmpty ?? false)
+                          ? student!.fullName.substring(0, 1).toUpperCase()
+                          : 'S',
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: AppColors.emerald,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      'Roll: ${student?.rollNo ?? "--"}',
-                      style: GoogleFonts.inter(fontSize: 12, color: Colors.white.withOpacity(0.85)),
+                      student?.fullName ?? 'Student Account',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Adm No: ${student?.admissionNo ?? "--"}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildCardInfoPill('CLASS', '${student?.className ?? "--"} (${student?.sectionName ?? "--"})'),
+                Container(height: 20, width: 1, color: Colors.white.withValues(alpha: 0.2)),
+                _buildCardInfoPill('ROLL NO', '${student?.rollNo ?? "--"}'),
+                Container(height: 20, width: 1, color: Colors.white.withValues(alpha: 0.2)),
+                _buildCardInfoPill('SESSION', student?.sessionName ?? '2026-27'),
               ],
             ),
           ),
@@ -441,32 +567,141 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildShortcutItem({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, color: color, size: 24),
+  Widget _buildCardInfoPill(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withValues(alpha: 0.7),
+            letterSpacing: 0.5,
           ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 11.5,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickShortcutsGrid(BuildContext context) {
+    final shortcuts = [
+      {
+        'icon': Icons.calendar_today_rounded,
+        'label': 'Routine',
+        'color': AppColors.primary,
+        'bgColor': AppColors.primarySubtle,
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen())),
+      },
+      {
+        'icon': Icons.how_to_reg_rounded,
+        'label': 'Attendance',
+        'color': AppColors.emerald,
+        'bgColor': AppColors.emeraldSubtle,
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen())),
+      },
+      {
+        'icon': Icons.account_balance_wallet_rounded,
+        'label': 'Fees',
+        'color': AppColors.violet,
+        'bgColor': AppColors.violetSubtle,
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeePortalScreen())),
+      },
+      {
+        'icon': Icons.assignment_rounded,
+        'label': 'Homework',
+        'color': AppColors.accent,
+        'bgColor': AppColors.accentSubtle,
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeworkListScreen())),
+      },
+      {
+        'icon': Icons.auto_stories_rounded,
+        'label': 'Notes',
+        'color': AppColors.cyan,
+        'bgColor': AppColors.cyanSubtle,
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudyMaterialScreen())),
+      },
+      {
+        'icon': Icons.military_tech_rounded,
+        'label': 'Report Card',
+        'color': const Color(0xFFF97316),
+        'bgColor': const Color(0xFFFFF7ED),
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportCardScreen())),
+      },
+      {
+        'icon': Icons.campaign_rounded,
+        'label': 'Notices',
+        'color': const Color(0xFF0284C7),
+        'bgColor': const Color(0xFFF0F9FF),
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeListScreen())),
+      },
+      {
+        'icon': Icons.account_circle_rounded,
+        'label': 'Profile',
+        'color': AppColors.secondaryLight,
+        'bgColor': AppColors.surfaceMuted,
+        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+      },
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: shortcuts.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 0.92,
       ),
+      itemBuilder: (context, index) {
+        final item = shortcuts[index];
+        return InkWell(
+          onTap: item['onTap'] as VoidCallback,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: item['bgColor'] as Color,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 20),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  item['label'] as String,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

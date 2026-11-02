@@ -64,140 +64,143 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.school_rounded,
-                      size: 48,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    'Welcome Back!',
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySubtle,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                      ),
+                      child: const Icon(
+                        Icons.school_rounded,
+                        size: 42,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
-                ),
-                Center(
-                  child: Text(
-                    'Sign in to your EduManage ERP account',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      'Welcome to EduManage',
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 28),
-
-                // Role Selector Chips
-                Text(
-                  'Select Role',
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    _buildRoleChip('STUDENT', 'Student / Parent', Icons.person_rounded),
-                    const SizedBox(width: 8),
-                    _buildRoleChip('TEACHER', 'Teacher / Staff', Icons.co_present_rounded),
-                    const SizedBox(width: 8),
-                    _buildRoleChip('ADMIN', 'Admin', Icons.admin_panel_settings_rounded),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // School Code (Optional)
-                CustomTextField(
-                  controller: _schoolCodeController,
-                  label: 'School Code (Optional)',
-                  hint: 'e.g. 027 or leave blank for default',
-                  prefixIcon: Icons.domain_rounded,
-                ),
-                const SizedBox(height: 16),
-
-                // Username / Admission No
-                CustomTextField(
-                  controller: _usernameController,
-                  label: 'Username / Admission Number',
-                  hint: 'Enter your username or roll number',
-                  prefixIcon: Icons.badge_outlined,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter username';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Password
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hint: 'Enter your password',
-                  prefixIcon: Icons.lock_outline_rounded,
-                  obscureText: _obscurePassword,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      color: AppColors.textMuted,
-                      size: 20,
+                  Center(
+                    child: Text(
+                      'Sign in to your school mobile portal',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Role Selector
+                  Text(
+                    'Select Login Account',
+                    style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _buildRoleChip('STUDENT', 'Student', Icons.person_rounded),
+                      const SizedBox(width: 8),
+                      _buildRoleChip('TEACHER', 'Teacher', Icons.co_present_rounded),
+                      const SizedBox(width: 8),
+                      _buildRoleChip('ADMIN', 'Admin', Icons.admin_panel_settings_rounded),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // School Code (Optional)
+                  CustomTextField(
+                    controller: _schoolCodeController,
+                    label: 'School Code (Optional)',
+                    hint: 'e.g. 027 or leave blank for default',
+                    prefixIcon: Icons.domain_rounded,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Username / Admission No
+                  CustomTextField(
+                    controller: _usernameController,
+                    label: 'Username / Admission Number',
+                    hint: 'Enter your username or roll number',
+                    prefixIcon: Icons.badge_outlined,
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please enter username';
+                      }
+                      return null;
                     },
                   ),
-                  validator: (val) {
-                    if (val == null || val.isEmpty) {
-                      return 'Please enter password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 28),
+                  const SizedBox(height: 14),
 
-                // Sign In Button
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomButton(
-                    text: 'Sign In',
-                    isLoading: authProvider.isLoading,
-                    onPressed: _handleLogin,
+                  // Password
+                  CustomTextField(
+                    controller: _passwordController,
+                    label: 'Password',
+                    hint: 'Enter your account password',
+                    prefixIcon: Icons.lock_outline_rounded,
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: AppColors.textMuted,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Please enter password';
+                      }
+                      return null;
+                    },
                   ),
-                ),
+                  const SizedBox(height: 24),
 
-                const SizedBox(height: 24),
-                Center(
-                  child: Text(
-                    'Need help signing in? Contact school administration.',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
+                  // Sign In Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: CustomButton(
+                      text: 'Sign In',
+                      isLoading: authProvider.isLoading,
+                      onPressed: _handleLogin,
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      'Multi-Campus Cloud School ERP • v1.0.0',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -218,22 +221,22 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withOpacity(0.12) : AppColors.surfaceMuted,
+            color: isSelected ? AppColors.primarySubtle : AppColors.surfaceMuted,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? AppColors.primary : Colors.transparent,
-              width: 1.5,
+              color: isSelected ? AppColors.primary : AppColors.border,
+              width: 1.2,
             ),
           ),
           child: Column(
             children: [
-              Icon(icon, size: 20, color: isSelected ? AppColors.primary : AppColors.textSecondary),
+              Icon(icon, size: 18, color: isSelected ? AppColors.primary : AppColors.textSecondary),
               const SizedBox(height: 4),
               Text(
                 label,
                 style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   color: isSelected ? AppColors.primary : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,

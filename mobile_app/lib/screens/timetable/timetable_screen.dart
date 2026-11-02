@@ -21,7 +21,11 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _days.length, vsync: this);
+    // Default to today's day if it falls Mon-Sat
+    final weekday = DateTime.now().weekday; // 1=Mon, ..., 6=Sat, 7=Sun
+    final initialIndex = (weekday >= 1 && weekday <= 6) ? (weekday - 1) : 0;
+    _tabController = TabController(length: _days.length, vsync: this, initialIndex: initialIndex);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<TimetableProvider>(context, listen: false).fetchTimetable();
     });
@@ -43,8 +47,11 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
         title: const Text('Class Timetable Routine'),
         actions: [
           IconButton(
-            icon: Icon(_isMatrixView ? Icons.view_agenda_outlined : Icons.grid_view_rounded),
-            tooltip: _isMatrixView ? 'Switch to Daily View' : 'Switch to Full Matrix Grid',
+            icon: Icon(
+              _isMatrixView ? Icons.view_agenda_rounded : Icons.grid_view_rounded,
+              color: AppColors.primary,
+            ),
+            tooltip: _isMatrixView ? 'Switch to Daily Timeline' : 'Switch to Weekly Matrix',
             onPressed: () {
               setState(() {
                 _isMatrixView = !_isMatrixView;
@@ -54,31 +61,38 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
         ],
       ),
       body: timetableProvider.isLoading
-          ? const LoadingIndicator(message: 'Loading weekly routine...')
+          ? const LoadingIndicator(message: 'Loading weekly routine schedule...')
           : Column(
               children: [
-                // Top Classic Routine Header Banner (Matching web theme)
-                _buildRoutineBanner(timetableProvider),
+                // Modern Class Routine Header Card
+                _buildClassHeaderCard(timetableProvider),
 
-                // View Switcher: Matrix Grid vs Day Tab View
                 if (_isMatrixView)
                   Expanded(child: _buildMatrixGridView(timetableProvider))
                 else ...[
-                  // Day Selector Tabs
+                  // Day Selector Tabs with modern capsule styling
                   Container(
+                    width: double.infinity,
                     color: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: TabBar(
                       controller: _tabController,
                       isScrollable: true,
-                      labelColor: AppColors.primary,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      labelColor: Colors.white,
                       unselectedLabelColor: AppColors.textSecondary,
-                      indicatorColor: AppColors.primary,
-                      indicatorWeight: 3,
-                      labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
-                      unselectedLabelStyle: GoogleFonts.inter(fontSize: 13),
-                      tabs: _days.map((d) => Tab(text: d.toUpperCase())).toList(),
+                      labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
+                      unselectedLabelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+                      tabs: _days.map((d) => Tab(text: d.substring(0, 3).toUpperCase())).toList(),
                     ),
                   ),
+                  const Divider(height: 1),
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
@@ -91,39 +105,76 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildRoutineBanner(TimetableProvider provider) {
+  Widget _buildClassHeaderCard(TimetableProvider provider) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.ttNavyHeader,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              'TIME TABLE',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: const Color(0xFFFFE600),
-                letterSpacing: 2.5,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySubtle,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.class_rounded, color: AppColors.primary, size: 20),
               ),
-            ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Class ${provider.selectedClass.toUpperCase()} - Sec ${provider.selectedSection.toUpperCase()}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    'Academic Session Routine',
+                    style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+            ],
           ),
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            color: AppColors.ttYellowBanner,
-            child: Text(
-              'ROUTINE FOR CLASS ${provider.selectedClass.toUpperCase()} - SECTION ${provider.selectedSection.toUpperCase()}',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: const Color(0xFFB71C1C),
-                letterSpacing: 1,
-              ),
-              textAlign: TextAlign.center,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _isMatrixView ? Icons.grid_on_rounded : Icons.view_day_rounded,
+                  size: 13,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _isMatrixView ? 'Matrix' : 'Daily',
+                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                ),
+              ],
             ),
           ),
         ],
@@ -138,7 +189,7 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     if (dayEntries.isEmpty) {
       return EmptyStateWidget(
         title: 'No Classes for $dayName',
-        message: 'No periods scheduled for this day in the active routine.',
+        message: 'No periods scheduled in the active routine for $dayName.',
         icon: Icons.event_busy_rounded,
         onRefresh: () => provider.fetchTimetable(),
       );
@@ -148,39 +199,37 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     final afternoonEntries = dayEntries.where((e) => e.periodNumber >= 5).toList();
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       children: [
-        // Morning Periods
         if (morningEntries.isNotEmpty) ...[
           Padding(
-            padding: const EdgeInsets.only(bottom: 8, left: 4),
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
               'MORNING SESSION',
               style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
                 color: AppColors.primary,
                 letterSpacing: 1,
               ),
             ),
           ),
           ...morningEntries.map((entry) => _buildPeriodCard(entry, provider)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
         ],
 
-        // Lunch Break Banner Card
-        _buildLunchBreakCard(provider.breakTiming),
-        const SizedBox(height: 12),
+        // Recess / Lunch Break Card
+        _buildLunchBreakCard(provider.breakTiming.isNotEmpty ? provider.breakTiming : '11:45 AM - 12:15 PM'),
+        const SizedBox(height: 10),
 
-        // Afternoon Periods
         if (afternoonEntries.isNotEmpty) ...[
           Padding(
-            padding: const EdgeInsets.only(bottom: 8, left: 4),
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
               'AFTERNOON SESSION',
               style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
                 color: AppColors.primary,
                 letterSpacing: 1,
               ),
@@ -194,73 +243,57 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
 
   Widget _buildLunchBreakCard(String breakTime) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFCD34D), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFD97706).withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.accentSubtle,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFFDE68A)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.accent,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.restaurant_rounded, color: Colors.white, size: 22),
+            child: const Icon(Icons.restaurant_rounded, color: Colors.white, size: 18),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'LUNCH / RECESS BREAK',
+                  'RECESS / LUNCH BREAK',
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                     color: const Color(0xFF92400E),
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.3,
                   ),
                 ),
-                const SizedBox(height: 2),
                 Text(
-                  'Rest, refreshments & meal time',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: const Color(0xFFB45309),
-                  ),
+                  'Meals & Refreshment Time',
+                  style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFFB45309)),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFF59E0B)),
+              border: Border.all(color: const Color(0xFFFCD34D)),
             ),
             child: Text(
               breakTime,
               style: GoogleFonts.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFFB45309),
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF92400E),
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -273,16 +306,16 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
         '${entry.startTime} - ${entry.endTime}';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -290,25 +323,25 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: AppColors.ttGreenCell.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.ttGreenCell),
+              color: AppColors.primarySubtle,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
             ),
             child: Center(
               child: Text(
                 'P${entry.periodNumber}',
                 style: GoogleFonts.poppins(
-                  fontSize: 15,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1E293B),
+                  color: AppColors.primary,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,36 +349,48 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
                 Text(
                   entry.subjectName.toUpperCase(),
                   style: GoogleFonts.poppins(
-                    fontSize: 14,
+                    fontSize: 13.5,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  'Teacher: ${entry.teacherName}',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                  ),
+                Row(
+                  children: [
+                    const Icon(Icons.person_outline_rounded, size: 13, color: AppColors.textMuted),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        entry.teacherName,
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Text(
               periodTiming.replaceAll(' - ', '\n'),
               style: GoogleFonts.inter(
                 fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF1E3A5F),
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                height: 1.2,
               ),
               textAlign: TextAlign.center,
             ),
@@ -383,21 +428,21 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     final hasBreak = provider.breakTiming.isNotEmpty && afternoonCells.isNotEmpty;
 
     final columnWidths = <int, TableColumnWidth>{
-      0: const FixedColumnWidth(95), // Days
+      0: const FixedColumnWidth(85), // Day label
     };
     int colIdx = 1;
     for (int i = 0; i < morningCells.length; i++) {
-      columnWidths[colIdx++] = const FixedColumnWidth(115);
+      columnWidths[colIdx++] = const FixedColumnWidth(105);
     }
     if (hasBreak) {
-      columnWidths[colIdx++] = const FixedColumnWidth(65); // Break
+      columnWidths[colIdx++] = const FixedColumnWidth(60); // Break
     }
     for (int i = 0; i < afternoonCells.length; i++) {
-      columnWidths[colIdx++] = const FixedColumnWidth(115);
+      columnWidths[colIdx++] = const FixedColumnWidth(105);
     }
 
     final headerWidgets = <Widget>[
-      _buildMatrixHeaderCell('DAYS', 'WEEKLY'),
+      _buildMatrixHeaderCell('DAY', 'SESSION'),
       ...morningCells.map((c) => _buildMatrixHeaderCell(
             _getOrdinal(c.periodNumber),
             c.timing.isNotEmpty ? c.timing : (provider.periodTimings[c.periodNumber.toString()] ?? ''),
@@ -412,94 +457,61 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.ttBorder, width: 2),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
           ),
           child: Table(
-            defaultColumnWidth: const FixedColumnWidth(115),
+            defaultColumnWidth: const FixedColumnWidth(105),
             columnWidths: columnWidths,
-            border: TableBorder.all(color: AppColors.ttBorder, width: 1.2),
+            border: TableBorder.all(color: AppColors.border, width: 0.8),
             children: [
-              // Dynamic Header Row
               TableRow(
-                decoration: const BoxDecoration(color: AppColors.ttGreenCell),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F5F9),
+                ),
                 children: headerWidgets,
               ),
-              // Dynamic Data Rows
               ...provider.gridRows.map((row) {
                 return TableRow(
                   children: [
-                    // Day column
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
-                      color: AppColors.ttGreenCell,
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+                      color: AppColors.surfaceMuted,
                       child: Center(
                         child: Text(
                           row.dayDisplay,
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: AppColors.textPrimary,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
                     ),
-                    // Morning cells
                     ...row.morning.map((cell) => _buildMatrixDataCell(cell.item)),
-                    // Break column
                     if (hasBreak)
                       Container(
-                        color: AppColors.ttGreenCell,
+                        color: AppColors.accentSubtle,
                         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFE600),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: const Color(0xFFB71C1C)),
-                              ),
-                              child: Text(
-                                'LUNCH',
-                                style: GoogleFonts.inter(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w900,
-                                  color: const Color(0xFFB71C1C),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
                             Text(
-                              'B\nR\nE\nA\nK',
+                              'RECESS',
                               style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.black87,
-                                height: 1.2,
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF92400E),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              provider.breakTiming.replaceAll(' - ', '\n'),
-                              style: GoogleFonts.inter(
-                                fontSize: 8,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF1E3A5F),
-                                height: 1.1,
-                              ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       ),
-                    // Afternoon cells
                     ...row.afternoon.map((cell) => _buildMatrixDataCell(cell.item)),
                   ],
                 );
@@ -519,32 +531,24 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
         children: [
           Text(
             title,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.poppins(
               fontSize: 11,
-              fontWeight: FontWeight.w900,
-              color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
             ),
             textAlign: TextAlign.center,
           ),
           if (timeSlot.isNotEmpty) ...[
-            const SizedBox(height: 3),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: Colors.black12),
+            const SizedBox(height: 2),
+            Text(
+              timeSlot,
+              style: GoogleFonts.inter(
+                fontSize: 8.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
               ),
-              child: Text(
-                timeSlot,
-                style: GoogleFonts.inter(
-                  fontSize: 8,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1E3A5F),
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
             ),
           ],
         ],
@@ -556,7 +560,7 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     if (item == null) {
       return Container(
         color: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         child: const Center(
           child: Text('-', style: TextStyle(color: Colors.black26)),
         ),
@@ -578,10 +582,10 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
           ),
           const SizedBox(height: 2),
           Text(
-            '(${item.teacherName})',
-            style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+            item.teacherName,
+            style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w500, color: AppColors.textSecondary),
             textAlign: TextAlign.center,
-            maxLines: 2,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -589,4 +593,3 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
     );
   }
 }
-

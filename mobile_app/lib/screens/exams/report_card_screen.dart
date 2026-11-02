@@ -55,27 +55,24 @@ class _ReportCardScreenState extends State<ReportCardScreen> {
           ? const LoadingIndicator(message: 'Loading examination results...')
           : RefreshIndicator(
               onRefresh: _fetchReportCard,
+              color: AppColors.primary,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Result Overview Card
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
+                        gradient: AppColors.reportGradient,
+                        borderRadius: BorderRadius.circular(18),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFF59E0B).withOpacity(0.3),
+                            color: const Color(0xFFF97316).withValues(alpha: 0.25),
                             blurRadius: 16,
-                            offset: const Offset(0, 6),
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -86,43 +83,42 @@ class _ReportCardScreenState extends State<ReportCardScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Overall Performance',
-                                style: GoogleFonts.inter(fontSize: 13, color: Colors.white.withOpacity(0.9)),
+                                'Overall Examination Score',
+                                style: GoogleFonts.inter(fontSize: 12.5, color: Colors.white.withValues(alpha: 0.9)),
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 4),
                               Text(
-                                '$_percentage%',
-                                style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                                '${_percentage.toStringAsFixed(1)}%',
+                                style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
+                              const SizedBox(height: 2),
                               Text(
-                                '$_totalObtained / $_totalMax Total Marks',
-                                style: GoogleFonts.inter(fontSize: 12, color: Colors.white70),
+                                '${_totalObtained.toStringAsFixed(0)} / ${_totalMax.toStringAsFixed(0)} Total Marks',
+                                style: GoogleFonts.inter(fontSize: 11.5, color: Colors.white70),
                               ),
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.workspace_premium_rounded, size: 36, color: Colors.white),
+                            child: const Icon(Icons.workspace_premium_rounded, size: 32, color: Colors.white),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    Text(
-                      'Subject Marks & Grades',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                    ),
-                    const SizedBox(height: 12),
+                    const SectionHeader(title: 'Subject Marks & Grades'),
+                    const SizedBox(height: 10),
 
                     if (_marks.isEmpty)
                       const EmptyStateWidget(
                         title: 'No Results Published',
-                        message: 'Exam marks have not been published for this session yet.',
+                        message: 'Exam marks have not been published for this academic term yet.',
+                        icon: Icons.assessment_rounded,
                       )
                     else
                       ListView.separated(
@@ -132,59 +128,81 @@ class _ReportCardScreenState extends State<ReportCardScreen> {
                         separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           final m = _marks[index];
+                          final ratio = m.maxMarks > 0 ? (m.totalMarks / m.maxMarks).clamp(0.0, 1.0) : 0.0;
                           return Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(color: AppColors.border),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.02),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      m.subjectName,
-                                      style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                    Expanded(
+                                      child: Text(
+                                        m.subjectName,
+                                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    Text(
-                                      'Theory: ${m.theoryMarks} | Practical: ${m.practicalMarks}',
-                                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primarySubtle,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        m.grade.isNotEmpty ? 'Grade: ${m.grade}' : 'Grade: A',
+                                        style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                      ),
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: ratio,
+                                    minHeight: 6,
+                                    backgroundColor: AppColors.surfaceMuted,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      m.isPass ? AppColors.emerald : AppColors.rose,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                    Text(
+                                      'Theory: ${m.theoryMarks} | Practical: ${m.practicalMarks}',
+                                      style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondary),
+                                    ),
+                                    Row(
                                       children: [
                                         Text(
                                           '${m.totalMarks} / ${m.maxMarks}',
-                                          style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                                         ),
-                                        Text(
-                                          m.isPass ? 'PASS' : 'FAIL',
-                                          style: GoogleFonts.inter(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: m.isPass ? AppColors.emerald : AppColors.rose,
-                                          ),
+                                        const SizedBox(width: 6),
+                                        StatusBadge(
+                                          text: m.isPass ? 'PASS' : 'FAIL',
+                                          color: m.isPass ? AppColors.emerald : AppColors.rose,
+                                          backgroundColor: m.isPass ? AppColors.emeraldSubtle : AppColors.roseSubtle,
                                         ),
                                       ],
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        m.grade.isNotEmpty ? m.grade : 'A',
-                                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary),
-                                      ),
                                     ),
                                   ],
                                 ),

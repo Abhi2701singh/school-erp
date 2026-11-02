@@ -7,7 +7,6 @@ import '../../core/constants/app_colors.dart';
 import '../../core/services/api_service.dart';
 import '../../widgets/common_widgets.dart';
 
-
 class StudyMaterialScreen extends StatefulWidget {
   const StudyMaterialScreen({super.key});
 
@@ -50,62 +49,80 @@ class _StudyMaterialScreenState extends State<StudyMaterialScreen> {
           ? const LoadingIndicator(message: 'Loading study notes...')
           : RefreshIndicator(
               onRefresh: _fetchMaterials,
+              color: AppColors.primary,
               child: _materials.isEmpty
                   ? EmptyStateWidget(
                       title: 'No Notes Found',
-                      message: 'Teachers have not uploaded study notes yet.',
+                      message: 'Subject teachers have not uploaded revision notes yet.',
                       icon: Icons.menu_book_rounded,
                       onRefresh: _fetchMaterials,
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       itemCount: _materials.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final m = _materials[index];
                         final fileUrl = m['file'] as String?;
                         return Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: AppColors.border),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppColors.rose.withOpacity(0.1),
+                                  color: AppColors.roseSubtle,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.rose, size: 28),
+                                child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.rose, size: 24),
                               ),
-                              const SizedBox(width: 14),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       m['title'] ?? 'Study Notes',
-                                      style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
+                                    const SizedBox(height: 2),
                                     Text(
                                       '${m['subject_name'] ?? "Subject"} • ${m['class_name'] ?? ""}',
-                                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                                      style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondary),
                                     ),
                                   ],
                                 ),
                               ),
                               if (fileUrl != null && fileUrl.isNotEmpty)
-                                IconButton(
-                                  icon: const Icon(Icons.download_rounded, color: AppColors.primary),
-                                  onPressed: () async {
-                                    final uri = Uri.parse(fileUrl);
-                                    if (await canLaunchUrl(uri)) {
-                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                    }
-                                  },
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primarySubtle,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.download_rounded, color: AppColors.primary, size: 20),
+                                    onPressed: () async {
+                                      final uri = Uri.parse(fileUrl);
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      }
+                                    },
+                                    tooltip: 'Download File',
+                                  ),
                                 ),
                             ],
                           ),

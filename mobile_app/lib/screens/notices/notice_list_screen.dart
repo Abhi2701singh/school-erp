@@ -50,29 +50,30 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
           ? const LoadingIndicator(message: 'Loading announcements...')
           : RefreshIndicator(
               onRefresh: _fetchNotices,
+              color: AppColors.primary,
               child: _notices.isEmpty
                   ? EmptyStateWidget(
                       title: 'No Announcements',
-                      message: 'No new notices published by the school administration.',
+                      message: 'No official notices or circulars published yet.',
                       icon: Icons.campaign_rounded,
                       onRefresh: _fetchNotices,
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       itemCount: _notices.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final n = _notices[index];
                         return Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: AppColors.border),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
-                                blurRadius: 8,
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
@@ -83,44 +84,58 @@ class _NoticeListScreenState extends State<NoticeListScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      n.targetRoleDisplay,
-                                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
-                                    ),
+                                  StatusBadge(
+                                    text: n.targetRoleDisplay,
+                                    color: AppColors.primary,
+                                    backgroundColor: AppColors.primarySubtle,
                                   ),
-                                  Text(
-                                    n.createdAt.split('T').first,
-                                    style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.textMuted),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        n.createdAt.split('T').first,
+                                        style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 8),
                               Text(
                                 n.title,
-                                style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 4),
                               Text(
                                 n.content,
-                                style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  color: AppColors.textSecondary,
+                                  height: 1.4,
+                                ),
                               ),
                               if (n.attachment != null && n.attachment!.isNotEmpty) ...[
                                 const SizedBox(height: 10),
-                                TextButton.icon(
+                                OutlinedButton.icon(
                                   onPressed: () async {
                                     final uri = Uri.parse(n.attachment!);
                                     if (await canLaunchUrl(uri)) {
                                       await launchUrl(uri, mode: LaunchMode.externalApplication);
                                     }
                                   },
-                                  icon: const Icon(Icons.attachment_rounded, size: 16),
+                                  icon: const Icon(Icons.attachment_rounded, size: 14),
                                   label: const Text('View Attachment'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    textStyle: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ],
                             ],

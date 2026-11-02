@@ -45,34 +45,35 @@ class _HomeworkListScreenState extends State<HomeworkListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Homework & Assignments')),
+      appBar: AppBar(title: const Text('Homework & Tasks')),
       body: _isLoading
-          ? const LoadingIndicator(message: 'Loading homework tasks...')
+          ? const LoadingIndicator(message: 'Loading active homework...')
           : RefreshIndicator(
               onRefresh: _fetchHomework,
+              color: AppColors.primary,
               child: _homeworks.isEmpty
                   ? EmptyStateWidget(
-                      title: 'No Homework Assigned',
-                      message: 'You are all caught up! No active tasks for your class.',
+                      title: 'All Tasks Completed!',
+                      message: 'No pending homework or assignments assigned to your class.',
                       icon: Icons.task_alt_rounded,
                       onRefresh: _fetchHomework,
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       itemCount: _homeworks.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final hw = _homeworks[index];
                         return Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: AppColors.border),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
-                                blurRadius: 8,
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
@@ -83,20 +84,10 @@ class _HomeworkListScreenState extends State<HomeworkListScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      hw.subjectName.toUpperCase(),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
+                                  StatusBadge(
+                                    text: hw.subjectName.toUpperCase(),
+                                    color: AppColors.primary,
+                                    backgroundColor: AppColors.primarySubtle,
                                   ),
                                   Row(
                                     children: [
@@ -105,7 +96,7 @@ class _HomeworkListScreenState extends State<HomeworkListScreen> {
                                       Text(
                                         'Due: ${hw.dueDate}',
                                         style: GoogleFonts.inter(
-                                          fontSize: 12,
+                                          fontSize: 11.5,
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.rose,
                                         ),
@@ -114,20 +105,20 @@ class _HomeworkListScreenState extends State<HomeworkListScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 8),
                               Text(
                                 hw.title,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 16,
+                                  fontSize: 14.5,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 4),
                               Text(
                                 hw.description,
                                 style: GoogleFonts.inter(
-                                  fontSize: 13,
+                                  fontSize: 12.5,
                                   color: AppColors.textSecondary,
                                   height: 1.4,
                                 ),
@@ -136,20 +127,32 @@ class _HomeworkListScreenState extends State<HomeworkListScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    'By ${hw.createdByName}',
-                                    style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.person_outline_rounded, size: 14, color: AppColors.textMuted),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        hw.createdByName,
+                                        style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted),
+                                      ),
+                                    ],
                                   ),
                                   if (hw.attachment != null && hw.attachment!.isNotEmpty)
-                                    TextButton.icon(
+                                    OutlinedButton.icon(
                                       onPressed: () async {
                                         final uri = Uri.parse(hw.attachment!);
                                         if (await canLaunchUrl(uri)) {
                                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                                         }
                                       },
-                                      icon: const Icon(Icons.attach_file_rounded, size: 16),
-                                      label: const Text('Download File'),
+                                      icon: const Icon(Icons.attach_file_rounded, size: 14),
+                                      label: const Text('Download'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        textStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                 ],
                               ),

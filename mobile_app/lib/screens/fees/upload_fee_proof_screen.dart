@@ -9,7 +9,6 @@ import '../../providers/fee_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/common_widgets.dart';
 
-
 class UploadFeeProofScreen extends StatefulWidget {
   final FeeItemModel fee;
 
@@ -30,18 +29,17 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
   File? _selectedProofFile;
   final ImagePicker _picker = ImagePicker();
 
-  final List<Map<String, String>> _paymentModes = [
-    {'value': 'UPI', 'label': 'UPI / QR Code (GPay, PhonePe, Paytm)'},
-    {'value': 'BANK_TRANSFER', 'label': 'Bank Transfer / NEFT / IMPS'},
-    {'value': 'NET_BANKING', 'label': 'Net Banking'},
-    {'value': 'CASH_DEPOSIT', 'label': 'Cash Deposit in School A/C'},
-    {'value': 'CHEQUE', 'label': 'Cheque / Demand Draft'},
+  final List<Map<String, dynamic>> _paymentModes = [
+    {'value': 'UPI', 'label': 'UPI / QR (GPay, PhonePe, Paytm)', 'icon': Icons.qr_code_rounded},
+    {'value': 'BANK_TRANSFER', 'label': 'Bank Transfer / NEFT / IMPS', 'icon': Icons.account_balance_rounded},
+    {'value': 'NET_BANKING', 'label': 'Net Banking', 'icon': Icons.language_rounded},
+    {'value': 'CASH_DEPOSIT', 'label': 'Cash Deposit in Bank', 'icon': Icons.payments_rounded},
+    {'value': 'CHEQUE', 'label': 'Cheque / Demand Draft', 'icon': Icons.receipt_rounded},
   ];
 
   @override
   void initState() {
     super.initState();
-    // Default amount to remaining net due
     _amountController.text = widget.fee.netDue.toStringAsFixed(2);
   }
 
@@ -68,7 +66,6 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
 
     final enteredAmount = double.tryParse(_amountController.text) ?? 0.0;
 
-    // Strict Validation: Cannot exceed remaining net due
     if (enteredAmount > widget.fee.netDue) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -100,13 +97,13 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Row(
             children: [
-              Icon(Icons.check_circle_rounded, color: AppColors.emerald, size: 28),
+              Icon(Icons.check_circle_rounded, color: AppColors.emerald, size: 26),
               SizedBox(width: 8),
-              Text('Proof Submitted!'),
+              Text('Slip Submitted!'),
             ],
           ),
           content: Text(
-            'Your payment slip of ₹${enteredAmount.toStringAsFixed(2)} has been submitted for verification. School administration will verify and approve your receipt.',
+            'Your payment receipt of ₹${enteredAmount.toStringAsFixed(2)} has been submitted for review. School administration will verify and credit your balance.',
             style: GoogleFonts.inter(fontSize: 13),
           ),
           actions: [
@@ -123,7 +120,7 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(feeProvider.errorMessage ?? 'Failed to submit payment proof.'),
+          content: Text(feeProvider.errorMessage ?? 'Failed to submit payment slip.'),
           backgroundColor: AppColors.rose,
         ),
       );
@@ -140,7 +137,7 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
         title: const Text('Submit Payment Slip'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Form(
           key: _formKey,
           child: Column(
@@ -148,34 +145,34 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
             children: [
               // Fee Info Banner
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                  color: AppColors.primarySubtle,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.fee.feeHeadName,
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Net Due Payable:', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
+                        Text('Net Due Payable:', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
                         Text(
                           '₹${widget.fee.netDue.toStringAsFixed(2)}',
-                          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.rose),
+                          style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.rose),
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
               // Amount to Pay
               CustomTextField(
@@ -192,21 +189,29 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Payment Mode Dropdown
               Text(
                 'Payment Mode',
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
               ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                value: _selectedPaymentMode,
-                decoration: const InputDecoration(),
+                initialValue: _selectedPaymentMode,
+                decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
                 items: _paymentModes.map((m) {
                   return DropdownMenuItem<String>(
-                    value: m['value'],
-                    child: Text(m['label']!, style: GoogleFonts.inter(fontSize: 13)),
+                    value: m['value'] as String,
+                    child: Row(
+                      children: [
+                        Icon(m['icon'] as IconData, size: 16, color: AppColors.textSecondary),
+                        const SizedBox(width: 8),
+                        Text(m['label'] as String, style: GoogleFonts.inter(fontSize: 12.5)),
+                      ],
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {
@@ -217,7 +222,7 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
                   }
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Transaction / UTR ID
               CustomTextField(
@@ -230,36 +235,36 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Bank / App Name (Optional)
+              // Bank / App Name
               CustomTextField(
                 controller: _bankNameController,
                 label: 'Bank / UPI App Name (Optional)',
                 hint: 'e.g. Google Pay, PhonePe, SBI, HDFC',
                 prefixIcon: Icons.account_balance_rounded,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
               // Attach Receipt / Screenshot
               Text(
-                'Payment Proof / Receipt Screenshot',
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                'Payment Slip / Screenshot',
+                style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
               if (_selectedProofFile != null) ...[
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceMuted,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.image_rounded, color: AppColors.primary, size: 28),
-                      const SizedBox(width: 12),
+                      const Icon(Icons.image_rounded, color: AppColors.primary, size: 24),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           _selectedProofFile!.path.split('/').last,
@@ -269,12 +274,8 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: AppColors.rose, size: 20),
-                        onPressed: () {
-                          setState(() {
-                            _selectedProofFile = null;
-                          });
-                        },
+                        icon: const Icon(Icons.close_rounded, color: AppColors.rose, size: 18),
+                        onPressed: () => setState(() => _selectedProofFile = null),
                       ),
                     ],
                   ),
@@ -287,42 +288,48 @@ class _UploadFeeProofScreenState extends State<UploadFeeProofScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.photo_library_rounded, size: 18),
+                      icon: const Icon(Icons.photo_library_rounded, size: 16),
                       label: const Text('Gallery'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                      icon: const Icon(Icons.camera_alt_rounded, size: 16),
                       label: const Text('Camera'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Student Note (Optional)
+              // Student Note
               CustomTextField(
                 controller: _noteController,
                 label: 'Notes / Remarks (Optional)',
-                hint: 'Any message for the school accountant...',
+                hint: 'Any remarks for school accounts team...',
                 maxLines: 2,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 22),
 
               // Submit Button
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(
-                  text: 'Submit Payment Slip for Review',
+                  text: 'Submit Slip for Review',
                   isLoading: feeProvider.isSubmitting,
                   icon: Icons.send_rounded,
                   onPressed: _handleSubmit,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
             ],
           ),
         ),
