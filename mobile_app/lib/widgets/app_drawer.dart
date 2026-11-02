@@ -5,20 +5,35 @@ import '../core/constants/app_colors.dart';
 import '../providers/auth_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../screens/main_navigation_screen.dart';
-import '../screens/timetable/timetable_screen.dart';
 import '../screens/attendance/attendance_screen.dart';
-import '../screens/fees/fee_portal_screen.dart';
-import '../screens/homework/homework_list_screen.dart';
 import '../screens/exams/report_card_screen.dart';
 import '../screens/study_material/study_material_screen.dart';
 import '../screens/notices/notice_list_screen.dart';
-import '../screens/profile/profile_screen.dart';
 import '../screens/auth/login_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   final int activeIndex;
+  final ValueChanged<int>? onSelectTab;
 
-  const AppDrawer({super.key, this.activeIndex = -1});
+  const AppDrawer({
+    super.key,
+    this.activeIndex = -1,
+    this.onSelectTab,
+  });
+
+  void _navigateToTab(BuildContext context, int tabIndex) {
+    Navigator.pop(context);
+    if (activeIndex == tabIndex) return;
+    if (onSelectTab != null) {
+      onSelectTab!(tabIndex);
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => MainNavigationScreen(initialIndex: tabIndex)),
+        (route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,27 +191,14 @@ class AppDrawer extends StatelessWidget {
                     icon: Icons.space_dashboard_rounded,
                     title: 'Dashboard Overview',
                     isSelected: activeIndex == 0,
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (activeIndex != 0) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const MainNavigationScreen(initialIndex: 0)),
-                          (route) => false,
-                        );
-                      }
-                    },
+                    onTap: () => _navigateToTab(context, 0),
                   ),
                   _buildDrawerTile(
                     context: context,
                     icon: Icons.calendar_today_rounded,
                     title: 'Routine Timetable',
                     isSelected: activeIndex == 1,
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (activeIndex == 1) return;
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen()));
-                    },
+                    onTap: () => _navigateToTab(context, 1),
                   ),
                   _buildDrawerTile(
                     context: context,
@@ -215,11 +217,7 @@ class AppDrawer extends StatelessWidget {
                     isSelected: activeIndex == 3,
                     badge: dashboardProvider.homeworks.isNotEmpty ? '${dashboardProvider.homeworks.length}' : null,
                     badgeColor: AppColors.accent,
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (activeIndex == 3) return;
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeworkListScreen()));
-                    },
+                    onTap: () => _navigateToTab(context, 3),
                   ),
                   _buildDrawerTile(
                     context: context,
@@ -251,11 +249,7 @@ class AppDrawer extends StatelessWidget {
                     isSelected: activeIndex == 2,
                     badge: dashboardProvider.pendingFeeCount > 0 ? '${dashboardProvider.pendingFeeCount}' : null,
                     badgeColor: AppColors.rose,
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (activeIndex == 2) return;
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const FeePortalScreen()));
-                    },
+                    onTap: () => _navigateToTab(context, 2),
                   ),
                   _buildDrawerTile(
                     context: context,
@@ -275,11 +269,7 @@ class AppDrawer extends StatelessWidget {
                     icon: Icons.account_circle_rounded,
                     title: 'Student Profile',
                     isSelected: activeIndex == 4,
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (activeIndex == 4) return;
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
-                    },
+                    onTap: () => _navigateToTab(context, 4),
                   ),
                 ],
               ),

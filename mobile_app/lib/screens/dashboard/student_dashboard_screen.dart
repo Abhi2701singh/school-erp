@@ -17,7 +17,8 @@ import '../study_material/study_material_screen.dart';
 import '../profile/profile_screen.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
-  const StudentDashboardScreen({super.key});
+  final ValueChanged<int>? onSelectTab;
+  const StudentDashboardScreen({super.key, this.onSelectTab});
 
   @override
   State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
@@ -41,7 +42,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(activeIndex: 0),
+      drawer: AppDrawer(activeIndex: 0, onSelectTab: widget.onSelectTab),
       appBar: AppBar(
         leading: Builder(
           builder: (context) => IconButton(
@@ -115,7 +116,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+                if (widget.onSelectTab != null) {
+                  widget.onSelectTab!(4);
+                } else {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+                }
               },
               borderRadius: BorderRadius.circular(20),
               child: CircleAvatar(
@@ -181,7 +186,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                             icon: Icons.account_balance_wallet_rounded,
                             gradient: AppColors.feeGradient,
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const FeePortalScreen()));
+                              if (widget.onSelectTab != null) {
+                                widget.onSelectTab!(2);
+                              } else {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const FeePortalScreen()));
+                              }
                             },
                           ),
                         ),
@@ -198,7 +207,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                             icon: Icons.assignment_turned_in_rounded,
                             gradient: AppColors.homeworkGradient,
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeworkListScreen()));
+                              if (widget.onSelectTab != null) {
+                                widget.onSelectTab!(3);
+                              } else {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeworkListScreen()));
+                              }
                             },
                           ),
                         ),
@@ -223,7 +236,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     SectionHeader(
                       title: "Today's Schedule (${dashboardProvider.todayDay})",
                       actionText: 'Full Routine',
-                      onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen())),
+                      onActionTap: () {
+                        if (widget.onSelectTab != null) {
+                          widget.onSelectTab!(1);
+                        } else {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen()));
+                        }
+                      },
                     ),
                     const SizedBox(height: 10),
                     if (dashboardProvider.todaySchedule.isEmpty)
@@ -600,7 +619,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         'label': 'Routine',
         'color': AppColors.primary,
         'bgColor': AppColors.primarySubtle,
-        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen())),
+        'onTap': () {
+          if (widget.onSelectTab != null) {
+            widget.onSelectTab!(1);
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen()));
+          }
+        },
       },
       {
         'icon': Icons.how_to_reg_rounded,
@@ -614,14 +639,26 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         'label': 'Fees',
         'color': AppColors.violet,
         'bgColor': AppColors.violetSubtle,
-        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeePortalScreen())),
+        'onTap': () {
+          if (widget.onSelectTab != null) {
+            widget.onSelectTab!(2);
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const FeePortalScreen()));
+          }
+        },
       },
       {
         'icon': Icons.assignment_rounded,
         'label': 'Homework',
         'color': AppColors.accent,
         'bgColor': AppColors.accentSubtle,
-        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeworkListScreen())),
+        'onTap': () {
+          if (widget.onSelectTab != null) {
+            widget.onSelectTab!(3);
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeworkListScreen()));
+          }
+        },
       },
       {
         'icon': Icons.auto_stories_rounded,
@@ -649,7 +686,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         'label': 'Profile',
         'color': AppColors.secondaryLight,
         'bgColor': AppColors.surfaceMuted,
-        'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+        'onTap': () {
+          if (widget.onSelectTab != null) {
+            widget.onSelectTab!(4);
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+          }
+        },
       },
     ];
 
@@ -661,7 +704,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         crossAxisCount: 4,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.92,
+        childAspectRatio: 0.88,
       ),
       itemBuilder: (context, index) {
         final item = shortcuts[index];

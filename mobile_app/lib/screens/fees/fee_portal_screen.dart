@@ -5,10 +5,12 @@ import '../../core/constants/app_colors.dart';
 import '../../providers/fee_provider.dart';
 import '../../models/fee_model.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/app_drawer.dart';
 import 'upload_fee_proof_screen.dart';
 
 class FeePortalScreen extends StatefulWidget {
-  const FeePortalScreen({super.key});
+  final ValueChanged<int>? onSelectTab;
+  const FeePortalScreen({super.key, this.onSelectTab});
 
   @override
   State<FeePortalScreen> createState() => _FeePortalScreenState();
@@ -40,7 +42,20 @@ class _FeePortalScreenState extends State<FeePortalScreen> with SingleTickerProv
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: AppDrawer(activeIndex: 2, onSelectTab: widget.onSelectTab),
       appBar: AppBar(
+        leading: (ModalRoute.of(context)?.canPop ?? false)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.menu_rounded),
+                  tooltip: 'Navigation Menu',
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
+                ),
+              ),
         title: const Text('Fee Portal & Payments'),
         bottom: TabBar(
           controller: _tabController,

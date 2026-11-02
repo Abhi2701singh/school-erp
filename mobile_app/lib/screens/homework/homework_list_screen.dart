@@ -7,9 +7,11 @@ import '../../core/constants/app_colors.dart';
 import '../../core/services/api_service.dart';
 import '../../models/common_models.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/app_drawer.dart';
 
 class HomeworkListScreen extends StatefulWidget {
-  const HomeworkListScreen({super.key});
+  final ValueChanged<int>? onSelectTab;
+  const HomeworkListScreen({super.key, this.onSelectTab});
 
   @override
   State<HomeworkListScreen> createState() => _HomeworkListScreenState();
@@ -45,7 +47,22 @@ class _HomeworkListScreenState extends State<HomeworkListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Homework & Tasks')),
+      drawer: AppDrawer(activeIndex: 3, onSelectTab: widget.onSelectTab),
+      appBar: AppBar(
+        leading: (ModalRoute.of(context)?.canPop ?? false)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.menu_rounded),
+                  tooltip: 'Navigation Menu',
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
+                ),
+              ),
+        title: const Text('Homework & Tasks'),
+      ),
       body: _isLoading
           ? const LoadingIndicator(message: 'Loading active homework...')
           : RefreshIndicator(

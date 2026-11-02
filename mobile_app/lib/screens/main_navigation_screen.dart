@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../core/constants/app_colors.dart';
+import '../providers/dashboard_provider.dart';
 import 'dashboard/student_dashboard_screen.dart';
 import 'timetable/timetable_screen.dart';
 import 'fees/fee_portal_screen.dart';
@@ -18,35 +20,45 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late int _currentIndex;
 
-  final List<Widget> _screens = const [
-    StudentDashboardScreen(),
-    TimetableScreen(),
-    FeePortalScreen(),
-    HomeworkListScreen(),
-    ProfileScreen(),
-  ];
-
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
   }
 
+  void _onTabSelected(int index) {
+    if (_currentIndex != index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final dashboardProvider = Provider.of<DashboardProvider>(context);
+
+    final screens = [
+      StudentDashboardScreen(onSelectTab: _onTabSelected),
+      TimetableScreen(onSelectTab: _onTabSelected),
+      FeePortalScreen(onSelectTab: _onTabSelected),
+      HomeworkListScreen(onSelectTab: _onTabSelected),
+      ProfileScreen(onSelectTab: _onTabSelected),
+    ];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 14,
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
               offset: const Offset(0, -3),
             ),
           ],
@@ -56,71 +68,115 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
         child: SafeArea(
           top: false,
-          child: NavigationBarTheme(
-            data: NavigationBarThemeData(
-              height: 62,
-              elevation: 0,
-              backgroundColor: Colors.white,
-              indicatorColor: AppColors.primary.withValues(alpha: 0.12),
-              indicatorShape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
-                  );
-                }
-                return GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                );
-              }),
-              iconTheme: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return const IconThemeData(color: AppColors.primary, size: 22);
-                }
-                return const IconThemeData(color: AppColors.textSecondary, size: 22);
-              }),
-            ),
-            child: NavigationBar(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.space_dashboard_outlined),
-                  selectedIcon: Icon(Icons.space_dashboard_rounded),
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  index: 0,
+                  icon: Icons.space_dashboard_outlined,
+                  activeIcon: Icons.space_dashboard_rounded,
                   label: 'Home',
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.calendar_month_outlined),
-                  selectedIcon: Icon(Icons.calendar_month_rounded),
+                _buildNavItem(
+                  index: 1,
+                  icon: Icons.calendar_month_outlined,
+                  activeIcon: Icons.calendar_month_rounded,
                   label: 'Routine',
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.account_balance_wallet_outlined),
-                  selectedIcon: Icon(Icons.account_balance_wallet_rounded),
+                _buildNavItem(
+                  index: 2,
+                  icon: Icons.account_balance_wallet_outlined,
+                  activeIcon: Icons.account_balance_wallet_rounded,
                   label: 'Fees',
+                  badgeCount: dashboardProvider.pendingFeeCount,
+                  badgeColor: AppColors.rose,
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.assignment_outlined),
-                  selectedIcon: Icon(Icons.assignment_rounded),
-                  label: 'Homework',
+                _buildNavItem(
+                  index: 3,
+                  icon: Icons.assignment_outlined,
+                  activeIcon: Icons.assignment_rounded,
+                  label: 'Tasks',
+                  badgeCount: dashboardProvider.homeworks.length,
+                  badgeColor: AppColors.accent,
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.person_outline_rounded),
-                  selectedIcon: Icon(Icons.person_rounded),
+                _buildNavItem(
+                  index: 4,
+                  icon: Icons.person_outline_rounded,
+                  activeIcon: Icons.person_rounded,
                   label: 'Profile',
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    int? badgeCount,
+    Color badgeColor = AppColors.rose,
+  }) {
+    final isSelected = _currentIndex == index;
+
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _onTabSelected(index),
+          splashColor: AppColors.primary.withValues(alpha: 0.08),
+          highlightColor: Colors.transparent,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primary.withValues(alpha: 0.12) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      isSelected ? activeIcon : icon,
+                      size: 21,
+                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    ),
+                  ),
+                  if (badgeCount != null && badgeCount > 0)
+                    Positioned(
+                      top: -1,
+                      right: 1,
+                      child: Container(
+                        padding: const EdgeInsets.all(3.5),
+                        decoration: BoxDecoration(
+                          color: badgeColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                        constraints: const BoxConstraints(minWidth: 8, minHeight: 8),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 10.5,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../widgets/app_drawer.dart';
 import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final ValueChanged<int>? onSelectTab;
+  const ProfileScreen({super.key, this.onSelectTab});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,22 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('My Profile & Settings')),
+      drawer: AppDrawer(activeIndex: 4, onSelectTab: onSelectTab),
+      appBar: AppBar(
+        leading: (ModalRoute.of(context)?.canPop ?? false)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.menu_rounded),
+                  tooltip: 'Navigation Menu',
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
+                ),
+              ),
+        title: const Text('My Profile & Settings'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Column(

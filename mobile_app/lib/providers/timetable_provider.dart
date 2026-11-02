@@ -12,6 +12,9 @@ class TimetableProvider with ChangeNotifier {
   String _selectedSection = '';
   Map<String, String> _periodTimings = {};
   String _breakTiming = '11:40 AM - 12:20 PM';
+  int _totalPeriods = 8;
+  int _breakAfterPeriod = 4;
+  bool _hasBreak = true;
   List<GridRowModel> _gridRows = [];
   List<TimetableEntryModel> _allEntries = [];
   int _selectedDayIndex = 0; // 0=Mon, 1=Tue, 2=Wed, etc.
@@ -22,6 +25,9 @@ class TimetableProvider with ChangeNotifier {
   String get selectedSection => _selectedSection;
   Map<String, String> get periodTimings => _periodTimings;
   String get breakTiming => _breakTiming;
+  int get totalPeriods => _totalPeriods;
+  int get breakAfterPeriod => _breakAfterPeriod;
+  bool get hasBreak => _hasBreak;
   List<GridRowModel> get gridRows => _gridRows;
   List<TimetableEntryModel> get allEntries => _allEntries;
   int get selectedDayIndex => _selectedDayIndex;
@@ -56,6 +62,9 @@ class TimetableProvider with ChangeNotifier {
         _selectedSection = sec != null ? sec['name'] ?? '' : '';
 
         _breakTiming = data['break_timing'] ?? '11:40 AM - 12:20 PM';
+        _totalPeriods = data['total_periods'] ?? 8;
+        _breakAfterPeriod = data['break_after_period'] ?? 4;
+        _hasBreak = data['has_break'] ?? true;
 
         final rawTimings = data['period_timings'];
         if (rawTimings is Map) {

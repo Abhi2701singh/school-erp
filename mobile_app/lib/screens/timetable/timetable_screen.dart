@@ -5,9 +5,11 @@ import '../../core/constants/app_colors.dart';
 import '../../providers/timetable_provider.dart';
 import '../../models/timetable_model.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/app_drawer.dart';
 
 class TimetableScreen extends StatefulWidget {
-  const TimetableScreen({super.key});
+  final ValueChanged<int>? onSelectTab;
+  const TimetableScreen({super.key, this.onSelectTab});
 
   @override
   State<TimetableScreen> createState() => _TimetableScreenState();
@@ -43,7 +45,20 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: AppDrawer(activeIndex: 1, onSelectTab: widget.onSelectTab),
       appBar: AppBar(
+        leading: (ModalRoute.of(context)?.canPop ?? false)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.menu_rounded),
+                  tooltip: 'Navigation Menu',
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
+                ),
+              ),
         title: const Text('Class Timetable Routine'),
         actions: [
           IconButton(
@@ -195,8 +210,13 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
       );
     }
 
-    final morningEntries = dayEntries.where((e) => e.periodNumber <= 4).toList();
-    final afternoonEntries = dayEntries.where((e) => e.periodNumber >= 5).toList();
+    final hasBreak = provider.hasBreak && provider.breakAfterPeriod > 0;
+    final morningEntries = hasBreak
+        ? dayEntries.where((e) => e.periodNumber <= provider.breakAfterPeriod).toList()
+        : dayEntries;
+    final afternoonEntries = hasBreak
+        ? dayEntries.where((e) => e.periodNumber > provider.breakAfterPeriod).toList()
+        : <TimetableEntryModel>[];
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -205,7 +225,7 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
-              'MORNING SESSION',
+              hasBreak ? 'MORNING SESSION' : 'DAILY CLASSES',
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -219,8 +239,10 @@ class _TimetableScreenState extends State<TimetableScreen> with SingleTickerProv
         ],
 
         // Recess / Lunch Break Card
-        _buildLunchBreakCard(provider.breakTiming.isNotEmpty ? provider.breakTiming : '11:45 AM - 12:15 PM'),
-        const SizedBox(height: 10),
+        if (hasBreak) ...[
+          _buildLunchBreakCard(provider.breakTiming.isNotEmpty ? provider.breakTiming : '11:40 AM - 12:20 PM'),
+          const SizedBox(height: 10),
+        ],
 
         if (afternoonEntries.isNotEmpty) ...[
           Padding(
