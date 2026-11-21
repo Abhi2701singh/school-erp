@@ -142,6 +142,10 @@ def collect_fee_view(request, student_id):
     student_fees = StudentFee.objects.filter(school=request.school, student=student).select_related('fee_head', 'academic_session')
 
     if request.method == 'POST':
+        if request.school and not request.school.is_active:
+            messages.error(request, f"Cannot collect fee: School branch '{request.school.name}' is currently INACTIVE.")
+            return redirect('student_fees', student_id=student.id)
+
         student_fee_id = request.POST.get('student_fee_id')
         student_fee = get_object_or_404(StudentFee, pk=student_fee_id, student=student, school=request.school)
 

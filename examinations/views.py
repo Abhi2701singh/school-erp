@@ -12,6 +12,10 @@ def exam_list_view(request):
     exams = Exam.objects.filter(school=request.school).select_related('class_level', 'academic_session')
 
     if request.method == 'POST' and request.user.is_school_admin():
+        if request.school and not request.school.is_active:
+            messages.error(request, f"Cannot create exam: School branch '{request.school.name}' is currently INACTIVE.")
+            return redirect('exam_list')
+
         form = ExamForm(request.POST, school=request.school)
         if form.is_valid():
             active_session = AcademicSession.objects.filter(school=request.school, is_current=True).first()

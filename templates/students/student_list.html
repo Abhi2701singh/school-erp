@@ -11,9 +11,15 @@
     </div>
     {% if user.is_school_admin %}
     <div>
-        <a href="{% url 'student_admission' %}" class="btn btn-primary rounded-pill px-3 py-2 shadow-sm">
-            <i class="fa-solid fa-plus me-1"></i> Add New Student
-        </a>
+        {% if request.school and not request.school.is_active %}
+            <button class="btn btn-secondary rounded-pill px-3 py-2 shadow-sm" disabled title="School branch is INACTIVE. New admissions are locked until activated.">
+                <i class="fa-solid fa-lock me-1"></i> Add New Student (School Inactive)
+            </button>
+        {% else %}
+            <a href="{% url 'student_admission' %}" class="btn btn-primary rounded-pill px-3 py-2 shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Add New Student
+            </a>
+        {% endif %}
     </div>
     {% endif %}
 </div>

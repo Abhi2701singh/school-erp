@@ -7,6 +7,13 @@ from schools.models import School
 
 def login_view(request):
     if request.method == 'GET' and request.user.is_authenticated:
+        if not request.user.is_super_admin() and request.user.school and not request.user.school.is_active:
+            logout(request)
+            messages.error(
+                request,
+                f"Access Disabled: The school branch '{request.user.school.name}' is currently inactive / suspended by the platform administrator."
+            )
+            return render(request, 'accounts/login.html', {'form': LoginForm()})
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -17,6 +24,14 @@ def login_view(request):
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
+            # Strict inactive school check:
+            if not user.is_super_admin() and user.school and not user.school.is_active:
+                messages.error(
+                    request,
+                    f"Access Disabled: The school branch '{user.school.name}' is currently inactive / suspended by the platform administrator. Portal access is locked."
+                )
+                return render(request, 'accounts/login.html', {'form': form})
+
             login(request, user)
             messages.success(request, f"Welcome back, {user.get_full_name() or user.username}!")
             return redirect('dashboard')

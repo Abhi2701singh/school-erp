@@ -17,6 +17,10 @@ def class_list_view(request):
     school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     classes = Class.objects.filter(school=school) if school else Class.objects.none()
     if request.method == 'POST' and request.user.is_school_admin():
+        if school and not school.is_active:
+            messages.error(request, f"Cannot create class: School branch '{school.name}' is currently INACTIVE.")
+            return redirect('class_list')
+
         form = ClassForm(request.POST)
         if form.is_valid():
             class_name = form.cleaned_data.get('name')
@@ -45,6 +49,10 @@ def class_delete_view(request, pk):
         messages.error(request, "Permission denied.")
         return redirect('class_list')
 
+    if school and not school.is_active:
+        messages.error(request, f"Cannot delete class: School branch '{school.name}' is currently INACTIVE.")
+        return redirect('class_list')
+
     cls = get_object_or_404(Class, pk=pk, school=school)
     if request.method == 'POST':
         class_name = cls.name
@@ -60,6 +68,10 @@ def section_list_view(request):
     school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     sections = Section.objects.filter(school=school).select_related('class_level') if school else Section.objects.none()
     if request.method == 'POST' and request.user.is_school_admin():
+        if school and not school.is_active:
+            messages.error(request, f"Cannot create section: School branch '{school.name}' is currently INACTIVE.")
+            return redirect('section_list')
+
         form = SectionForm(request.POST, school=school)
         if form.is_valid():
             sec = form.save(commit=False)
@@ -80,6 +92,10 @@ def section_delete_view(request, pk):
         messages.error(request, "Permission denied.")
         return redirect('section_list')
 
+    if school and not school.is_active:
+        messages.error(request, f"Cannot delete section: School branch '{school.name}' is currently INACTIVE.")
+        return redirect('section_list')
+
     section = get_object_or_404(Section, pk=pk, school=school)
     if request.method == 'POST':
         sec_name = f"{section.class_level.name} - Section {section.name}"
@@ -95,6 +111,10 @@ def subject_list_view(request):
     school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     subjects = Subject.objects.filter(school=school) if school else Subject.objects.none()
     if request.method == 'POST' and request.user.is_school_admin():
+        if school and not school.is_active:
+            messages.error(request, f"Cannot create subject: School branch '{school.name}' is currently INACTIVE.")
+            return redirect('subject_list')
+
         form = SubjectForm(request.POST)
         if form.is_valid():
             sbj = form.save(commit=False)
@@ -113,6 +133,11 @@ def subject_delete_view(request, pk):
     school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
+        return redirect('subject_list')
+
+    if school and not school.is_active:
+        messages.error(request, f"Cannot delete subject: School branch '{school.name}' is currently INACTIVE.")
+        return redirect('subject_list')
         return redirect('subject_list')
 
     subject = get_object_or_404(Subject, pk=pk, school=school)

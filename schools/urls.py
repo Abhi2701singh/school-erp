@@ -5,6 +5,7 @@ urlpatterns = [
     path('', views.school_list_view, name='school_list'),
     path('add/', views.school_create_view, name='school_create'),
     path('<int:pk>/edit/', views.school_edit_view, name='school_edit'),
+    path('<int:pk>/toggle-status/', views.school_toggle_status_view, name='school_toggle_status'),
     path('<int:pk>/delete/', views.school_delete_view, name='school_delete'),
     path('sessions/', views.session_list_view, name='session_list'),
     path('sessions/<int:pk>/delete/', views.session_delete_view, name='session_delete'),

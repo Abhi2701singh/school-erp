@@ -70,6 +70,13 @@ class LoginAPIView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+        is_super = user.is_superuser or (callable(getattr(user, 'is_super_admin', None)) and user.is_super_admin())
+        if school and not school.is_active and not is_super:
+            return Response(
+                {'error': f"The school branch '{school.name}' is currently deactivated by platform administration. Mobile app and portal access are disabled."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         if not school and not user.is_superuser:
             school = School.objects.filter(is_active=True).first()
 

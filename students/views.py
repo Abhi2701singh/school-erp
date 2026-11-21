@@ -83,6 +83,13 @@ def student_admission_view(request):
         messages.error(request, "No school found. Please create or assign a school first.")
         return redirect('dashboard')
 
+    if not school.is_active:
+        messages.error(
+            request,
+            f"Cannot admit students: School branch '{school.name}' is currently INACTIVE. Please activate the school branch first from Schools Directory."
+        )
+        return redirect('student_list')
+
     # Ensure school has an active academic session
     active_session = AcademicSession.objects.filter(school=school, is_current=True).first()
     if not active_session:
@@ -170,6 +177,10 @@ def student_delete_view(request, pk):
         messages.error(request, "Permission denied.")
         return redirect('student_list')
 
+    if request.school and not request.school.is_active:
+        messages.error(request, f"Cannot delete student records: School branch '{request.school.name}' is currently INACTIVE.")
+        return redirect('student_list')
+
     student = get_object_or_404(Student, pk=pk, school=request.school)
     if request.method == 'POST':
         student_name = f"{student.first_name} {student.last_name}".strip()
@@ -197,6 +208,10 @@ def student_profile_view(request, pk):
         return redirect('dashboard')
 
     if request.method == 'POST' and request.user.is_school_admin():
+        if request.school and not request.school.is_active:
+            messages.error(request, f"Cannot upload document: School branch '{request.school.name}' is currently INACTIVE.")
+            return redirect('student_profile', pk=student.pk)
+
         doc_form = StudentDocumentForm(request.POST, request.FILES)
         if doc_form.is_valid():
             doc = doc_form.save(commit=False)

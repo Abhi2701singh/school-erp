@@ -8,26 +8,38 @@
     <div class="col-12 col-lg-5">
         <div class="card card-custom p-3 p-sm-4">
             <h5 class="fw-bold mb-3"><i class="fa-solid fa-bullhorn text-warning me-2"></i> Post Announcement</h5>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Notice Title</label>
-                    {{ form.title }}
+            {% if request.school and not request.school.is_active %}
+                <div class="alert alert-danger mb-0 border-0 p-3 rounded-3" style="background: #fef2f2; border-left: 4px solid #ef4444 !important;">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fa-solid fa-lock text-danger"></i>
+                        <strong class="text-danger">Notice Publishing Locked</strong>
+                    </div>
+                    <p class="small text-muted mb-0">
+                        School branch <strong>{{ request.school.name }}</strong> is currently <strong>INACTIVE</strong>. Publishing notices/messages is disabled until this branch is activated.
+                    </p>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Target Audience</label>
-                    {{ form.target_role }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Notice Content</label>
-                    {{ form.content }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Attachment (PDF / Image)</label>
-                    {{ form.attachment }}
-                </div>
-                <button type="submit" class="btn btn-warning text-white w-100 fw-bold"><i class="fa-solid fa-paper-plane me-2"></i> Publish Notice</button>
-            </form>
+            {% else %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Notice Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Target Audience</label>
+                        {{ form.target_role }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Notice Content</label>
+                        {{ form.content }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Attachment (PDF / Image)</label>
+                        {{ form.attachment }}
+                    </div>
+                    <button type="submit" class="btn btn-warning text-white w-100 fw-bold"><i class="fa-solid fa-paper-plane me-2"></i> Publish Notice</button>
+                </form>
+            {% endif %}
         </div>
     </div>
     {% endif %}
@@ -50,12 +62,18 @@
                                     <a href="{{ notice.attachment.url }}" class="btn btn-sm btn-outline-primary text-nowrap" target="_blank"><i class="fa-solid fa-paperclip me-1"></i> View Attachment</a>
                                 {% endif %}
                                 {% if user.is_school_admin %}
-                                    <form method="post" action="{% url 'notice_delete' notice.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this announcement? (क्या आप यह नोटिस डिलीट करना चाहते हैं?)');">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Notice">
-                                            <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                    {% if request.school and not request.school.is_active %}
+                                        <button class="btn btn-sm btn-outline-secondary text-nowrap" disabled title="School branch is inactive. Notice deletion is locked.">
+                                            <i class="fa-solid fa-lock me-1"></i> Locked
                                         </button>
-                                    </form>
+                                    {% else %}
+                                        <form method="post" action="{% url 'notice_delete' notice.id %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this announcement? (क्या आप यह नोटिस डिलीट करना चाहते हैं?)');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap" title="Delete Notice">
+                                                <i class="fa-solid fa-trash-can me-1"></i> Delete
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>

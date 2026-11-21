@@ -31,6 +31,10 @@ def mark_attendance_view(request):
         existing_attendance = {r.student_id: r.status for r in records}
 
     if request.method == 'POST':
+        if request.school and not request.school.is_active:
+            messages.error(request, f"Cannot mark attendance: School branch '{request.school.name}' is currently INACTIVE.")
+            return redirect('mark_attendance')
+
         class_id = request.POST.get('class_id')
         section_id = request.POST.get('section_id')
         attendance_date_str = request.POST.get('date')

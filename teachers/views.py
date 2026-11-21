@@ -21,6 +21,10 @@ def teacher_create_view(request):
         messages.error(request, "Permission denied.")
         return redirect('teacher_list')
 
+    if request.school and not request.school.is_active:
+        messages.error(request, f"Cannot add teachers: School branch '{request.school.name}' is currently INACTIVE.")
+        return redirect('teacher_list')
+
     if request.method == 'POST':
         form = TeacherForm(request.POST, school=request.school)
         if form.is_valid():
@@ -62,6 +66,10 @@ def teacher_edit_view(request, pk):
         messages.error(request, "Permission denied.")
         return redirect('teacher_list')
 
+    if request.school and not request.school.is_active:
+        messages.error(request, f"Cannot edit teacher details: School branch '{request.school.name}' is currently INACTIVE.")
+        return redirect('teacher_list')
+
     if request.method == 'POST':
         form = TeacherForm(request.POST, instance=teacher, school=request.school)
         if form.is_valid():
@@ -92,6 +100,10 @@ def teacher_delete_view(request, pk):
     is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
     if not (request.user.is_school_admin() or is_super):
         messages.error(request, "Permission denied.")
+        return redirect('teacher_list')
+
+    if request.school and not request.school.is_active:
+        messages.error(request, f"Cannot delete teacher: School branch '{request.school.name}' is currently INACTIVE.")
         return redirect('teacher_list')
 
     if is_super and not request.school:

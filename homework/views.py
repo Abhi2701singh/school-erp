@@ -14,6 +14,10 @@ def homework_list_view(request):
         homeworks = Homework.objects.filter(school=request.school).select_related('class_level', 'section', 'subject', 'created_by')
 
     if request.method == 'POST' and (request.user.is_teacher_user() or request.user.is_school_admin() or is_super):
+        if request.school and not request.school.is_active:
+            messages.error(request, f"Cannot assign homework: School branch '{request.school.name}' is currently INACTIVE.")
+            return redirect('homework_list')
+
         form = HomeworkForm(request.POST, request.FILES, school=request.school)
         if form.is_valid():
             hw = form.save(commit=False)

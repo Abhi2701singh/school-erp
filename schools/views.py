@@ -167,6 +167,25 @@ def school_delete_view(request, pk):
 
 
 @login_required
+def school_toggle_status_view(request, pk):
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    if not is_super:
+        messages.error(request, "Permission denied. Only Super Admin can change school status.")
+        return redirect('dashboard')
+
+    school = get_object_or_404(School, pk=pk)
+    school.is_active = not school.is_active
+    school.save(update_fields=['is_active'])
+
+    if school.is_active:
+        messages.success(request, f"School branch '{school.name}' has been ACTIVATED. Staff, teachers, and students can now access the portal.")
+    else:
+        messages.warning(request, f"School branch '{school.name}' has been DEACTIVATED (Inactive). All portal access, admissions, and notice operations are now locked.")
+
+    return redirect('school_list')
+
+
+@login_required
 def session_list_view(request):
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
@@ -174,6 +193,10 @@ def session_list_view(request):
 
     sessions = AcademicSession.objects.filter(school=request.school)
     if request.method == 'POST':
+        if request.school and not request.school.is_active:
+            messages.error(request, f"Cannot create academic session: School branch '{request.school.name}' is currently INACTIVE.")
+            return redirect('session_list')
+
         form = AcademicSessionForm(request.POST)
         if form.is_valid():
             session = form.save(commit=False)
@@ -192,6 +215,10 @@ def session_delete_view(request, pk):
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
         return redirect('dashboard')
+
+    if request.school and not request.school.is_active:
+        messages.error(request, f"Cannot delete academic session: School branch '{request.school.name}' is currently INACTIVE.")
+        return redirect('session_list')
 
     session = get_object_or_404(AcademicSession, pk=pk, school=request.school)
     if request.method == 'POST':
@@ -223,6 +250,13 @@ def notice_list_view(request):
             messages.error(request, "Permission denied. Only School Admin/Principal can post notices.")
             return redirect('notice_list')
 
+        if request.school and not request.school.is_active:
+            messages.error(
+                request,
+                f"Cannot publish notice: School branch '{request.school.name}' is currently INACTIVE. Please activate the school branch first."
+            )
+            return redirect('notice_list')
+
         form = NoticeForm(request.POST, request.FILES)
         if form.is_valid():
             notice = form.save(commit=False)
@@ -242,6 +276,10 @@ def notice_delete_view(request, pk):
     if not request.user.is_school_admin():
         messages.error(request, "Permission denied.")
         return redirect('dashboard')
+
+    if request.school and not request.school.is_active:
+        messages.error(request, f"Cannot delete notice: School branch '{request.school.name}' is currently INACTIVE.")
+        return redirect('notice_list')
 
     notice = get_object_or_404(Notice, pk=pk, school=request.school)
     if request.method == 'POST':

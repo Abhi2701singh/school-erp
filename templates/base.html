@@ -146,10 +146,17 @@
                 {% if user.is_super_admin %}
                     {% if request.session.active_school_id and request.school %}
                         <div class="d-flex align-items-center gap-2">
-                            <div class="tenant-badge border border-warning" style="background: #fefce8; color: #854d0e;" title="Currently viewing as {{ request.school.name }}">
-                                <i class="fa-solid fa-eye text-warning"></i>
-                                <span class="text-truncate fw-bold">{{ request.school.name }}</span>
-                            </div>
+                            {% if not request.school.is_active %}
+                                <div class="tenant-badge border border-danger" style="background: #fef2f2; color: #b91c1c;" title="Currently viewing INACTIVE school: {{ request.school.name }}">
+                                    <i class="fa-solid fa-ban text-danger"></i>
+                                    <span class="text-truncate fw-bold">{{ request.school.name }} (INACTIVE)</span>
+                                </div>
+                            {% else %}
+                                <div class="tenant-badge border border-warning" style="background: #fefce8; color: #854d0e;" title="Currently viewing as {{ request.school.name }}">
+                                    <i class="fa-solid fa-eye text-warning"></i>
+                                    <span class="text-truncate fw-bold">{{ request.school.name }}</span>
+                                </div>
+                            {% endif %}
                             <a href="{% url 'switch_school' 0 %}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1 shadow-xs" style="font-size: 0.75rem;" title="Exit school view and return to Super Admin console">
                                 <i class="fa-solid fa-xmark me-1"></i> Exit View
                             </a>
@@ -161,10 +168,17 @@
                         </div>
                     {% endif %}
                 {% elif request.school %}
-                    <div class="tenant-badge" title="{{ request.school.name }} ({{ request.school.code }})">
-                        <i class="fa-solid fa-school text-primary"></i> 
-                        <span class="text-truncate fw-bold">{{ request.school.name }}</span>
-                    </div>
+                    {% if not request.school.is_active %}
+                        <div class="tenant-badge border border-danger" style="background: #fef2f2; color: #b91c1c;" title="{{ request.school.name }} (INACTIVE)">
+                            <i class="fa-solid fa-ban text-danger"></i> 
+                            <span class="text-truncate fw-bold">{{ request.school.name }} (INACTIVE)</span>
+                        </div>
+                    {% else %}
+                        <div class="tenant-badge" title="{{ request.school.name }} ({{ request.school.code }})">
+                            <i class="fa-solid fa-school text-primary"></i> 
+                            <span class="text-truncate fw-bold">{{ request.school.name }}</span>
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
 
@@ -207,6 +221,38 @@
 
         <!-- Dynamic Content Body -->
         <main class="content-container">
+            <!-- Inactive School Banner -->
+            {% if request.school and not request.school.is_active %}
+                <div class="alert alert-danger shadow-sm border-0 d-flex flex-column flex-md-row align-items-md-center justify-content-between p-3 mb-4 rounded-3 gap-3" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-left: 5px solid #ef4444 !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-danger text-white flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                            <i class="fa-solid fa-ban"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h6 class="fw-bold mb-0 text-danger" style="font-size: 1.05rem;">
+                                    School Branch INACTIVE (यह स्कूल शाखा इनएक्टिव / सस्पेंडेड है)
+                                </h6>
+                                <span class="badge bg-danger">INACTIVE</span>
+                            </div>
+                            <p class="mb-0 text-dark small mt-1">
+                                <strong>{{ request.school.name }}</strong> वर्तमान में इनएक्टिव है। इस स्कूल के सभी शिक्षक, छात्र और स्टाफ का पोर्टल एक्सेस बंद है। जब तक आप इसे एक्टिव नहीं करते, कोई भी नया एडमिशन, फीस कलेक्शन या नोटिस पोस्टिंग नहीं की जा सकती।
+                            </p>
+                        </div>
+                    </div>
+                    {% if user.is_super_admin %}
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <a href="{% url 'school_toggle_status' request.school.pk %}" class="btn btn-sm btn-danger fw-bold rounded-pill px-3 shadow-xs">
+                            <i class="fa-solid fa-power-off me-1"></i> Activate School (सक्रिय करें)
+                        </a>
+                        <a href="{% url 'switch_school' 0 %}" class="btn btn-sm btn-outline-secondary fw-semibold rounded-pill px-3">
+                            Exit View
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
             <!-- Django Status Messages -->
             {% if messages %}
                 <div class="mb-4">
