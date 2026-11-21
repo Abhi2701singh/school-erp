@@ -378,6 +378,25 @@
                     </div>
                 </div>
 
+                <!-- Data Safety & Backup Controls -->
+                <div class="card border-0 shadow-sm rounded-4 p-3 mb-3" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0 !important;">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fa-solid fa-shield-halved text-primary fs-5"></i>
+                        <h6 class="fw-bold mb-0 text-dark">Data Security & Backups</h6>
+                    </div>
+                    <p class="text-muted small mb-3" style="font-size: 0.8rem;">
+                        डेटा हमेशा सुरक्षित रखने के लिए 1-क्लिक बैकअप डाउनलोड करें या पहले का बैकअप रिस्टोर करें।
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'export_backup' %}" class="btn btn-sm btn-primary rounded-pill d-flex align-items-center justify-content-center gap-2 py-2 fw-bold shadow-xs">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> 📥 Download Backup (JSON)
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#restoreBackupModal">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> 📤 Restore from Backup
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Shortcuts -->
                 <div class="d-grid gap-2">
                     <a href="/admin/accounts/user/" target="_blank" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold">
@@ -599,4 +618,34 @@ function filterByStatus(status, btn) {
     }
 }
 </script>
+
+<!-- Restore Backup Modal -->
+<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-primary"></i> Restore School ERP Backup
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'restore_backup' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body py-3">
+                    <p class="text-muted small mb-3">
+                        Select a previously downloaded <code>.json</code> backup file to restore all your schools, classes, students, fees, and records into the database.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Upload Backup File (.json):</label>
+                        <input type="file" name="backup_file" accept=".json" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Restore Data Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

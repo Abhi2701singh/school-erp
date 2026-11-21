@@ -294,4 +294,71 @@ def service_worker_view(request):
     return HttpResponse('', content_type='application/javascript')
 
 
+@login_required
+def export_backup_view(request):
+    """Allow Super Admin to download a complete, timestamped JSON backup of all ERP data."""
+    if not request.user.is_super_admin():
+        messages.error(request, "Permission denied. Only Super Admin can export full database backups.")
+        return redirect('dashboard')
+
+    from io import StringIO
+    from datetime import datetime
+    from django.core.management import call_command
+    from django.http import HttpResponse
+
+    out = StringIO()
+    call_command(
+        'dumpdata',
+        'schools',
+        'accounts.User',
+        'academics',
+        'students',
+        'teachers',
+        'attendance',
+        'examinations',
+        'fees',
+        'homework',
+        indent=2,
+        stdout=out
+    )
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"school_erp_backup_{timestamp}.json"
+
+    response = HttpResponse(out.getvalue(), content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+def restore_backup_view(request):
+    """Allow Super Admin to restore ERP data from an uploaded JSON backup file."""
+    if not request.user.is_super_admin():
+        messages.error(request, "Permission denied.")
+        return redirect('dashboard')
+
+    from django.contrib import messages
+    from django.core.management import call_command
+    import tempfile, os
+
+    if request.method == 'POST' and request.FILES.get('backup_file'):
+        backup_file = request.FILES['backup_file']
+        try:
+            content = backup_file.read().decode('utf-8')
+            json.loads(content)  # Validate JSON structure
+
+            with tempfile.NamedTemporaryFile('w', delete=False, suffix='.json', encoding='utf-8') as tf:
+                tf.write(content)
+                temp_path = tf.name
+
+            call_command('loaddata', temp_path)
+            os.remove(temp_path)
+            messages.success(request, f"Data backup '{backup_file.name}' restored successfully!")
+        except Exception as e:
+            messages.error(request, f"Failed to restore backup: {e}")
+    else:
+        messages.warning(request, "Please select a valid .json backup file to restore.")
+
+    return redirect('dashboard')
+
+
 
