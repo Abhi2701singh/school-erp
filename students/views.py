@@ -80,10 +80,8 @@ def student_admission_view(request):
 
     school = getattr(request, 'school', None) or (request.user.school if request.user.is_authenticated else None) or School.objects.first()
     if not school:
-        school, _ = School.objects.get_or_create(
-            code="PN_NPS",
-            defaults={"name": "PN National Public School", "is_active": True}
-        )
+        messages.error(request, "No school found. Please create or assign a school first.")
+        return redirect('dashboard')
 
     # Ensure school has an active academic session
     active_session = AcademicSession.objects.filter(school=school, is_current=True).first()

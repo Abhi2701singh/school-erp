@@ -27,21 +27,6 @@ class TenantMiddleware:
                     active_school = request.user.school or School.objects.first()
             else:
                 active_school = School.objects.first()
-
-            # If no school exists in database, initialize a default School
-            if not active_school:
-                active_school, _ = School.objects.get_or_create(
-                    code="PN_NPS",
-                    defaults={
-                        "name": "PN National Public School",
-                        "address": "Gorakhpur, Uttar Pradesh",
-                        "phone": "9876543210",
-                        "email": "contact@pnnps.edu.in",
-                        "principal_name": "Dr. Principal",
-                        "affiliation_no": "CBSE-UP-2025",
-                        "is_active": True
-                    }
-                )
         except Exception as e:
             import sys
             print(f"[TENANT MIDDLEWARE WARNING] Failed to resolve active school tenant: {e}", file=sys.stderr)
