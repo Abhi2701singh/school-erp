@@ -89,21 +89,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'school_erp.wsgi.application'
 
-# Database configuration (Resilient PostgreSQL with automatic SQLite fallback if host is unreachable or suspended)
+# Database configuration (Resilient PostgreSQL with automatic SQLite fallback if host is unreachable, suspended or quota-exceeded)
 DATABASE_URL = os.getenv('DATABASE_URL')
 USE_POSTGRES = False
 
 if DATABASE_URL:
     try:
-        from urllib.parse import urlparse
-        import socket
-        parsed_db = urlparse(DATABASE_URL)
-        db_hostname = parsed_db.hostname
-        if db_hostname:
-            socket.gethostbyname(db_hostname)
-            USE_POSTGRES = True
+        import psycopg2
+        # Verify database is active, reachable, and not quota-exhausted
+        test_conn = psycopg2.connect(DATABASE_URL, connect_timeout=3)
+        test_cur = test_conn.cursor()
+        test_cur.execute("SELECT 1;")
+        test_cur.close()
+        test_conn.close()
+        USE_POSTGRES = True
     except Exception as e:
-        print(f"[SETTINGS WARNING] DATABASE_URL host '{parsed_db.hostname if 'parsed_db' in locals() else 'unknown'}' cannot be reached ({e}). Falling back to local SQLite database.")
+        print(f"[SETTINGS WARNING] DATABASE_URL cannot be used ({e}). Falling back to local SQLite database.")
         USE_POSTGRES = False
 
 if USE_POSTGRES:
