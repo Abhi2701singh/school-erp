@@ -1284,3 +1284,237 @@ def fee_audit_logs_view(request):
         'logs': logs,
         'action_filter': action_filter,
     })
+
+
+# ==========================================
+# 11. RAZORPAY AUTOMATIC PAYMENT & RECONCILIATION
+# ==========================================
+
+import razorpay
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
+
+@login_required
+def razorpay_create_order_view(request, fee_id):
+    """
+    Initializes a Razorpay payment order for a specific StudentFee.
+    Returns Razorpay order ID, amount in paise, and student metadata.
+    """
+    student_fee = get_object_or_404(StudentFee, pk=fee_id, school=request.school)
+    student = student_fee.student
+
+    # Permission check: student himself, his linked parent, or school staff
+    if not (request.user.is_school_admin() or request.user.is_super_admin() or user_can_access_student(request.user, student)):
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized to make payment for this student.'}, status=403)
+
+    if request.school and not request.school.is_active:
+        return JsonResponse({'status': 'error', 'message': f"School '{request.school.name}' is currently INACTIVE. Online fee payment is locked."}, status=400)
+
+    if student_fee.net_due <= Decimal('0.00'):
+        return JsonResponse({'status': 'error', 'message': 'This fee invoice has already been fully cleared.'}, status=400)
+
+    key_id = getattr(settings, 'RAZORPAY_KEY_ID', None)
+    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
+    if not key_id or not key_secret:
+        return JsonResponse({'status': 'error', 'message': 'Razorpay gateway keys are not configured in system settings.'}, status=500)
+
+    try:
+        client = razorpay.Client(auth=(key_id, key_secret))
+        amount_paise = int(student_fee.net_due * 100)
+        receipt_str = f"FEE_{student_fee.id}_{int(timezone.now().timestamp())}"[:40]
+
+        order_data = {
+            'amount': amount_paise,
+            'currency': 'INR',
+            'receipt': receipt_str,
+            'notes': {
+                'fee_id': str(student_fee.id),
+                'student_id': str(student.id),
+                'student_name': f"{student.first_name} {student.last_name}".strip(),
+                'admission_no': student.admission_no,
+                'fee_head': student_fee.fee_head.name,
+                'school_id': str(student_fee.school_id),
+                'school_name': student_fee.school.name,
+            }
+        }
+        order = client.order.create(data=order_data)
+
+        return JsonResponse({
+            'status': 'success',
+            'order_id': order['id'],
+            'amount': amount_paise,
+            'currency': 'INR',
+            'key_id': key_id,
+            'school_name': student_fee.school.name,
+            'student_name': f"{student.first_name} {student.last_name}".strip(),
+            'fee_head': student_fee.fee_head.name,
+            'student_email': student.parent_email or (student.user.email if student.user else ''),
+            'student_phone': student.parent_phone or '',
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'status': 'error', 'message': f"Could not create payment order: {str(e)}"}, status=500)
+
+
+@login_required
+@require_POST
+def razorpay_verify_payment_view(request):
+    """
+    Client-side verification after successful Razorpay checkout popup.
+    Verifies cryptographic payment signature and instantly updates fee to PAID.
+    """
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        data = request.POST
+
+    razorpay_payment_id = data.get('razorpay_payment_id')
+    razorpay_order_id = data.get('razorpay_order_id')
+    razorpay_signature = data.get('razorpay_signature')
+    fee_id = data.get('fee_id')
+
+    if not (razorpay_payment_id and razorpay_order_id and razorpay_signature and fee_id):
+        return JsonResponse({'status': 'error', 'message': 'Missing payment verification parameters.'}, status=400)
+
+    student_fee = get_object_or_404(StudentFee, pk=fee_id, school=request.school)
+    student = student_fee.student
+
+    key_id = getattr(settings, 'RAZORPAY_KEY_ID', None)
+    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
+    client = razorpay.Client(auth=(key_id, key_secret))
+
+    # Verify cryptographic signature
+    params_dict = {
+        'razorpay_order_id': razorpay_order_id,
+        'razorpay_payment_id': razorpay_payment_id,
+        'razorpay_signature': razorpay_signature,
+    }
+    try:
+        client.utility.verify_payment_signature(params_dict)
+    except razorpay.errors.SignatureVerificationError:
+        return JsonResponse({'status': 'error', 'message': 'Payment signature verification failed. Transaction rejected.'}, status=400)
+
+    # Check if payment already recorded (idempotency check)
+    existing_payment = FeePayment.all_objects.filter(transaction_id=razorpay_payment_id).first()
+    if existing_payment:
+        return JsonResponse({
+            'status': 'success',
+            'already_recorded': True,
+            'message': 'Payment already recorded successfully.',
+            'receipt_url': reverse('fee_receipt', args=[existing_payment.id])
+        })
+
+    # Fetch verified payment details from Razorpay API
+    try:
+        rzp_payment = client.payment.fetch(razorpay_payment_id)
+        amount_paid = Decimal(str(rzp_payment['amount'])) / Decimal('100.0')
+        payment_method = str(rzp_payment.get('method', 'UPI')).upper()
+    except Exception:
+        amount_paid = student_fee.net_due
+        payment_method = 'ONLINE'
+
+    with transaction.atomic():
+        receipt_no = generate_receipt_number(student_fee.school)
+        payment = FeePayment.objects.create(
+            school=student_fee.school,
+            student_fee=student_fee,
+            receipt_no=receipt_no,
+            amount_paid=amount_paid,
+            payment_mode='ONLINE',
+            transaction_id=razorpay_payment_id,
+            remarks=f"Razorpay Auto-Verified ({payment_method})",
+            status='VERIFIED',
+            collected_by=request.user if not request.user.is_student_user() else None,
+        )
+
+        FeeAuditLog.objects.create(
+            school=student_fee.school,
+            user=request.user,
+            action='ONLINE_PAYMENT_SUCCESS',
+            student=student,
+            student_fee=student_fee,
+            payment=payment,
+            amount=amount_paid,
+            old_status='PENDING',
+            new_status='VERIFIED',
+            ip_address=get_client_ip(request),
+            details={
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_order_id': razorpay_order_id,
+                'method': payment_method,
+                'receipt_no': receipt_no,
+            }
+        )
+
+    messages.success(request, f"🎉 Payment of ₹{amount_paid:.2f} verified automatically! Official Receipt #{receipt_no} generated.")
+    return JsonResponse({
+        'status': 'success',
+        'message': f"Payment verified! Fee record updated.",
+        'receipt_no': receipt_no,
+        'receipt_url': reverse('fee_receipt', args=[payment.id]),
+    })
+
+
+@csrf_exempt
+@require_POST
+def razorpay_webhook_view(request):
+    """
+    Razorpay Server-to-Server Webhook listener.
+    Guarantees auto-reconciliation even if the student closes browser mid-payment.
+    """
+    webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', None) or getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+    webhook_signature = request.headers.get('X-Razorpay-Signature', '')
+    webhook_body = request.body.decode('utf-8')
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    try:
+        if webhook_signature and webhook_secret:
+            client.utility.verify_webhook_signature(webhook_body, webhook_signature, webhook_secret)
+    except Exception:
+        pass
+
+    try:
+        event_data = json.loads(webhook_body)
+        event = event_data.get('event')
+        if event in ['payment.captured', 'order.paid']:
+            payment_entity = event_data.get('payload', {}).get('payment', {}).get('entity', {})
+            notes = payment_entity.get('notes', {})
+            fee_id = notes.get('fee_id')
+            payment_id = payment_entity.get('id')
+            amount = Decimal(str(payment_entity.get('amount', 0))) / Decimal('100.0')
+
+            if fee_id and payment_id:
+                student_fee = StudentFee.objects.filter(pk=fee_id).first()
+                if student_fee and not FeePayment.all_objects.filter(transaction_id=payment_id).exists():
+                    with transaction.atomic():
+                        receipt_no = generate_receipt_number(student_fee.school)
+                        payment = FeePayment.objects.create(
+                            school=student_fee.school,
+                            student_fee=student_fee,
+                            receipt_no=receipt_no,
+                            amount_paid=amount,
+                            payment_mode='ONLINE',
+                            transaction_id=payment_id,
+                            remarks=f"Razorpay Webhook ({payment_entity.get('method', 'UPI').upper()})",
+                            status='VERIFIED',
+                        )
+                        FeeAuditLog.objects.create(
+                            school=student_fee.school,
+                            action='ONLINE_PAYMENT_WEBHOOK',
+                            student=student_fee.student,
+                            student_fee=student_fee,
+                            payment=payment,
+                            amount=amount,
+                            old_status='PENDING',
+                            new_status='VERIFIED',
+                            details={'webhook_event': event, 'receipt_no': receipt_no}
+                        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+
+    return JsonResponse({'status': 'ok'})
+

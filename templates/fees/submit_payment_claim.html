@@ -54,6 +54,30 @@
             </div>
         </div>
 
+        <!-- Instant Razorpay Auto-Payment Hero Card -->
+        {% if student_fee.net_due > 0 %}
+        <div class="card card-custom p-4 mb-4 border-2 border-success shadow-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-success"><i class="fa-solid fa-bolt me-1"></i> 1-Second Auto Update</span>
+                        <h5 class="fw-bold m-0 text-success-emphasis">
+                            Pay Online via UPI / QR / Card
+                        </h5>
+                    </div>
+                    <p class="mb-0 text-secondary small">
+                        Scan Dynamic QR Code with <strong>PhonePe, Google Pay, Paytm</strong> or BHIM. Your fee is verified and updated <strong>instantly without waiting for clerk approval!</strong>
+                    </p>
+                </div>
+                <div class="text-md-end flex-shrink-0">
+                    <button type="button" class="btn btn-success btn-lg rounded-pill px-4 fw-bold shadow-sm" id="rzpInstantPayBtn">
+                        <i class="fa-solid fa-qrcode me-2"></i> Pay ₹{{ student_fee.net_due|floatformat:2 }} Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- School Payment Details Box -->
         <div class="card card-custom p-3 mb-4 bg-light border">
             <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-building-columns me-1"></i> School Payment Channels</h6>
@@ -174,6 +198,7 @@
     </div>
 </div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const amountInput = document.getElementById('claimAmountInput');
@@ -191,6 +216,93 @@
                     overpayError.classList.add('d-none');
                     submitBtn.disabled = false;
                 }
+            });
+        }
+
+        // Razorpay Instant Auto-Pay Button
+        const rzpBtn = document.getElementById('rzpInstantPayBtn');
+        if (rzpBtn) {
+            rzpBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const originalHtml = this.innerHTML;
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Opening Gateway...';
+
+                fetch("{% url 'razorpay_create_order' student_fee.id %}", {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    rzpBtn.disabled = false;
+                    rzpBtn.innerHTML = originalHtml;
+
+                    if (data.status !== 'success') {
+                        alert(data.message || 'Could not initiate payment order.');
+                        return;
+                    }
+
+                    const options = {
+                        key: data.key_id,
+                        amount: data.amount,
+                        currency: data.currency,
+                        name: data.school_name,
+                        description: `Fee: ${data.fee_head} (${data.student_name})`,
+                        order_id: data.order_id,
+                        prefill: {
+                            name: data.student_name,
+                            email: data.student_email,
+                            contact: data.student_phone,
+                        },
+                        theme: { color: '#16a34a' },
+                        handler: function(response) {
+                            rzpBtn.disabled = true;
+                            rzpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Verifying & Issuing Receipt...';
+
+                            fetch("{% url 'razorpay_verify_payment' %}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: JSON.stringify({
+                                    fee_id: "{{ student_fee.id }}",
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                })
+                            })
+                            .then(r => r.json())
+                            .then(verifyData => {
+                                if (verifyData.status === 'success') {
+                                    alert('🎉 Payment Successful! Fee marked as PAID and receipt generated.');
+                                    window.location.href = "{% url 'my_fees' %}";
+                                } else {
+                                    alert(verifyData.message || 'Payment recorded.');
+                                    window.location.href = "{% url 'my_fees' %}";
+                                }
+                            })
+                            .catch(err => {
+                                window.location.href = "{% url 'my_fees' %}";
+                            });
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                rzpBtn.disabled = false;
+                                rzpBtn.innerHTML = originalHtml;
+                            }
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                })
+                .catch(err => {
+                    rzpBtn.disabled = false;
+                    rzpBtn.innerHTML = originalHtml;
+                    alert('Network error connecting to payment gateway.');
+                });
             });
         }
     });

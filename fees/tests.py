@@ -1094,3 +1094,64 @@ class ProductionFeeSystemComprehensiveTest(TestCase):
         self.assertContains(res_receipt, payment.receipt_no)
         self.assertContains(res_receipt, "PAID")
 
+    # -------------------------------------------------------------
+    # TEST 28: Razorpay Automatic Fee Payment & Instant Reconciliation
+    # -------------------------------------------------------------
+    def test_razorpay_create_order_and_verify(self):
+        import json
+        from unittest.mock import patch, MagicMock
+        self.client.login(username="student_rahul", password="password123")
+
+        # 1. Create order test
+        with patch('razorpay.Client') as mock_client_cls:
+            mock_client = MagicMock()
+            mock_client.order.create.return_value = {
+                'id': 'order_test_12345',
+                'amount': 250000,
+                'currency': 'INR',
+            }
+            mock_client_cls.return_value = mock_client
+
+            res = self.client.get(f"/fees/razorpay/create-order/{self.fee_due_tuition.id}/")
+            self.assertEqual(res.status_code, 200)
+            data = res.json()
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(data['order_id'], 'order_test_12345')
+
+        # 2. Verify payment test (Instant Auto-Verification)
+        with patch('razorpay.Client') as mock_client_cls:
+            mock_client = MagicMock()
+            mock_client.utility.verify_payment_signature.return_value = True
+            mock_client.payment.fetch.return_value = {
+                'id': 'pay_test_999888',
+                'amount': 250000,
+                'method': 'upi',
+            }
+            mock_client_cls.return_value = mock_client
+
+            verify_payload = {
+                'fee_id': self.fee_due_tuition.id,
+                'razorpay_order_id': 'order_test_12345',
+                'razorpay_payment_id': 'pay_test_999888',
+                'razorpay_signature': 'valid_mock_signature',
+            }
+            res_verify = self.client.post(
+                "/fees/razorpay/verify/",
+                data=json.dumps(verify_payload),
+                content_type="application/json"
+            )
+            self.assertEqual(res_verify.status_code, 200)
+            data_verify = res_verify.json()
+            self.assertEqual(data_verify['status'], 'success')
+
+            # Check that fee is automatically updated to PAID!
+            self.fee_due_tuition.refresh_from_db()
+            self.assertEqual(self.fee_due_tuition.status, 'PAID')
+            self.assertEqual(self.fee_due_tuition.amount_paid, Decimal('2500.00'))
+
+            # Check that FeePayment record was created automatically
+            payment = FeePayment.objects.get(transaction_id='pay_test_999888')
+            self.assertEqual(payment.status, 'VERIFIED')
+            self.assertEqual(payment.payment_mode, 'ONLINE')
+
+

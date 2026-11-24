@@ -187,17 +187,24 @@
                             <i class="fa-solid fa-file-invoice me-1"></i> Challan
                         </a>
                         {% if fee.net_due > 0 %}
-                            {% if fee.has_pending_submission %}
-                                <button class="btn btn-sm btn-outline-warning rounded-pill px-3" disabled title="A claim is currently under review by administration">
-                                    <i class="fa-solid fa-clock me-1"></i> In Review
+                            {% if request.school and not request.school.is_active %}
+                                <button class="btn btn-sm btn-secondary rounded-pill px-3" disabled title="School branch is INACTIVE. Online payments are locked.">
+                                    <i class="fa-solid fa-lock me-1"></i> Locked
                                 </button>
                             {% else %}
-                                <a href="{% url 'submit_payment_claim' fee.id %}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-xs">
-                                    <i class="fa-solid fa-upload me-1"></i> Pay / Submit Proof
+                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-xs rzp-pay-btn me-1"
+                                        data-fee-id="{{ fee.id }}"
+                                        data-fee-name="{{ fee.fee_head.name }}"
+                                        data-amount="{{ fee.net_due }}"
+                                        title="Instant Auto-Verified Online Payment via UPI / QR / Card">
+                                    <i class="fa-solid fa-bolt me-1"></i> Pay Online
+                                </button>
+                                <a href="{% url 'submit_payment_claim' fee.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-2" title="Manual Offline Transfer / Cash Deposit Proof">
+                                    <i class="fa-solid fa-upload"></i>
                                 </a>
                             {% endif %}
                         {% else %}
-                            <span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Cleared</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i> Cleared</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -371,4 +378,120 @@
         </table>
     </div>
 </div>
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.rzp-pay-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const feeId = this.getAttribute('data-fee-id');
+            const originalHtml = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Opening...';
+
+            const buttonEl = this;
+
+            fetch(`/fees/razorpay/create-order/${feeId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                buttonEl.disabled = false;
+                buttonEl.innerHTML = originalHtml;
+
+                if (data.status !== 'success') {
+                    alert(data.message || 'Could not initiate payment. Please try again.');
+                    return;
+                }
+
+                const options = {
+                    key: data.key_id,
+                    amount: data.amount,
+                    currency: data.currency,
+                    name: data.school_name,
+                    description: `Fee: ${data.fee_head} (${data.student_name})`,
+                    order_id: data.order_id,
+                    prefill: {
+                        name: data.student_name,
+                        email: data.student_email,
+                        contact: data.student_phone,
+                    },
+                    theme: {
+                        color: '#4f46e5'
+                    },
+                    handler: function(response) {
+                        buttonEl.disabled = true;
+                        buttonEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verifying...';
+
+                        fetch('/fees/razorpay/verify/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: JSON.stringify({
+                                fee_id: feeId,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(verifyData => {
+                            if (verifyData.status === 'success') {
+                                alert('🎉 Payment Verified! Fee marked as PAID automatically.');
+                                window.location.reload();
+                            } else {
+                                alert(verifyData.message || 'Payment recorded.');
+                                window.location.reload();
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            window.location.reload();
+                        });
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            buttonEl.disabled = false;
+                            buttonEl.innerHTML = originalHtml;
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+            })
+            .catch(err => {
+                buttonEl.disabled = false;
+                buttonEl.innerHTML = originalHtml;
+                console.error(err);
+                alert('Connection error with payment gateway.');
+            });
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}

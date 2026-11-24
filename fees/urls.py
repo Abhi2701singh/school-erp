@@ -41,4 +41,9 @@ urlpatterns = [
     path('daily-closing/', views.daily_closing_view, name='daily_closing'),
     path('reconciliation/', views.fee_reconciliation_view, name='fee_reconciliation'),
     path('audit-logs/', views.fee_audit_logs_view, name='fee_audit_logs'),
+
+    # Razorpay Automatic Online Fee Payment & Webhooks
+    path('razorpay/create-order/<int:fee_id>/', views.razorpay_create_order_view, name='razorpay_create_order'),
+    path('razorpay/verify/', views.razorpay_verify_payment_view, name='razorpay_verify_payment'),
+    path('razorpay/webhook/', views.razorpay_webhook_view, name='razorpay_webhook'),
 ]
