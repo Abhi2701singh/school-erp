@@ -13,8 +13,11 @@ from examinations.models import Exam, MarksEntry
 from fees.models import StudentFee, FeePayment, PaymentSubmission
 from homework.models import Homework, StudyMaterial
 
-@login_required
 def dashboard_router_view(request):
+    if not request.user.is_authenticated:
+        from accounts.forms import LoginForm
+        return render(request, 'accounts/login.html', {'form': LoginForm()})
+
     user = request.user
 
     # Super Admin Dashboard
