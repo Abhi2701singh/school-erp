@@ -54,8 +54,8 @@
             </div>
         </div>
 
-        <!-- Instant Razorpay Auto-Payment Hero Card -->
-        {% if student_fee.net_due > 0 %}
+        <!-- Instant Razorpay Auto-Payment Hero Card (Only if School has configured active Gateway) -->
+        {% if student_fee.net_due > 0 and student_fee.school.has_active_payment_gateway %}
         <div class="card card-custom p-4 mb-4 border-2 border-success shadow-sm" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
                 <div>
@@ -76,17 +76,40 @@
                 </div>
             </div>
         </div>
+        {% elif student_fee.net_due > 0 %}
+        <div class="alert alert-info border-0 shadow-xs rounded-3 p-3 mb-4 d-flex align-items-start gap-3" style="background: #eff6ff;">
+            <i class="fa-solid fa-circle-info fs-4 text-primary mt-1"></i>
+            <div>
+                <strong class="text-primary">Offline Bank Transfer / Cash Deposit:</strong>
+                <p class="mb-0 small text-secondary">
+                    Please transfer the fee amount directly to <strong>{{ student_fee.school.name }}</strong>'s bank account or UPI ID below, then fill out the claim form and upload your transaction receipt for school approval.
+                </p>
+            </div>
+        </div>
         {% endif %}
 
         <!-- School Payment Details Box -->
         <div class="card card-custom p-3 mb-4 bg-light border">
-            <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-building-columns me-1"></i> School Payment Channels</h6>
+            <h6 class="fw-bold text-primary mb-2"><i class="fa-solid fa-building-columns me-1"></i> {{ student_fee.school.name }} - Official Payment Channels</h6>
             <div class="row g-2 small text-secondary">
                 <div class="col-12 col-md-6">
-                    <strong>UPI ID:</strong> <span class="badge bg-white text-dark border font-monospace">school.fees@upi</span>
+                    <strong>UPI ID:</strong> 
+                    {% if student_fee.school.upi_id %}
+                        <span class="badge bg-white text-dark border font-monospace">{{ student_fee.school.upi_id }}</span>
+                    {% else %}
+                        <span class="text-muted fst-italic">Not specified (Contact School Office)</span>
+                    {% endif %}
                 </div>
                 <div class="col-12 col-md-6">
-                    <strong>Bank A/C:</strong> 99281002938491 (IFSC: SBIN0001234)
+                    <strong>Bank A/C:</strong> 
+                    {% if student_fee.school.bank_account_no %}
+                        <span class="fw-semibold text-dark">{{ student_fee.school.bank_name|default:"School Bank" }}: {{ student_fee.school.bank_account_no }}</span>
+                        {% if student_fee.school.bank_ifsc %}
+                            <span class="badge bg-white text-dark border ms-1 font-monospace">IFSC: {{ student_fee.school.bank_ifsc }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted fst-italic">Available at school fee counter</span>
+                    {% endif %}
                 </div>
             </div>
         </div>

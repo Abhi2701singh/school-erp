@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import Q
 from accounts.models import User
 from schools.models import School, AcademicSession, Notice
-from schools.forms import SchoolForm, AcademicSessionForm, NoticeForm
+from schools.forms import SchoolForm, AcademicSessionForm, NoticeForm, SchoolPaymentGatewayForm
 
 @login_required
 def school_list_view(request):
@@ -288,3 +288,45 @@ def notice_delete_view(request, pk):
         return redirect('notice_list')
 
     return render(request, 'schools/notice_confirm_delete.html', {'notice': notice})
+
+
+@login_required
+def school_payment_settings_view(request):
+    is_super = request.user.is_super_admin() if callable(getattr(request.user, 'is_super_admin', None)) else bool(getattr(request.user, 'is_super_admin', False))
+    is_admin = request.user.is_school_admin() if callable(getattr(request.user, 'is_school_admin', None)) else bool(getattr(request.user, 'is_school_admin', False))
+
+    if not (is_super or is_admin):
+        messages.error(request, "Permission denied. Only School Administration can configure Payment Gateway.")
+        return redirect('dashboard')
+
+    school_id = request.GET.get('school_id')
+    if is_super and school_id:
+        school = get_object_or_404(School, pk=school_id)
+    else:
+        school = getattr(request, 'school', None) or getattr(request.user, 'school', None)
+
+    if not school:
+        messages.error(request, "No school found to configure. Please select or register a school first.")
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        if not school.is_active:
+            messages.error(request, f"Cannot update settings: School branch '{school.name}' is currently INACTIVE.")
+            return redirect('school_gateway_settings')
+
+        form = SchoolPaymentGatewayForm(request.POST, instance=school)
+        if form.is_valid():
+            school = form.save()
+            status_text = "ENABLED / ACTIVE (🟢 चालू)" if school.has_active_payment_gateway else "DISABLED / INCOMPLETE (🔴 बंद)"
+            messages.success(request, f"Payment Gateway configuration for '{school.name}' updated successfully! Status: {status_text}")
+            return redirect('school_gateway_settings')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = SchoolPaymentGatewayForm(instance=school)
+
+    return render(request, 'schools/payment_settings.html', {
+        'form': form,
+        'school': school,
+    })
+

@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Gateway Setup - {{ school.name }} - EduManage ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 mb-4">
+        <div>
+            <h3 class="fw-bold m-0 text-dark">
+                <i class="fa-solid fa-credit-card text-success me-2"></i> Payment Gateway Setup
+            </h3>
+            <p class="text-muted m-0 small mt-1">
+                Configure online fee collection, UPI & Razorpay API credentials for <strong>{{ school.name }}</strong> (Code: <code>{{ school.code }}</code>)
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if school.has_active_payment_gateway %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-bold d-inline-flex align-items-center gap-1">
+                    <span class="pulse-dot"></span> Online Payments Active
+                </span>
+            {% else %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fw-bold">
+                    <i class="fa-solid fa-circle-xmark me-1"></i> Gateway Not Configured
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Multi-School Isolation Notice -->
+    <div class="alert alert-info border-0 shadow-xs mb-4 rounded-3 d-flex align-items-start gap-3" style="background: #eff6ff; border-left: 4px solid #3b82f6 !important;">
+        <i class="fa-solid fa-shield-halved text-primary fs-4 mt-1"></i>
+        <div>
+            <strong class="text-dark d-block">Multi-School Bank Account Isolation (अलग-अलग स्कूल का स्वतंत्र खाता):</strong>
+            <span class="text-muted small">
+                यहाँ दर्ज की गई Razorpay API Key और बैंक विवरण सिर्फ <strong>{{ school.name }}</strong> के लिए उपयोग होंगे। छात्रों द्वारा जमा की गई फीस सीधे इसी स्कूल के बैंक खाते में जाएगी। दूसरे स्कूलों का खाता पूरी तरह अलग रहेगा।
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Form Column -->
+        <div class="col-12 col-lg-8">
+            <div class="card card-custom p-3 p-sm-4 shadow-sm border-0">
+                <form method="post" novalidate id="gatewaySettingsForm">
+                    {% csrf_token %}
+
+                    <!-- Section 1: Activation Toggle -->
+                    <div class="p-3 mb-4 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-between p-0 m-0">
+                            <div>
+                                <label class="form-check-label fw-bold text-dark fs-6 d-block" for="{{ form.online_payments_enabled.id_for_label }}">
+                                    <i class="fa-solid fa-power-off text-success me-2"></i> Enable Online Student Fee Payments
+                                </label>
+                                <small class="text-muted">
+                                    Turn this switch ON to allow students and parents of this school to pay fees online via UPI, QR, Cards, & Netbanking.
+                                </small>
+                            </div>
+                            <div class="ms-3">
+                                {{ form.online_payments_enabled }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Razorpay Credentials -->
+                    <h5 class="fw-bold text-dark mb-3">
+                        <i class="fa-solid fa-key text-warning me-2"></i> Razorpay API Credentials
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">
+                            Razorpay Key ID <span class="text-danger">*</span>
+                        </label>
+                        {{ form.razorpay_key_id }}
+                        <small class="text-muted d-block mt-1">
+                            Paste the Key ID generated from your Razorpay Dashboard (e.g. <code>rzp_live_xxxxxxxxxxxxxx</code> or <code>rzp_test_...</code>).
+                        </small>
+                        {% if form.razorpay_key_id.errors %}
+                            <div class="text-danger small mt-1">{{ form.razorpay_key_id.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">
+                            Razorpay Key Secret <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            {{ form.razorpay_key_secret }}
+                            <button class="btn btn-outline-secondary" type="button" id="toggleSecretBtn" title="Show/Hide Secret">
+                                <i class="fa-solid fa-eye" id="toggleSecretIcon"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-1">
+                            {{ form.razorpay_key_secret.help_text }}
+                        </small>
+                        {% if form.razorpay_key_secret.errors %}
+                            <div class="text-danger small mt-1">{{ form.razorpay_key_secret.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-muted small">
+                            Webhook Secret (Optional)
+                        </label>
+                        {{ form.razorpay_webhook_secret }}
+                        <small class="text-muted d-block mt-1">
+                            Used for asynchronous server-to-server webhook verification.
+                        </small>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Section 3: School Banking & UPI Info -->
+                    <h5 class="fw-bold text-dark mb-3">
+                        <i class="fa-solid fa-building-columns text-primary me-2"></i> School Bank & UPI Display Details
+                    </h5>
+                    <p class="text-muted small mb-3">
+                        ये विवरण छात्र के फीस चालान (Challan) और ऑफलाइन पेमेंट स्लिप पर दिखाई देंगे।
+                    </p>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">School UPI ID</label>
+                            {{ form.upi_id }}
+                            <small class="text-muted d-block mt-1">e.g. <code>schoolname@upi</code></small>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Bank Name</label>
+                            {{ form.bank_name }}
+                            <small class="text-muted d-block mt-1">e.g. <code>Bank of Baroda</code></small>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Bank Account Number</label>
+                            {{ form.bank_account_no }}
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-dark">Bank IFSC Code</label>
+                            {{ form.bank_ifsc }}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Save Gateway Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Instruction Guide Column -->
+        <div class="col-12 col-lg-4">
+            <div class="card card-custom p-3 p-sm-4 bg-light border-0 mb-3 shadow-xs">
+                <h6 class="fw-bold text-dark mb-3">
+                    <i class="fa-solid fa-circle-question text-info me-2"></i> How to get Razorpay Keys?
+                </h6>
+                <ol class="small text-muted ps-3 mb-3 d-flex flex-column gap-2">
+                    <li>Open <strong><a href="https://dashboard.razorpay.com/" target="_blank" class="text-primary text-decoration-none">dashboard.razorpay.com</a></strong>.</li>
+                    <li>Click <strong>Account & Settings</strong> (⚙️) on the bottom-left sidebar.</li>
+                    <li>Under <em>Website and app settings</em>, click <strong>API Keys</strong>.</li>
+                    <li>Click <strong>Generate Key</strong> (or Regenerate Key).</li>
+                    <li>Copy the <strong>Key ID</strong> and <strong>Key Secret</strong> and paste them into the form on the left.</li>
+                    <li>Click <strong>Save Gateway Configuration</strong>.</li>
+                </ol>
+
+                <div class="p-2 rounded bg-white border small text-secondary">
+                    <i class="fa-solid fa-lightbulb text-warning me-1"></i>
+                    <strong>Testing vs Live:</strong>
+                    Keys starting with <code>rzp_test_</code> allow testing without deducting real money. Keys starting with <code>rzp_live_</code> credit real payments directly into the school's bank account.
+                </div>
+            </div>
+
+            <!-- Student View Preview Card -->
+            <div class="card card-custom p-3 p-sm-4 border-0 shadow-xs">
+                <h6 class="fw-bold text-dark mb-2">
+                    <i class="fa-solid fa-mobile-screen text-primary me-2"></i> What will students see?
+                </h6>
+                <p class="small text-muted mb-3">
+                    Once you save your Key ID & Secret and turn on the switch, every student and parent of this school will see a green <strong>"Pay Online via UPI / QR"</strong> button on their fees page.
+                </p>
+                <div class="p-3 rounded-3 text-center" style="background: #f0fdf4; border: 1.5px dashed #22c55e;">
+                    <span class="badge bg-success mb-2">1-Second Auto Update</span>
+                    <div class="fw-bold text-success small mb-1">⚡ Pay Online via UPI / QR / Card</div>
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">Instant payment without clerk approval</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleSecretBtn');
+    const secretInput = document.getElementById('{{ form.razorpay_key_secret.id_for_label }}');
+    const toggleIcon = document.getElementById('toggleSecretIcon');
+
+    if (toggleBtn && secretInput) {
+        toggleBtn.addEventListener('click', function() {
+            if (secretInput.type === 'password') {
+                secretInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                secretInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -213,7 +213,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
-# Razorpay Online Payment Gateway Integration
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_U3wK1RuKzMj6RX')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '8vbl20b55fC9V16JMENnYXK2')
+# Razorpay Online Payment Gateway Integration (Per-School Multi-Tenant with optional global fallback)
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
 

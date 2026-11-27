@@ -191,7 +191,7 @@
                                 <button class="btn btn-sm btn-secondary rounded-pill px-3" disabled title="School branch is INACTIVE. Online payments are locked.">
                                     <i class="fa-solid fa-lock me-1"></i> Locked
                                 </button>
-                            {% else %}
+                            {% elif fee.school.has_active_payment_gateway %}
                                 <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-xs rzp-pay-btn me-1"
                                         data-fee-id="{{ fee.id }}"
                                         data-fee-name="{{ fee.fee_head.name }}"
@@ -201,6 +201,10 @@
                                 </button>
                                 <a href="{% url 'submit_payment_claim' fee.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-2" title="Manual Offline Transfer / Cash Deposit Proof">
                                     <i class="fa-solid fa-upload"></i>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'submit_payment_claim' fee.id %}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-xs" title="Submit Bank Transfer / Cash Deposit Proof">
+                                    <i class="fa-solid fa-upload me-1"></i> Submit Proof
                                 </a>
                             {% endif %}
                         {% else %}

@@ -34,6 +34,14 @@ class SchoolForm(forms.ModelForm):
             'established_year': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2005 (optional)'}),
             'logo': forms.FileInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'online_payments_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'razorpay_key_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'rzp_live_... or rzp_test_...'}),
+            'razorpay_key_secret': forms.PasswordInput(render_value=True, attrs={'class': 'form-control'}),
+            'razorpay_webhook_secret': forms.TextInput(attrs={'class': 'form-control'}),
+            'upi_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'school@upi'}),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Bank Name'}),
+            'bank_account_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Account Number'}),
+            'bank_ifsc': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'IFSC Code'}),
         }
 
     def clean_code(self):
@@ -79,4 +87,39 @@ class NoticeForm(forms.ModelForm):
             'target_role': forms.Select(attrs={'class': 'form-select'}),
             'attachment': forms.FileInput(attrs={'class': 'form-control'}),
         }
+
+
+class SchoolPaymentGatewayForm(forms.ModelForm):
+    razorpay_key_secret = forms.CharField(
+        required=False,
+        label="Razorpay Key Secret",
+        widget=forms.PasswordInput(render_value=True, attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter Key Secret from Razorpay Dashboard'
+        }),
+        help_text="Keep this secret confidential. It is used to securely verify student fee payments."
+    )
+
+    class Meta:
+        model = School
+        fields = [
+            'online_payments_enabled',
+            'razorpay_key_id',
+            'razorpay_key_secret',
+            'razorpay_webhook_secret',
+            'upi_id',
+            'bank_name',
+            'bank_account_no',
+            'bank_ifsc',
+        ]
+        widgets = {
+            'online_payments_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'razorpay_key_id': forms.TextInput(attrs={'class': 'form-control font-monospace', 'placeholder': 'rzp_live_... or rzp_test_...'}),
+            'razorpay_webhook_secret': forms.TextInput(attrs={'class': 'form-control font-monospace', 'placeholder': 'Optional webhook secret'}),
+            'upi_id': forms.TextInput(attrs={'class': 'form-control font-monospace', 'placeholder': 'e.g. dps.school@upi'}),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Bank of Baroda'}),
+            'bank_account_no': forms.TextInput(attrs={'class': 'form-control font-monospace', 'placeholder': 'e.g. 99281002938491'}),
+            'bank_ifsc': forms.TextInput(attrs={'class': 'form-control font-monospace text-uppercase', 'placeholder': 'e.g. BARB0KUSHIN'}),
+        }
+
 

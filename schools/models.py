@@ -13,6 +13,17 @@ class School(models.Model):
     affiliation_no = models.CharField(max_length=100, blank=True, default="", verbose_name=_("Affiliation No."))
     established_year = models.IntegerField(null=True, blank=True, verbose_name=_("Established Year"))
     is_active = models.BooleanField(default=True, verbose_name=_("Active Status"))
+
+    # Per-School Payment Gateway Configuration (Multi-Tenant Gateway)
+    online_payments_enabled = models.BooleanField(default=False, verbose_name=_("Enable Online Payments"))
+    razorpay_key_id = models.CharField(max_length=100, blank=True, default="", verbose_name=_("Razorpay Key ID"))
+    razorpay_key_secret = models.CharField(max_length=100, blank=True, default="", verbose_name=_("Razorpay Key Secret"))
+    razorpay_webhook_secret = models.CharField(max_length=100, blank=True, default="", verbose_name=_("Razorpay Webhook Secret"))
+    upi_id = models.CharField(max_length=100, blank=True, default="", verbose_name=_("School UPI ID"))
+    bank_name = models.CharField(max_length=100, blank=True, default="", verbose_name=_("Bank Name"))
+    bank_account_no = models.CharField(max_length=100, blank=True, default="", verbose_name=_("Bank Account Number"))
+    bank_ifsc = models.CharField(max_length=50, blank=True, default="", verbose_name=_("Bank IFSC Code"))
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -23,6 +34,11 @@ class School(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.code})"
+
+    @property
+    def has_active_payment_gateway(self):
+        return bool(self.online_payments_enabled and self.razorpay_key_id.strip() and self.razorpay_key_secret.strip())
+
 
 
 class AcademicSession(models.Model):

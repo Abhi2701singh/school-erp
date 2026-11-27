@@ -1102,6 +1102,18 @@ class ProductionFeeSystemComprehensiveTest(TestCase):
         from unittest.mock import patch, MagicMock
         self.client.login(username="student_rahul", password="password123")
 
+        # 0. Test unconfigured school payment gateway returns 400
+        res_unconfigured = self.client.get(f"/fees/razorpay/create-order/{self.fee_due_tuition.id}/")
+        self.assertEqual(res_unconfigured.status_code, 400)
+        self.assertIn('status', res_unconfigured.json())
+        self.assertEqual(res_unconfigured.json()['status'], 'error')
+
+        # Configure school payment gateway credentials
+        self.school_a.online_payments_enabled = True
+        self.school_a.razorpay_key_id = 'rzp_test_mock123'
+        self.school_a.razorpay_key_secret = 'mock_secret_key456'
+        self.school_a.save()
+
         # 1. Create order test
         with patch('razorpay.Client') as mock_client_cls:
             mock_client = MagicMock()
@@ -1117,6 +1129,7 @@ class ProductionFeeSystemComprehensiveTest(TestCase):
             data = res.json()
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['order_id'], 'order_test_12345')
+            self.assertEqual(data['key_id'], 'rzp_test_mock123')
 
         # 2. Verify payment test (Instant Auto-Verification)
         with patch('razorpay.Client') as mock_client_cls:

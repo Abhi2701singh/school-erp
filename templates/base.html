@@ -93,6 +93,18 @@
                 <li><a href="{% url 'daily_closing' %}" class="{% if request.resolver_match.url_name == 'daily_closing' %}active{% endif %}"><i class="fa-solid fa-calculator"></i> Daily Closing</a></li>
                 <li><a href="{% url 'fee_reconciliation' %}" class="{% if request.resolver_match.url_name == 'fee_reconciliation' %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i> Reconciliation</a></li>
                 <li><a href="{% url 'fee_audit_logs' %}" class="{% if request.resolver_match.url_name == 'fee_audit_logs' %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> Audit Trail</a></li>
+                {% if user.is_school_admin or user.is_super_admin %}
+                <li>
+                    <a href="{% url 'school_gateway_settings' %}" class="{% if request.resolver_match.url_name == 'school_gateway_settings' %}active{% endif %}">
+                        <i class="fa-solid fa-credit-card text-success"></i> Payment Gateway Setup
+                        {% if request.school and request.school.has_active_payment_gateway %}
+                            <span class="badge bg-success ms-auto" style="font-size: 0.65rem;">Active</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark ms-auto" style="font-size: 0.65rem;">Setup</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endif %}
             {% endif %}
 
             {% if user.is_teacher_user or user.role == 'TEACHER' %}
@@ -138,44 +150,44 @@
     <div id="main-wrapper">
         <!-- Top Navbar -->
         <header id="top-navbar">
-            <div class="d-flex align-items-center gap-2 gap-md-3">
-                <button id="sidebarToggle" class="navbar-toggle-btn d-lg-none" type="button" aria-label="Toggle navigation">
+            <div class="d-flex align-items-center gap-1 gap-sm-2 gap-md-3" style="min-width: 0; flex: 1 1 auto; overflow: hidden;">
+                <button id="sidebarToggle" class="navbar-toggle-btn d-lg-none flex-shrink-0" type="button" aria-label="Toggle navigation">
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
                 {% if user.is_super_admin %}
                     {% if request.session.active_school_id and request.school %}
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-1 gap-sm-2" style="min-width: 0; overflow: hidden;">
                             {% if not request.school.is_active %}
                                 <div class="tenant-badge border border-danger" style="background: #fef2f2; color: #b91c1c;" title="Currently viewing INACTIVE school: {{ request.school.name }}">
-                                    <i class="fa-solid fa-ban text-danger"></i>
+                                    <i class="fa-solid fa-ban text-danger flex-shrink-0"></i>
                                     <span class="text-truncate fw-bold">{{ request.school.name }} (INACTIVE)</span>
                                 </div>
                             {% else %}
                                 <div class="tenant-badge border border-warning" style="background: #fefce8; color: #854d0e;" title="Currently viewing as {{ request.school.name }}">
-                                    <i class="fa-solid fa-eye text-warning"></i>
+                                    <i class="fa-solid fa-eye text-warning flex-shrink-0"></i>
                                     <span class="text-truncate fw-bold">{{ request.school.name }}</span>
                                 </div>
                             {% endif %}
-                            <a href="{% url 'switch_school' 0 %}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1 shadow-xs" style="font-size: 0.75rem;" title="Exit school view and return to Super Admin console">
-                                <i class="fa-solid fa-xmark me-1"></i> Exit View
+                            <a href="{% url 'switch_school' 0 %}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-1 shadow-xs flex-shrink-0" style="font-size: 0.75rem;" title="Exit school view and return to Super Admin console">
+                                <i class="fa-solid fa-xmark"></i> <span class="d-none d-sm-inline">Exit</span>
                             </a>
                         </div>
                     {% else %}
                         <div class="tenant-badge" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; border: 1px solid rgba(255,255,255,0.15);" title="Global Multi-Tenant SaaS Platform">
-                            <i class="fa-solid fa-globe text-warning"></i> 
-                            <span class="text-truncate fw-bold">Multi-School Platform (Global)</span>
+                            <i class="fa-solid fa-globe text-warning flex-shrink-0"></i> 
+                            <span class="text-truncate fw-bold">Multi-School Platform</span>
                         </div>
                     {% endif %}
                 {% elif request.school %}
                     {% if not request.school.is_active %}
                         <div class="tenant-badge border border-danger" style="background: #fef2f2; color: #b91c1c;" title="{{ request.school.name }} (INACTIVE)">
-                            <i class="fa-solid fa-ban text-danger"></i> 
+                            <i class="fa-solid fa-ban text-danger flex-shrink-0"></i> 
                             <span class="text-truncate fw-bold">{{ request.school.name }} (INACTIVE)</span>
                         </div>
                     {% else %}
                         <div class="tenant-badge" title="{{ request.school.name }} ({{ request.school.code }})">
-                            <i class="fa-solid fa-school text-primary"></i> 
+                            <i class="fa-solid fa-school text-primary flex-shrink-0"></i> 
                             <span class="text-truncate fw-bold">{{ request.school.name }}</span>
                         </div>
                     {% endif %}
@@ -189,20 +201,20 @@
             </div>
 
             <!-- Right Profile & Actions -->
-            <div class="d-flex align-items-center gap-2 gap-sm-3">
+            <div class="d-flex align-items-center gap-1 gap-sm-2 gap-md-3 flex-shrink-0 ms-auto">
                 {% if user.role == 'STUDENT' or user.role == 'PARENT' or user.is_student_user or user.is_parent_user %}
-                    <a href="{% url 'my_fees' %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 rounded-pill px-3 py-1 shadow-xs fw-semibold" style="font-size: 0.82rem;">
+                    <a href="{% url 'my_fees' %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 rounded-pill px-2 px-sm-3 py-1 shadow-xs fw-semibold flex-shrink-0" style="font-size: 0.82rem;" title="My Fees & Online Payment">
                         <i class="fa-solid fa-wallet text-warning"></i>
-                        <span>My Fees</span>
+                        <span class="d-none d-sm-inline">My Fees</span>
                     </a>
                 {% endif %}
 
-                <a href="{% url 'notice_list' %}" class="notif-btn" title="Announcements & Notices">
+                <a href="{% url 'notice_list' %}" class="notif-btn flex-shrink-0" title="Announcements & Notices">
                     <i class="fa-regular fa-bell"></i>
                     <span class="notif-badge"></span>
                 </a>
 
-                <a href="{% url 'profile' %}" class="user-profile-badge">
+                <a href="{% url 'profile' %}" class="user-profile-badge flex-shrink-0">
                     {% if user.profile_photo %}
                         <img src="{{ user.profile_photo.url }}" class="user-avatar-circle" alt="Avatar">
                     {% else %}

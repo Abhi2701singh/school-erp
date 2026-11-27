@@ -47,11 +47,19 @@
     overflow-wrap: break-word;
 }
 
+html {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-body);
     color: #1e293b;
-    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+    overflow-x: hidden !important;
+    position: relative;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -165,6 +173,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    max-width: 100vw;
+    width: 100%;
+    overflow-x: hidden !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -181,11 +192,17 @@ body {
     top: 0;
     z-index: 1020;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    max-width: 100vw;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .content-container {
     padding: 1.75rem;
     flex-grow: 1;
+    max-width: 100vw;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Backdrop */
@@ -220,7 +237,14 @@ body {
     align-items: center;
     gap: 8px;
     max-width: 320px;
+    min-width: 0;
     box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
+}
+.tenant-badge span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Global Search */
@@ -553,17 +577,20 @@ body {
     #main-wrapper {
         margin-left: 0 !important;
         width: 100% !important;
+        max-width: 100vw !important;
     }
     .content-container {
         padding: 1rem 0.75rem !important;
+        max-width: 100vw !important;
     }
     #top-navbar {
         padding: 0 1rem !important;
+        max-width: 100vw !important;
     }
     .tenant-badge {
-        max-width: 200px;
+        max-width: 160px;
         font-size: 0.78rem;
-        padding: 0.35rem 0.75rem;
+        padding: 0.35rem 0.65rem;
     }
 }
 
@@ -622,6 +649,59 @@ body {
     .nav-tabs .nav-link {
         padding: 0.5rem 0.85rem !important;
         font-size: 0.85rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    #top-navbar {
+        height: 60px !important;
+        padding: 0 0.5rem !important;
+        gap: 6px !important;
+        max-width: 100vw !important;
+    }
+    .tenant-badge {
+        max-width: 115px !important;
+        font-size: 0.72rem !important;
+        padding: 0.25rem 0.45rem !important;
+        gap: 4px !important;
+    }
+    .content-container {
+        padding: 0.75rem 0.5rem !important;
+        max-width: 100vw !important;
+    }
+    .card-custom {
+        padding: 0.85rem !important;
+        margin-bottom: 0.75rem !important;
+        border-radius: 12px !important;
+    }
+    .navbar-toggle-btn {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        font-size: 0.95rem !important;
+    }
+    .notif-btn {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        font-size: 0.95rem !important;
+    }
+    .user-avatar-circle {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 0.85rem !important;
+    }
+    .user-profile-badge {
+        padding: 2px !important;
+        gap: 4px !important;
+    }
+    .nav-pills {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+    .nav-pills .nav-link {
+        font-size: 0.78rem !important;
+        padding: 0.35rem 0.65rem !important;
     }
 }
 

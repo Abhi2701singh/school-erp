@@ -1300,7 +1300,8 @@ from django.urls import reverse
 def razorpay_create_order_view(request, fee_id):
     """
     Initializes a Razorpay payment order for a specific StudentFee.
-    Returns Razorpay order ID, amount in paise, and student metadata.
+    Dynamically uses the student fee's school's own configured Razorpay merchant credentials.
+    Returns Razorpay order ID, amount in paise, key_id, and student metadata.
     """
     student_fee = get_object_or_404(StudentFee, pk=fee_id, school=request.school)
     student = student_fee.student
@@ -1315,10 +1316,22 @@ def razorpay_create_order_view(request, fee_id):
     if student_fee.net_due <= Decimal('0.00'):
         return JsonResponse({'status': 'error', 'message': 'This fee invoice has already been fully cleared.'}, status=400)
 
-    key_id = getattr(settings, 'RAZORPAY_KEY_ID', None)
-    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
-    if not key_id or not key_secret:
-        return JsonResponse({'status': 'error', 'message': 'Razorpay gateway keys are not configured in system settings.'}, status=500)
+    school = student_fee.school
+    # Check whether the school has configured and enabled its own online payment gateway
+    if not school.has_active_payment_gateway:
+        # Fallback to system settings only if explicitly set (e.g. for mock tests)
+        global_key_id = getattr(settings, 'RAZORPAY_KEY_ID', '')
+        global_key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+        if not (global_key_id and global_key_secret):
+            return JsonResponse({
+                'status': 'error',
+                'message': f"ऑनलाइन पेमेंट गेटवे {school.name} द्वारा अभी सेटअप नहीं किया गया है। कृपया स्कूल प्रशासन से संपर्क करें या नीचे दिए गए बैंक खाते / UPI में फीस जमा करके रसीद अपलोड करें।"
+            }, status=400)
+        key_id = global_key_id
+        key_secret = global_key_secret
+    else:
+        key_id = school.razorpay_key_id.strip()
+        key_secret = school.razorpay_key_secret.strip()
 
     try:
         client = razorpay.Client(auth=(key_id, key_secret))
@@ -1364,7 +1377,7 @@ def razorpay_create_order_view(request, fee_id):
 def razorpay_verify_payment_view(request):
     """
     Client-side verification after successful Razorpay checkout popup.
-    Verifies cryptographic payment signature and instantly updates fee to PAID.
+    Verifies cryptographic payment signature against the school's secret and instantly updates fee to PAID.
     """
     try:
         data = json.loads(request.body)
@@ -1381,9 +1394,15 @@ def razorpay_verify_payment_view(request):
 
     student_fee = get_object_or_404(StudentFee, pk=fee_id, school=request.school)
     student = student_fee.student
+    school = student_fee.school
 
-    key_id = getattr(settings, 'RAZORPAY_KEY_ID', None)
-    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', None)
+    if school.has_active_payment_gateway:
+        key_id = school.razorpay_key_id.strip()
+        key_secret = school.razorpay_key_secret.strip()
+    else:
+        key_id = getattr(settings, 'RAZORPAY_KEY_ID', '')
+        key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+
     client = razorpay.Client(auth=(key_id, key_secret))
 
     # Verify cryptographic signature
@@ -1464,12 +1483,46 @@ def razorpay_webhook_view(request):
     """
     Razorpay Server-to-Server Webhook listener.
     Guarantees auto-reconciliation even if the student closes browser mid-payment.
+    Resolves the school dynamically from payload notes.
     """
-    webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', None) or getattr(settings, 'RAZORPAY_KEY_SECRET', '')
     webhook_signature = request.headers.get('X-Razorpay-Signature', '')
     webhook_body = request.body.decode('utf-8')
 
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    try:
+        event_data = json.loads(webhook_body)
+    except Exception:
+        event_data = {}
+
+    event = event_data.get('event')
+    payload = event_data.get('payload', {})
+    payment_entity = payload.get('payment', {}).get('entity', {})
+    notes = payment_entity.get('notes', {})
+    fee_id = notes.get('fee_id')
+    school_id = notes.get('school_id')
+
+    school = None
+    student_fee = None
+    if fee_id:
+        student_fee = StudentFee.objects.filter(pk=fee_id).first()
+        if student_fee:
+            school = student_fee.school
+    elif school_id:
+        from schools.models import School
+        school = School.objects.filter(pk=school_id).first()
+
+    webhook_secret = None
+    key_id = None
+    key_secret = None
+    if school:
+        webhook_secret = school.razorpay_webhook_secret.strip() or school.razorpay_key_secret.strip()
+        key_id = school.razorpay_key_id.strip()
+        key_secret = school.razorpay_key_secret.strip()
+    if not (key_id and key_secret):
+        key_id = getattr(settings, 'RAZORPAY_KEY_ID', '')
+        key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+        webhook_secret = webhook_secret or getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', '') or key_secret
+
+    client = razorpay.Client(auth=(key_id, key_secret))
     try:
         if webhook_signature and webhook_secret:
             client.utility.verify_webhook_signature(webhook_body, webhook_signature, webhook_secret)
@@ -1477,12 +1530,7 @@ def razorpay_webhook_view(request):
         pass
 
     try:
-        event_data = json.loads(webhook_body)
-        event = event_data.get('event')
         if event in ['payment.captured', 'order.paid']:
-            payment_entity = event_data.get('payload', {}).get('payment', {}).get('entity', {})
-            notes = payment_entity.get('notes', {})
-            fee_id = notes.get('fee_id')
             payment_id = payment_entity.get('id')
             amount = Decimal(str(payment_entity.get('amount', 0))) / Decimal('100.0')
 
