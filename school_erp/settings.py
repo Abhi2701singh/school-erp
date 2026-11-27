@@ -89,22 +89,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'school_erp.wsgi.application'
 
-# Database configuration (Resilient PostgreSQL with automatic SQLite fallback if host is unreachable, suspended or quota-exceeded)
+# Database configuration (Persistent Cloud PostgreSQL with automatic SQLite local dev fallback)
 DATABASE_URL = os.getenv('DATABASE_URL')
 USE_POSTGRES = False
 
 if DATABASE_URL:
     try:
         import psycopg2
-        # Verify database is active, reachable, and not quota-exhausted
-        test_conn = psycopg2.connect(DATABASE_URL, connect_timeout=3)
+        # Verify database is active, reachable, and responsive
+        test_conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
         test_cur = test_conn.cursor()
         test_cur.execute("SELECT 1;")
         test_cur.close()
         test_conn.close()
         USE_POSTGRES = True
+        masked_host = DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'PostgreSQL'
+        print(f"[DATABASE] ✅ Successfully connected to persistent PostgreSQL ({masked_host}). Data will be preserved permanently across all deploys.")
     except Exception as e:
-        print(f"[SETTINGS WARNING] DATABASE_URL cannot be used ({e}). Falling back to local SQLite database.")
+        print(f"[DATABASE WARNING] ⚠️ DATABASE_URL cannot be reached ({e}). Falling back to local SQLite database.")
+        print("[DATABASE WARNING] ⚠️ Notice: Ephemeral cloud containers do not persist local SQLite across new deploys. Connect Render PostgreSQL for 100% permanent data preservation.")
         USE_POSTGRES = False
 
 if USE_POSTGRES:

@@ -8,4 +8,8 @@ bin/
 .wrangler/
 .DS_Store
 media/
+*.sqlite3
+db.sqlite3
+*.bak
+*.dump
 
