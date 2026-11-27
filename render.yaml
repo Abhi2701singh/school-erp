@@ -10,7 +10,7 @@ services:
     env: python
     plan: free
     buildCommand: "bash build.sh"
-    startCommand: "gunicorn school_erp.wsgi:application"
+    startCommand: "python manage.py migrate --no-input && python seed_demo_data.py && gunicorn school_erp.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.8"

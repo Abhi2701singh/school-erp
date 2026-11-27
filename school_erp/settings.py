@@ -94,21 +94,27 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 USE_POSTGRES = False
 
 if DATABASE_URL:
-    try:
-        import psycopg2
-        # Verify database is active, reachable, and responsive
-        test_conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
-        test_cur = test_conn.cursor()
-        test_cur.execute("SELECT 1;")
-        test_cur.close()
-        test_conn.close()
-        USE_POSTGRES = True
-        masked_host = DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'PostgreSQL'
-        print(f"[DATABASE] ✅ Successfully connected to persistent PostgreSQL ({masked_host}). Data will be preserved permanently across all deploys.")
-    except Exception as e:
-        print(f"[DATABASE WARNING] ⚠️ DATABASE_URL cannot be reached ({e}). Falling back to local SQLite database.")
-        print("[DATABASE WARNING] ⚠️ Notice: Ephemeral cloud containers do not persist local SQLite across new deploys. Connect Render PostgreSQL for 100% permanent data preservation.")
+    DATABASE_URL = DATABASE_URL.strip()
+    if not (DATABASE_URL.startswith('postgres://') or DATABASE_URL.startswith('postgresql://')):
+        print(f"[DATABASE WARNING] ⚠️ DATABASE_URL does not start with postgres:// or postgresql:// (value was: '{DATABASE_URL[:40]}...').")
+        print("[DATABASE WARNING] ⚠️ Please copy the complete 'Internal Database URL' from Render (format: postgres://user:password@host/dbname). Falling back to SQLite.")
         USE_POSTGRES = False
+    else:
+        try:
+            import psycopg2
+            # Verify database is active, reachable, and responsive
+            test_conn = psycopg2.connect(DATABASE_URL, connect_timeout=5)
+            test_cur = test_conn.cursor()
+            test_cur.execute("SELECT 1;")
+            test_cur.close()
+            test_conn.close()
+            USE_POSTGRES = True
+            masked_host = DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'PostgreSQL'
+            print(f"[DATABASE] ✅ Successfully connected to persistent PostgreSQL ({masked_host}). Data will be preserved permanently across all deploys.")
+        except Exception as e:
+            print(f"[DATABASE WARNING] ⚠️ DATABASE_URL cannot be reached ({e}). Falling back to local SQLite database.")
+            print("[DATABASE WARNING] ⚠️ Notice: Ephemeral cloud containers do not persist local SQLite across new deploys. Connect Render PostgreSQL for 100% permanent data preservation.")
+            USE_POSTGRES = False
 
 if USE_POSTGRES:
     DATABASES = {
